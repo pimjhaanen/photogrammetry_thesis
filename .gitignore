@@ -1,0 +1,24 @@
+venv/
+photogrammetry_env/
+.idea/
+
+UWB/output/
+main simulation/output/
+main simulation/left_videos/
+main simulation/right_videos/
+synchronisation/matched_sync/
+Practising_with_phones/time_series/
+
+*.MP4
+*.mp4
+*.jpg
+*.JPG
+*.png
+*.PNG
+*.drawio
+*.obj
+*.ply
+*.csv
+*.npy
+*.wav
+*.ulg
