@@ -4,7 +4,7 @@ import json
 import os
 
 # === INPUT ===
-measured = np.array([4.95, 6.91, 8.93, 10.91, 12.90, 14.97])
+measured = np.array([4.95, 6.91, 8.93, 10.91, 12.90, 14.97]) #3 different samples at the same distance, static over couple of seconds, max stdv of 3cm
 actual   = np.array([5, 7, 9, 11, 13, 15])
 
 # === CALIBRATION FIT ===
