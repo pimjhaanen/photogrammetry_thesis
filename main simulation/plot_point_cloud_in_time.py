@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 # === CONFIG ===
 INPUT_CSV = "output/3d_coordinates_25_06_test2_merged.csv"
 ARUCO_COORDS_CSV = "output/aruco_coordinates_25_06_test2_merged.csv"
-OUTPUT_VIDEO = "output/test_02_camera_frame_LPF.mp4"
+OUTPUT_VIDEO = "output/test_02_camera_frame_LPF_2d.mp4"
 FPS = 30
 VIDEO_SIZE = (800, 800)
 
@@ -362,88 +362,82 @@ X_LIM = (-3, 4)
 Y_LIM = (-6, 6)
 Z_LIM = (-5, 2)
 
-def render_frame(points, line_segments):
+def render_frame(points, line_segments, mode, output_size=None):
     """
-    2x2 panel:
-      [TL] 3D (original view)
-      [TR] Front  (Y–Z)
-      [BL] Side   (X–Z)
-      [BR] Top    (X–Y)
+    mode: "3d" | "2d" | "all"
+    output_size: (W, H) to resize the raster. If None, no resizing.
     """
-    fig = plt.figure(figsize=(8, 8))
+    def plot_segments_scatter(ax, segs, pts, xi, yi, xlab, ylab, xlim, ylim, title):
+        for seg in segs:
+            if seg is not None and len(seg) > 0:
+                ax.plot(seg[:, xi], seg[:, yi], linewidth=2)
+        ax.scatter(pts[:, xi], pts[:, yi], c='red', s=POINT_SIZE)
+        ax.set_xlabel(xlab); ax.set_ylabel(ylab)
+        ax.set_xlim(*xlim); ax.set_ylim(*ylim)
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_title(title, fontsize=10); ax.grid(True)
+        try: ax.set_box_aspect(1)  # square plotting area
+        except Exception: pass
+        ax.set_anchor('C')
 
-    ax3d    = fig.add_subplot(2, 2, 1, projection='3d')  # 3D
-    ax_front= fig.add_subplot(2, 2, 2)                   # Y-Z
-    ax_side = fig.add_subplot(2, 2, 3)                   # X-Z
-    ax_top  = fig.add_subplot(2, 2, 4)                   # X-Y
+    # --- Build figure ---
+    m = mode.lower()
+    if m == "3d":
+        fig = plt.figure(figsize=(6, 6))
+        ax3d = fig.add_subplot(1, 1, 1, projection='3d')
+        for seg in line_segments:
+            if seg is not None and len(seg) > 0:
+                ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2], linewidth=2)
+        ax3d.scatter(points[:, 0], points[:, 1], points[:, 2], c='red', s=POINT_SIZE)
+        ax3d.set_xlabel("X (flight dir.)"); ax3d.set_ylabel("Y (spanwise)"); ax3d.set_zlabel("Z")
+        ax3d.set_xlim(*X_LIM); ax3d.set_ylim(*Y_LIM); ax3d.set_zlim(*Z_LIM)
+        ax3d.view_init(elev=30, azim=-45); ax3d.set_title("3D", fontsize=10); ax3d.grid(True)
 
-    # --- 3D ---
-    for seg in line_segments:
-        if seg is not None and len(seg) > 0:
-            ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2], linewidth=2)
-    ax3d.scatter(points[:, 0], points[:, 1], points[:, 2], c='red', s=POINT_SIZE)
-    ax3d.set_xlabel("X (flight dir.)")
-    ax3d.set_ylabel("Y (spanwise)")
-    ax3d.set_zlabel("Z")
-    ax3d.set_xlim(*X_LIM)
-    ax3d.set_ylim(*Y_LIM)
-    ax3d.set_zlim(*Z_LIM)
-    ax3d.view_init(elev=30, azim=-45)
-    ax3d.set_title("3D", fontsize=10)
-    ax3d.grid(True)
+    elif m == "2d":
+        # 3 square panels side-by-side → 3:1 aspect figure
+        fig = plt.figure(figsize=(15, 5))
+        ax_front = fig.add_subplot(1, 3, 1)
+        ax_side  = fig.add_subplot(1, 3, 2)
+        ax_top   = fig.add_subplot(1, 3, 3)
+        plot_segments_scatter(ax_front, line_segments, points, 1, 2, "$y_w (m)$", "$z_w (m)$", Y_LIM, Z_LIM, "Front view $(y_w–z_w)$")
+        plot_segments_scatter(ax_side,  line_segments, points, 0, 2, "$x_w (m)$", "$z_w (m)$", X_LIM, Z_LIM, "Side view $(x_w–z_w)$")
+        plot_segments_scatter(ax_top,   line_segments, points, 0, 1, "$x_w (m)$", "$y_w (m)$", X_LIM, Y_LIM, "Top view $(x_w–y_w)$")
 
-    # --- Front (Y–Z) ---
+    else:  # "all"
+        fig = plt.figure(figsize=(8, 8))
+        ax3d    = fig.add_subplot(2, 2, 1, projection='3d')
+        ax_front= fig.add_subplot(2, 2, 2)
+        ax_side = fig.add_subplot(2, 2, 3)
+        ax_top  = fig.add_subplot(2, 2, 4)
+        for seg in line_segments:
+            if seg is not None and len(seg) > 0:
+                ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2], linewidth=2)
+        ax3d.scatter(points[:, 0], points[:, 1], points[:, 2], c='red', s=POINT_SIZE)
+        ax3d.set_xlabel("X (flight dir.)"); ax3d.set_ylabel("Y (spanwise)"); ax3d.set_zlabel("Z")
+        ax3d.set_xlim(*X_LIM); ax3d.set_ylim(*Y_LIM); ax3d.set_zlim(*Z_LIM)
+        ax3d.view_init(elev=30, azim=-45); ax3d.set_title("3D", fontsize=10); ax3d.grid(True)
+        plot_segments_scatter(ax_front, line_segments, points, 1, 2, "$y_w (m)$", "$z_w (m)$", Y_LIM, Z_LIM, "Front view $(y_w–z_w)$")
+        plot_segments_scatter(ax_side,  line_segments, points, 0, 2, "$x_w (m)$", "$z_w (m)$", X_LIM, Z_LIM, "Side view $(x_w–z_w)$")
+        plot_segments_scatter(ax_top,   line_segments, points, 0, 1, "$x_w (m)$", "$y_w (m)$", X_LIM, Y_LIM, "Top view $(x_w–y_w)$")
 
-    for seg in line_segments:
-        if seg is not None and len(seg) > 0:
-            ax_front.plot(seg[:, 1], seg[:, 2], linewidth=2)
-    ax_front.scatter(points[:, 1], points[:, 2], c='red', s=POINT_SIZE)
-    ax_front.set_xlabel("Y (spanwise)")
-    ax_front.set_ylabel("Z")
-    ax_front.set_xlim(*Y_LIM)
-    ax_front.set_ylim(*Z_LIM)
-    ax_front.set_aspect('equal', adjustable='box')
-    ax_front.set_title("Front (Y–Z)", fontsize=10)
-    ax_front.grid(True)
-
-    # --- Side (X–Z) ---
-    for seg in line_segments:
-        if seg is not None and len(seg) > 0:
-            ax_side.plot(seg[:, 0], seg[:, 2], linewidth=2)
-    ax_side.scatter(points[:, 0], points[:, 2], c='red', s=POINT_SIZE)
-    ax_side.set_xlabel("X (flight dir.)")
-    ax_side.set_ylabel("Z")
-    ax_side.set_xlim(*X_LIM)
-    ax_side.set_ylim(*Z_LIM)
-    ax_side.set_aspect('equal', adjustable='box')
-    ax_side.set_title("Side (X–Z)", fontsize=10)
-    ax_side.grid(True)
-
-    # --- Top (X–Y) ---
-    for seg in line_segments:
-        if seg is not None and len(seg) > 0:
-            ax_top.plot(seg[:, 0], seg[:, 1], linewidth=2)
-    ax_top.scatter(points[:, 0], points[:, 1], c='red', s=POINT_SIZE)
-    ax_top.set_xlabel("X (flight dir.)")
-    ax_top.set_ylabel("Y (spanwise)")
-    ax_top.set_xlim(*X_LIM)
-    ax_top.set_ylim(*Y_LIM)
-    ax_top.set_aspect('equal', adjustable='box')
-    ax_top.set_title("Top (X–Y)", fontsize=10)
-    ax_top.grid(True)
-
+    # --- Rasterize ---
     fig.tight_layout()
     fig.canvas.draw()
-
     img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
     img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    img = cv2.resize(img, VIDEO_SIZE)
     plt.close(fig)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    # --- Optional resize (avoid forcing 800×800 on 2d) ---
+    if output_size is not None:
+        img = cv2.resize(img, output_size)
     return img
 
-# === MAIN LOOP ===
-prev_points_smoothed = None  # cache for point-level EMA (post-transform)
+
+# === MAIN LOOP (2D only, wide canvas) ===
+prev_points_smoothed = None
+MODE = "2d"                     # keep your other modes unchanged elsewhere
+OUTPUT_SIZE_2D = (2400, 800)    # 3× wider so each 2D subplot can be square
+out = None                      # lazy init
 
 frame_count = 0
 for frame_idx in unique_frames:
@@ -469,34 +463,33 @@ for frame_idx in unique_frames:
     if xyz.shape[0] >= 2:
         diffs = xyz[:, None, :] - xyz[None, :, :]
         D = np.linalg.norm(diffs, axis=2)
-        np.fill_diagonal(D, np.inf)           # ignore self-distance
-        min_dist = D.min(axis=1)              # nearest neighbor distance
+        np.fill_diagonal(D, np.inf)
+        min_dist = D.min(axis=1)
         keep = min_dist <= 2.0
         frame_df = frame_df.loc[keep].copy()
     else:
         frame_df = frame_df.iloc[0:0].copy()
 
-    # --- Optional: smooth points in ArUco frame by matching to previous frame ---
+    # --- Optional smoothing in ArUco frame by matching to previous frame ---
     points_to_plot = frame_df[["x", "y", "z"]].to_numpy()
     if SMOOTH_POINTS and LOWPASS and points_to_plot.size > 0:
         points_smoothed, _ = smooth_points_by_matching(
-            points_to_plot, prev_points_smoothed, alpha=POINT_ALPHA, max_dist=MATCH_RADIUS
+            points_to_plot, prev_points_smoothed,
+            alpha=POINT_ALPHA, max_dist=MATCH_RADIUS
         )
         frame_df[["x", "y", "z"]] = points_smoothed
         points_to_plot = points_smoothed
 
-    # Build line segments
+    # --- Build line segments ---
     line_segments = []
-
-    # 0..7: best-fit straight lines
-    for k in range(8):
+    for k in range(8):  # 0..7 straight lines
         grp = frame_df[frame_df["marker_str"] == str(k)]
         if grp.shape[0] >= 2:
             line_segments.append(fit_line_3d(grp[["x", "y", "z"]].values))
         else:
             line_segments.append(None)
 
-    # LE: straight segments connecting detected points by *shortest 3D path*
+    # LE: shortest 3D path
     le_grp = frame_df[frame_df["marker_str"].str.upper() == "LE"]
     if le_grp.shape[0] >= 2:
         le_points = le_grp[["x", "y", "z"]].values
@@ -505,12 +498,21 @@ for frame_idx in unique_frames:
     else:
         line_segments.append(None)
 
-    img = render_frame(points_to_plot, line_segments)
+    # --- Render wide 1×3 (no squashing to 800×800) ---
+    img = render_frame(points_to_plot, line_segments, mode=MODE, output_size=OUTPUT_SIZE_2D)
+
+    # Lazy-init the writer to the image size
+    if out is None:
+        h, w = img.shape[:2]
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(OUTPUT_VIDEO, fourcc, FPS, (w, h))
+
     out.write(img)
     frame_count += 1
 
     # cache smoothed points for next frame matching
     prev_points_smoothed = points_to_plot.copy()
 
-out.release()
+if out is not None:
+    out.release()
 print(f"[✓] Total frames written: {frame_count}")

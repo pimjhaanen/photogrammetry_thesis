@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # === Settings ===
-depths = [7, 15]  # in meters
+depths = [7]  # in meters
 focal_lengths = {
     "Linear": 2448.228,
     "Wide": 2337.803
