@@ -168,11 +168,11 @@ filtered_axes = {}   # cache: frame_idx -> (R_axes, origin)
 def get_aruco_transform(frame_idx, lowpass=None, alpha=None):
     """
     Aruco frame per frame:
-      Origin O = midpoint of two 4x4 markers.
-      x_hat = normalize(7x7 - O)
+      Origin O = center of the 7x7 marker.
+      x_hat = normalize(7x7 - midpoint(4x4a,4x4b))   # same direction as before
       y_raw_hat = normalize(4x4b - 4x4a)
       z_hat = normalize(cross(x_hat, y_raw_hat))
-      y_hat = normalize(cross(z_hat, x_hat))   # right-handed & continuous
+      y_hat = normalize(cross(z_hat, x_hat))          # right-handed & continuous
     Returns (R_axes, origin) with columns [x_hat, y_hat, z_hat].
     """
     # Use master settings by default
@@ -188,8 +188,12 @@ def get_aruco_transform(frame_idx, lowpass=None, alpha=None):
     p4b = np.array([r["x_4x4b"], r["y_4x4b"], r["z_4x4b"]], float)
     p7  = np.array([r["x_7x7"],  r["y_7x7"],  r["z_7x7"] ], float)
 
-    origin = 0.5 * (p4a + p4b)
-    x_vec = p7 - origin
+    # New origin: center of 7x7
+    origin = p7
+
+    # Keep x-axis direction identical to previous definition
+    mid_4x4 = 0.5 * (p4a + p4b)
+    x_vec = p7 - mid_4x4
     y_raw = p4b - p4a
 
     def _safe_norm(v):
@@ -221,6 +225,7 @@ def get_aruco_transform(frame_idx, lowpass=None, alpha=None):
 
     filtered_axes[frame_idx] = (R_axes, origin)
     return R_axes, origin
+
 
 def transform_points_to_aruco(points_xyz, frame_idx, lowpass=False):
     R_axes, origin = get_aruco_transform(frame_idx, lowpass=lowpass)
@@ -358,7 +363,7 @@ def smooth_points_by_matching(curr_pts, prev_pts, alpha=0.9, max_dist=0.35):
 
 # --- Rendering ---
 # Plot limits
-X_LIM = (-3, 4)
+X_LIM = (-5, 2)
 Y_LIM = (-6, 6)
 Z_LIM = (-5, 2)
 

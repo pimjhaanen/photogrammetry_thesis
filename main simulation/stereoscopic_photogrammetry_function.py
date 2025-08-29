@@ -334,77 +334,146 @@ def process_stereo_pair(left, right, calib, frame_counter, max_displacement=10):
             cv2.line(right_cross, (0, y), (right_cross.shape[1], y), (255, 0, 255), 1)
             cv2.putText(right_cross, str(i), (5, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 1)
 
-    # --- Debug overlay every 30th frame (yellow text on black block) ---
+        # --- Debug overlay every 30th frame (single LEFT frame, 180° flipped, fixed scale) ---
+    # --- Debug overlay every 30th frame (L+R, 180° flip, no save) ---
+    # --- Debug overlay every 30th frame (L+R, 180° flip, no save, safe close) ---
     debug_frame = True
     if frame_counter % 30 == 0 and debug_frame:
-        debug_left  = left_cross.copy()
-        debug_right = right_cross.copy()
+        FLIP_180 = True
+        DISPLAY_SCALE = 0.3  # e.g., 0.3–1.0. Increase if it looks too small.
 
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 2
-        thickness = 2
+        # -------- Helper: annotate one frame (no coords; white-on-black labels) --------
+        def annotate_frame(base_img, crosses, aruco4=None, aruco7=None,
+                           flip=True, font_scale=1.6, thickness=2):
+            """
+            base_img: np.ndarray (BGR)
+            crosses:  iterable of (x,y) or (x,y,label)
+            aruco4/7: iterable of (x,y) or None
+            flip:     if True, rotate 180° and map coords accordingly
+            """
+            img = base_img.copy()
+            H, W = img.shape[:2]
 
-        # Left labels
-        for i, pt in enumerate(tracked_cross_left):
-            if len(pt) == 3:
-                cx, cy, label = pt
-                label_str = f"{i}: {label}, {round(cx,0)}"
-            else:
-                cx, cy = pt
-                label_str = str(i)
+            # rotate image first so text is upright in final orientation
+            if flip:
+                img = cv2.rotate(img, cv2.ROTATE_180)
 
-            cv2.circle(debug_left, (int(cx), int(cy)), 6, (0, 255, 0), 2)
-            (w_txt, h_txt), baseline = cv2.getTextSize(label_str, font, font_scale, thickness)
-            cv2.rectangle(
-                debug_left,
-                (int(cx) + 10, int(cy) - h_txt),
-                (int(cx) + 10 + w_txt, int(cy) + baseline),
-                (0, 0, 0),
-                -1
-            )
-            cv2.putText(debug_left, label_str, (int(cx) + 10, int(cy)), font, font_scale, (0, 255, 255), thickness)
+            def map_xy(x, y):
+                xi, yi = int(round(x)), int(round(y))
+                if flip:
+                    return (W - 1 - xi, H - 1 - yi)
+                return (xi, yi)
 
-        # Right labels
-        for i, pt in enumerate(tracked_cross_right):
-            if len(pt) == 3:
-                cx, cy, label = pt
-                label_str = str(i)
-            else:
-                cx, cy = pt
-                label_str = str(i)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            text_color = (255, 255, 255)  # white
+            box_color = (0, 0, 0)  # black
 
-            cv2.circle(debug_right, (int(cx), int(cy)), 6, (0, 255, 0), 2)
-            (w_txt, h_txt), baseline = cv2.getTextSize(label_str, font, font_scale, thickness)
-            cv2.rectangle(
-                debug_right,
-                (int(cx) + 10, int(cy) - h_txt),
-                (int(cx) + 10 + w_txt, int(cy) + baseline),
-                (0, 0, 0),
-                -1
-            )
-            cv2.putText(debug_right, label_str, (int(cx) + 10, int(cy)), font, font_scale, (0, 255, 255), thickness)
+            # Cross markers: index + label (no x-position printed)
+            for i, pt in enumerate(crosses):
+                if len(pt) == 3:
+                    cx, cy, label = pt
+                    label_str = f"{i}: {label}"
+                else:
+                    cx, cy = pt
+                    label_str = str(i)
 
-        # ArUco annotations (IDs + pose line kept)
-        if aruco_centers_L_4x4:
-            for (x, y), id_ in zip(aruco_centers_L_4x4, aruco_ids_4x4):
-                cv2.circle(debug_left, (int(x), int(y)), 8, (255, 0, 0), 2)
-                cv2.putText(debug_left, f"{id_}", (int(x) + 10, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-        if aruco_centers_L_7x7:
-            for (x, y), id_, rvec, tvec in zip(aruco_centers_L_7x7, aruco_ids_7x7, aruco_rotations_7x7, aruco_translations_7x7):
-                cv2.circle(debug_left, (int(x), int(y)), 8, (255, 0, 0), 2)
-                cv2.putText(debug_left, f"{id_}", (int(x) + 10, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                cv2.putText(debug_left, f"Pose: {tvec}", (int(x), int(y) + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                x, y = map_xy(cx, cy)
+                cv2.circle(img, (x, y), 6, (0, 255, 0), 2)
+                (w_txt, h_txt), baseline = cv2.getTextSize(label_str, font, font_scale, thickness)
+                tl = (x + 10, y - h_txt)
+                br = (x + 10 + w_txt, y + baseline)
+                cv2.rectangle(img, tl, br, box_color, -1)
+                cv2.putText(img, label_str, (x + 10, y), font, font_scale, text_color, thickness, cv2.LINE_AA)
 
-        combined = np.hstack((
-            cv2.resize(debug_left,  (0, 0), fx=0.4, fy=0.4),
-            cv2.resize(debug_right, (0, 0), fx=0.4, fy=0.4)
-        ))
-        cv2.imshow(f"[DEBUG] Frame {frame_counter}", combined)
-        key = cv2.waitKey(0)
-        if key == 27:  # ESC
-            cv2.destroyAllWindows()
-            return None
-        cv2.destroyAllWindows()
+            # ArUco markers: generic labels only
+            if aruco4:
+                for (ax, ay) in aruco4:
+                    x, y = map_xy(ax, ay)
+                    cv2.circle(img, (x, y), 8, (255, 0, 0), 2)
+                    label = "ArUco 4x4"
+                    (w_txt, h_txt), baseline = cv2.getTextSize(label, font, font_scale, thickness)
+                    tl = (x + 10, y - h_txt)
+                    br = (x + 10 + w_txt, y + baseline)
+                    cv2.rectangle(img, tl, br, box_color, -1)
+                    cv2.putText(img, label, (x + 10, y), font, font_scale, text_color, thickness, cv2.LINE_AA)
+
+            if aruco7:
+                for (ax, ay) in aruco7:
+                    x, y = map_xy(ax, ay)
+                    cv2.circle(img, (x, y), 8, (255, 0, 0), 2)
+                    label = "ArUco 7x7"
+                    (w_txt, h_txt), baseline = cv2.getTextSize(label, font, font_scale, thickness)
+                    tl = (x + 10, y - h_txt)
+                    br = (x + 10 + w_txt, y + baseline)
+                    cv2.rectangle(img, tl, br, box_color, -1)
+                    cv2.putText(img, label, (x + 10, y), font, font_scale, text_color, thickness, cv2.LINE_AA)
+
+            return img
+
+        # ---- Make sure both frames have same base size (avoids weird tiny stacking) ----
+        Lh, Lw = left_cross.shape[:2]
+        Rh, Rw = right_cross.shape[:2]
+        if (Rh, Rw) != (Lh, Lw):
+            right_cross_disp_base = cv2.resize(right_cross, (Lw, Lh), interpolation=cv2.INTER_AREA)
+        else:
+            right_cross_disp_base = right_cross
+
+        # Safely pick ArUco arrays if they exist; otherwise None
+        left_aruco4 = aruco_centers_L_4x4 if 'aruco_centers_L_4x4' in locals() else None
+        left_aruco7 = aruco_centers_L_7x7 if 'aruco_centers_L_7x7' in locals() else None
+        right_aruco4 = aruco_centers_R_4x4 if 'aruco_centers_R_4x4' in locals() else None
+        right_aruco7 = aruco_centers_R_7x7 if 'aruco_centers_R_7x7' in locals() else None
+
+        # ---- Annotate both frames ----
+        left_annot = annotate_frame(left_cross, tracked_cross_left, left_aruco4, left_aruco7,
+                                    flip=FLIP_180, font_scale=1.6, thickness=2)
+        right_annot = annotate_frame(right_cross_disp_base, tracked_cross_right, right_aruco4, right_aruco7,
+                                     flip=FLIP_180, font_scale=1.6, thickness=2)
+
+        # ---- Scale for display (one fixed factor for both) ----
+        if not (0 < DISPLAY_SCALE <= 1.5):
+            DISPLAY_SCALE = 0.6  # sanity
+        left_disp = cv2.resize(left_annot, None, fx=DISPLAY_SCALE, fy=DISPLAY_SCALE, interpolation=cv2.INTER_AREA)
+        right_disp = cv2.resize(right_annot, None, fx=DISPLAY_SCALE, fy=DISPLAY_SCALE, interpolation=cv2.INTER_AREA)
+
+        # Ensure equal heights before hstack
+        hL, wL = left_disp.shape[:2]
+        hR, wR = right_disp.shape[:2]
+        if hL != hR:
+            target_h = min(hL, hR)
+
+            def resize_to_h(img, target_h):
+                h, w = img.shape[:2]
+                new_w = max(1, int(round(w * (target_h / h))))
+                return cv2.resize(img, (new_w, target_h), interpolation=cv2.INTER_AREA)
+
+            left_disp = resize_to_h(left_disp, target_h)
+            right_disp = resize_to_h(right_disp, target_h)
+
+        combined = np.hstack((left_disp, right_disp))
+
+        # ---- One clean window; safe close; no saving ----
+        win_name = f"[DEBUG] L+R Frame {frame_counter}  (ESC / Q / Enter = close)"
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)  # DPI-safe resizable window
+        # Force window to the image size in pixels (helps on high-DPI displays)
+        cv2.resizeWindow(win_name, combined.shape[1], combined.shape[0])
+        cv2.imshow(win_name, combined)
+
+        # Allow closing via ESC/Q/Enter *or* clicking X
+        while True:
+            key = cv2.waitKey(20) & 0xFF
+            if key in (27, ord('q'), ord('Q'), 13):  # ESC, q/Q, Enter
+                break
+            # if user clicked X, window disappears -> break
+            if cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1:
+                break
+
+        # Safe cleanup (prevents the "NULL window" error)
+        try:
+            cv2.destroyWindow(win_name)
+        except cv2.error:
+            pass
+        cv2.waitKey(1)  # flush events
 
     # --- 4) Triangulation ---
     if not tracked_cross_left or not tracked_cross_right:
