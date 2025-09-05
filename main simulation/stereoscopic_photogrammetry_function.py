@@ -189,12 +189,47 @@ def process_stereo_pair(left, right, calib, frame_counter, max_displacement=10):
     right_cross = cv2.convertScaleAbs(right_cross, alpha=4, beta=20)
 
     # (Optional quick look at brightened frames)
+    # (Optional quick look at brightened frames)
     show_bright_frames = False
     if show_bright_frames:
-        fx = fy = 0.3
-        cv2.imshow("Left Cross Bright",  cv2.resize(left_cross,  None, fx=fx, fy=fy))
-        cv2.imshow("Right Cross Bright", cv2.resize(right_cross, None, fx=fx, fy=fy))
-        cv2.waitKey(0); cv2.destroyAllWindows()
+        # ---- Normal brightness (no change) ----
+        left_disp = cv2.convertScaleAbs(left_cross, alpha=1.0, beta=0.0)
+        right_disp = cv2.convertScaleAbs(right_cross, alpha=1.0, beta=0.0)
+
+        # ---- Flip both by 180° ----
+        left_disp = cv2.rotate(left_disp, cv2.ROTATE_180)
+        right_disp = cv2.rotate(right_disp, cv2.ROTATE_180)
+
+        # ---- Optional labels (apply AFTER flip so text is upright) ----
+        L = left_disp.copy()
+        R = right_disp.copy()
+        cv2.putText(L, "Left (180° flipped)", (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(R, "Right (180° flipped)", (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2, cv2.LINE_AA)
+
+        # ---- Ensure same height, then stack horizontally ----
+        hL, wL = L.shape[:2]
+        hR, wR = R.shape[:2]
+        target_h = min(hL, hR)
+
+        def resize_to_h(img, target_h):
+            h, w = img.shape[:2]
+            new_w = max(1, int(round(w * (target_h / h))))
+            return cv2.resize(img, (new_w, target_h), interpolation=cv2.INTER_AREA)
+
+        if hL != target_h: L = resize_to_h(L, target_h)
+        if hR != target_h: R = resize_to_h(R, target_h)
+
+        combined = np.hstack((L, R))
+
+        # ---- Optional display scaling ----
+        DISPLAY_SCALE = 0.3
+        combined = cv2.resize(combined, None, fx=DISPLAY_SCALE, fy=DISPLAY_SCALE, interpolation=cv2.INTER_AREA)
+
+        win = "Left / Right Cross (180° flipped)"
+        cv2.namedWindow(win, cv2.WINDOW_NORMAL)
+        cv2.imshow(win, combined)
+        cv2.waitKey(0)
+        cv2.destroyWindow(win)
 
     # --- 1) ArUco detection (4x4 + 7x7) ---
     aruco_dict_4x4 = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_100)
