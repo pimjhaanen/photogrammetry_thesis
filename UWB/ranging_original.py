@@ -73,7 +73,7 @@ def apply_postprocessing(
 
     # Optional simple low-pass filter (EMA)
     if low_pass_filter and mask.any():
-        alpha = 0.9
+        alpha = 0.95
         filtered = []
         last = None
         for val in interp:
@@ -124,11 +124,10 @@ distances = []
 epochs = []
 
 try:
-    flash_sync()  # visual sync marker (optional)
-
     while True:
         status = pozyx.doRanging(destination_id, device_range, remote_id)
         now_epoch = time.time()              # <<--- RAW EPOCH SECONDS (UTC-based)
+        flash_sync()  # visual sync marker (optional)
         epochs.append(now_epoch)
 
         # Optional hot-plug check

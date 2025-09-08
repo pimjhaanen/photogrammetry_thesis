@@ -86,89 +86,132 @@ def extract_video_frame_timestamps(video_path):
     timestamps = np.arange(frame_count) / fps
     return timestamps, fps
 
-def detect_flash_end_frame(video_path, threshold=50, plot=True, occurs_before=None, occurs_after=None):
+def detect_flash_start_frame(
+    video_path,
+    *,
+    occurs_before=10,         # seconds (optional)
+    occurs_after=0,          # seconds (optional)
+    center_fraction=1/3,        # box size as fraction of width/height
+    min_jump=20.0,              # absolute min jump in brightness (gray levels)
+    slope_ratio=5.0,            # how many times larger than recent baseline slope (e.g., 5x = 500%)
+    baseline_window=5,          # frames to estimate recent baseline slope (median of |Δ|)
+    brightness_floor=0.0,       # optional floor for post-jump brightness
+    plot=True
+):
     """
-    Detects the last frame with high brightness in the central 1/3×1/3 region.
-    If no flash is detected in the (optional) time window, returns None (falsy).
+    Detect the *start* of a flash using the discrete slope (Δ brightness per frame)
+    in the central region of the image.
 
-    Args:
-        video_path (str): Path to the video file.
-        threshold (float): Brightness threshold for detecting flash.
-        plot (bool): Whether to plot the brightness curve.
-        occurs_before (float or None): Only consider frames <= this time (s).
-        occurs_after  (float or None): Only consider frames >= this time (s).
+    Heuristic: trigger at the first frame k where
+      Δ_brightness[k] >= min_jump  AND
+      Δ_brightness[k] >= slope_ratio * median(|Δ_brightness| over previous `baseline_window`)
+      AND brightness[k] >= brightness_floor (optional)
 
     Returns:
-        int | None: Index of the last frame where flash is detected, or None if none found.
+        int | None: Frame index of the *first bright frame of the flash*, or None if not found.
     """
+    occurs_before = occurs_before *30
+    occurs_after = occurs_after * 30 # Go from s to fps
     cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise IOError(f"Could not open video: {video_path}")
+
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps         = float(cap.get(cv2.CAP_PROP_FPS))
+    width       = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height      = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # Compute frame limits based on occurs_after and occurs_before
-    start_frame = int(max(0, (occurs_after or 0) * fps))
-    end_frame = int(min(frame_count, (occurs_before * fps) if occurs_before is not None else frame_count))
+    # Compute frame limits from time window (if provided)
+    start_frame = int(max(0, (occurs_after or 0.0) * fps))
+    end_frame   = int(min(frame_count, (occurs_before * fps) if occurs_before is not None else frame_count))
 
-    # Seek to start to avoid decoding everything
+    if start_frame >= end_frame:
+        cap.release()
+        return None
+
+    # Seek to start
     if start_frame > 0:
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 
-    # Central 1/3 box
-    x0, x1 = int(width/3), int(2*width/3)
-    y0, y1 = int(height/3), int(2*height/3)
+    # Central box (center_fraction of width/height)
+    fx = fy = center_fraction
+    x0, x1 = int((1 - fx) * 0.5 * width),  int((1 + fx) * 0.5 * width)
+    y0, y1 = int((1 - fy) * 0.5 * height), int((1 + fy) * 0.5 * height)
 
     brightness = []
-    flash_end = None
     i = start_frame
     while i < end_frame:
         ret, frame = cap.read()
         if not ret:
             break
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        center_region = gray[y0:y1, x0:x1]
-        mean_brightness = float(np.mean(center_region))
-        brightness.append(mean_brightness)
-        if mean_brightness > threshold:
-            flash_end = i  # keep updating: we want the last bright frame
+        roi  = gray[y0:y1, x0:x1]
+        brightness.append(float(np.mean(roi)))
         i += 1
 
     cap.release()
 
-    # Early out if nothing found
-    if flash_end is None:
+    if not brightness or len(brightness) < baseline_window + 2:
+        # Not enough data to compute a robust slope
         if plot:
-            # still show whatever was measured to help with debugging
             plt.figure(figsize=(12, 4))
             if brightness:
                 x = np.arange(start_frame, start_frame + len(brightness))
                 plt.plot(x, brightness, label='Brightness')
-            plt.title("Flash Detection (no flash found)")
+            plt.title("Flash Start Detection (insufficient data)")
             plt.xlabel("Frame Index")
             plt.ylabel("Brightness")
-            plt.grid(True)
-            plt.tight_layout()
-            plt.show()
+            plt.grid(True); plt.tight_layout(); plt.show()
         return None
 
+    # Discrete slope (Δ per frame)
+    brightness = np.asarray(brightness, dtype=float)
+    d = np.diff(brightness)  # length N-1, corresponds to transitions k->k+1
+
+    flash_start = None
+    eps = 1e-9
+    for k in range(baseline_window, len(d)):
+        recent = np.abs(d[max(0, k - baseline_window):k])
+        baseline = np.median(recent) if recent.size else 0.0
+        # Require both a minimum absolute jump and a multiple of the baseline
+        if (d[k] >= min_jump) and (d[k] >= slope_ratio * max(baseline, eps)):
+            # Also enforce a minimum post-jump brightness if desired
+            post_brightness = brightness[k + 1]
+            if post_brightness >= brightness_floor:
+                # The *first bright frame* is k+1 frames from start_frame
+                flash_start = start_frame + (k + 1)
+                break
+
     if plot:
-        x = np.arange(start_frame, start_frame + len(brightness))
-        plt.figure(figsize=(12, 4))
-        plt.plot(x, brightness, label='Brightness')
-        plt.axvline(flash_end, linestyle='--', label='End of Flash')
-        plt.xlabel("Frame Index")
+        x_frames = np.arange(start_frame, start_frame + len(brightness))
+        plt.figure(figsize=(12, 6))
+
+        # Top: brightness
+        plt.subplot(2, 1, 1)
+        plt.plot(x_frames, brightness, label='Brightness')
+        plt.xlim(occurs_after,occurs_before)
+        plt.ylim(-5,40)
+        if flash_start is not None:
+            plt.axvline(flash_start, linestyle='--', label='Flash start', linewidth=1.5)
         plt.ylabel("Brightness")
-        plt.title("Flash Detection")
-        plt.legend()
-        plt.grid(True)
-        plt.tight_layout()
+        plt.title("Flash Start Detection (brightness and slope)")
+        plt.grid(True); plt.legend()
+
+        # Bottom: slope
+        x_slope = np.arange(start_frame + 1, start_frame + len(brightness))
+        plt.subplot(2, 1, 2)
+        plt.plot(x_slope, d, label='Δ brightness/frame')
+        plt.xlim(occurs_after, occurs_before)
+        if flash_start is not None:
+            plt.axvline(flash_start, linestyle='--', label='Flash start', linewidth=1.5)
+        plt.xlabel("Frame Index"); plt.ylabel("Δ Brightness")
+        plt.grid(True); plt.legend(); plt.tight_layout()
         plt.show()
 
-    return flash_end
+    return flash_start
 
 
-#frame_idx = detect_flash_end_frame("test_led_6.MP4", threshold=30, occurs_after=0, occurs_before=10)
+frame_idx = detect_flash_start_frame("test_led_6.MP4")
 
 
 def match_videos(video1_path, video2_path, start_seconds, match_duration=300, downsample_factor=50, plot=False, output_dir='matched_sync'):
@@ -221,29 +264,33 @@ def match_videos(video1_path, video2_path, start_seconds, match_duration=300, do
         plt.tight_layout()
         plt.show()
 
-    # Step 4.5: Try to find end-of-flash frame
-    flash_video_path = video1_files[0]  # change this if the flash is in video2
-    flash_end_frame = detect_flash_end_frame(flash_video_path)
-    use_flash_alignment = flash_end_frame is not None
+    # Step 4.5: Try to find start-of-flash frame
+    flash_video_path = video1_files[0]  # change if the flash is in video2
+    flash_start_frame = detect_flash_start_frame(flash_video_path)
+    use_flash_alignment = flash_start_frame is not None
 
     # Step 5: Get timestamps
     timestamps1, fps1 = extract_video_frame_timestamps(video1_files[0])
     timestamps2, fps2 = extract_video_frame_timestamps(video2_files[0])
 
     if use_flash_alignment:
-        flash_video_fps = cv2.VideoCapture(flash_video_path).get(cv2.CAP_PROP_FPS)
-        flash_end_time = flash_end_frame / max(flash_video_fps, 1e-9)
-        print(f"End of flash at frame {flash_end_frame} (≈ {flash_end_time:.3f} s) in flash video")
+        cap_tmp = cv2.VideoCapture(flash_video_path)
+        flash_video_fps = cap_tmp.get(cv2.CAP_PROP_FPS)
+        cap_tmp.release()
+        flash_start_time = flash_start_frame / max(flash_video_fps, 1e-9)
+        print(f"Start of flash at frame {flash_start_frame} (≈ {flash_start_time:.3f} s) in flash video")
 
-        # Align both streams to the flash end; correct for measured audio lag
+        # Align both streams to flash start; correct for measured audio lag
         if flash_video_path == video1_files[0]:
-            timestamps1 = timestamps1 - flash_end_time
-            timestamps2 = timestamps2 - (flash_end_time - lag_seconds)
+            # flash in video 1 → t_f2 ≈ t_f1 - lag
+            timestamps1 = timestamps1 - flash_start_time
+            timestamps2 = timestamps2 - (flash_start_time - lag_seconds)
         else:
-            timestamps2 = timestamps2 - flash_end_time
-            timestamps1 = timestamps1 - (flash_end_time + lag_seconds)
+            # flash in video 2 → t_f1 ≈ t_f2 + lag
+            timestamps2 = timestamps2 - flash_start_time
+            timestamps1 = timestamps1 - (flash_start_time + lag_seconds)
     else:
-        # No flash detected → just shift by audio lag (audio2 lags audio1 by +lag_seconds)
+        # No flash detected → use audio-only alignment (audio2 lags audio1 by +lag_seconds)
         print("No flash detected — falling back to audio-only alignment.")
         timestamps1 = timestamps1.copy()
         timestamps2 = timestamps2 - lag_seconds
