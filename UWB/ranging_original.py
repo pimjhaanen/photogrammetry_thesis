@@ -124,10 +124,12 @@ distances = []
 epochs = []
 
 try:
+    now_epoch = time.time()  # <<--- RAW EPOCH SECONDS (UTC-based)
+    epochs.append(now_epoch)
+    flash_sync()  # visual sync marker (optional)
     while True:
         status = pozyx.doRanging(destination_id, device_range, remote_id)
         now_epoch = time.time()              # <<--- RAW EPOCH SECONDS (UTC-based)
-        flash_sync()  # visual sync marker (optional)
         epochs.append(now_epoch)
 
         # Optional hot-plug check
