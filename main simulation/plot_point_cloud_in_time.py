@@ -5,7 +5,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import cv2
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-
+from matplotlib import rcParams
 # === CONFIG ===
 INPUT_CSV = "output/3d_coordinates_25_06_test2_merged.csv"
 ARUCO_COORDS_CSV = "output/aruco_coordinates_25_06_test2_merged.csv"
@@ -367,74 +367,149 @@ X_LIM = (-5, 2)
 Y_LIM = (-6, 6)
 Z_LIM = (-5, 2)
 
-def render_frame(points, line_segments, mode, output_size=None):
+# Example globals expected by your function (already in your codebase)
+# X_LIM = (-5, 5); Y_LIM = (-10, 10); Z_LIM = (-1, 6)
+# POINT_SIZE = 10
+
+def render_frame(points, line_segments, mode, output_size=None,
+                 panel_letters=False,           # add (a)(b)(c) under panels (video use)
+                 pdf_path=None,                  # save a clean vector PDF of this frame (no titles)
+                 dpi=200,                        # overall raster density
+                 base_fontsize=14,               # larger fonts per feedback
+                 tick_fontsize=12,
+                 label_fontsize=14,
+                 lw=2.2):                        # slightly thicker lines
     """
     mode: "3d" | "2d" | "all"
-    output_size: (W, H) to resize the raster. If None, no resizing.
+    output_size: (W, H) in pixels; if None, figure size decides. Avoid resizing for sharpness.
     """
-    def plot_segments_scatter(ax, segs, pts, xi, yi, xlab, ylab, xlim, ylim, title):
+
+    # --- A. Visual style (bigger and clean) ---
+    rcParams.update({
+        "font.size": base_fontsize,
+        "axes.labelsize": label_fontsize,
+        "axes.titlesize": base_fontsize,  # we won't use titles in 2D per feedback
+        "xtick.labelsize": tick_fontsize,
+        "ytick.labelsize": tick_fontsize,
+        "lines.linewidth": lw,
+    })
+
+    def plot_segments_scatter(ax, segs, pts, xi, yi, xlab, ylab, xlim, ylim):
         for seg in segs:
             if seg is not None and len(seg) > 0:
-                ax.plot(seg[:, xi], seg[:, yi], linewidth=2)
+                ax.plot(seg[:, xi], seg[:, yi])
         ax.scatter(pts[:, xi], pts[:, yi], c='red', s=POINT_SIZE)
         ax.set_xlabel(xlab); ax.set_ylabel(ylab)
         ax.set_xlim(*xlim); ax.set_ylim(*ylim)
         ax.set_aspect('equal', adjustable='box')
-        ax.set_title(title, fontsize=10); ax.grid(True)
-        try: ax.set_box_aspect(1)  # square plotting area
+        ax.grid(True, alpha=0.4)
+        try: ax.set_box_aspect(1)
         except Exception: pass
         ax.set_anchor('C')
+
+    # Choose figure size by desired pixel target if output_size is given
+    if output_size is not None:
+        Wpx, Hpx = output_size
+        # inches = pixels / dpi
+        fig_w, fig_h = Wpx / dpi, Hpx / dpi
+    else:
+        # Keep your 3:1 look for 2D; otherwise square for 3D / 2x2 for "all"
+        if mode.lower() == "2d":
+            fig_w, fig_h = 15, 5
+        elif mode.lower() == "3d":
+            fig_w, fig_h = 6, 6
+        else:  # "all"
+            fig_w, fig_h = 8, 8
 
     # --- Build figure ---
     m = mode.lower()
     if m == "3d":
-        fig = plt.figure(figsize=(6, 6))
+        fig = plt.figure(figsize=(fig_w, fig_h), dpi=dpi)
         ax3d = fig.add_subplot(1, 1, 1, projection='3d')
         for seg in line_segments:
             if seg is not None and len(seg) > 0:
-                ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2], linewidth=2)
+                ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2])
         ax3d.scatter(points[:, 0], points[:, 1], points[:, 2], c='red', s=POINT_SIZE)
-        ax3d.set_xlabel("X (flight dir.)"); ax3d.set_ylabel("Y (spanwise)"); ax3d.set_zlabel("Z")
+        ax3d.set_xlabel(r"$x_\mathrm{w}\,(\mathrm{m})$")
+        ax3d.set_ylabel(r"$y_\mathrm{w}\,(\mathrm{m})$")
+        ax3d.set_zlabel(r"$z_\mathrm{w}\,(\mathrm{m})$")
         ax3d.set_xlim(*X_LIM); ax3d.set_ylim(*Y_LIM); ax3d.set_zlim(*Z_LIM)
-        ax3d.view_init(elev=30, azim=-45); ax3d.set_title("3D", fontsize=10); ax3d.grid(True)
+        ax3d.view_init(elev=30, azim=-45)
+        ax3d.grid(True, alpha=0.4)
 
     elif m == "2d":
-        # 3 square panels side-by-side → 3:1 aspect figure
-        fig = plt.figure(figsize=(15, 5))
+        # 3 square panels side-by-side → pick e.g. 1920x640 or 3000x1000 in output_size for sharpness
+        fig = plt.figure(figsize=(fig_w, fig_h), dpi=dpi)
         ax_front = fig.add_subplot(1, 3, 1)
         ax_side  = fig.add_subplot(1, 3, 2)
         ax_top   = fig.add_subplot(1, 3, 3)
-        plot_segments_scatter(ax_front, line_segments, points, 1, 2, "$y_w (m)$", "$z_w (m)$", Y_LIM, Z_LIM, "Front view $(y_w–z_w)$")
-        plot_segments_scatter(ax_side,  line_segments, points, 0, 2, "$x_w (m)$", "$z_w (m)$", X_LIM, Z_LIM, "Side view $(x_w–z_w)$")
-        plot_segments_scatter(ax_top,   line_segments, points, 0, 1, "$x_w (m)$", "$y_w (m)$", X_LIM, Y_LIM, "Top view $(x_w–y_w)$")
+
+        # Upright subscripts and units:
+        plot_segments_scatter(ax_front, line_segments, points, 1, 2,
+                              r"$y_\mathrm{w}\,(\mathrm{m})$", r"$z_\mathrm{w}\,(\mathrm{m})$", Y_LIM, Z_LIM)
+        plot_segments_scatter(ax_side,  line_segments, points, 0, 2,
+                              r"$x_\mathrm{w}\,(\mathrm{m})$", r"$z_\mathrm{w}\,(\mathrm{m})$", X_LIM, Z_LIM)
+        plot_segments_scatter(ax_top,   line_segments, points, 0, 1,
+                              r"$x_\mathrm{w}\,(\mathrm{m})$", r"$y_\mathrm{w}\,(\mathrm{m})$", X_LIM, Y_LIM)
+
+        # Optional panel letters UNDER each axes (video use). No subplot titles.
+        if panel_letters:
+            letters = ["(a)", "(b)", "(c)"]
+            for ax, lab in zip([ax_front, ax_side, ax_top], letters):
+                pos = ax.get_position()
+                cx  = 0.5*(pos.x0 + pos.x1)
+                y   = pos.y0 - 0.02  # adjust offset if needed
+                fig.text(cx, y, lab, ha="center", va="top", fontsize=label_fontsize)
 
     else:  # "all"
-        fig = plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(fig_w, fig_h), dpi=dpi)
         ax3d    = fig.add_subplot(2, 2, 1, projection='3d')
         ax_front= fig.add_subplot(2, 2, 2)
         ax_side = fig.add_subplot(2, 2, 3)
         ax_top  = fig.add_subplot(2, 2, 4)
         for seg in line_segments:
             if seg is not None and len(seg) > 0:
-                ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2], linewidth=2)
+                ax3d.plot(seg[:, 0], seg[:, 1], seg[:, 2])
         ax3d.scatter(points[:, 0], points[:, 1], points[:, 2], c='red', s=POINT_SIZE)
-        ax3d.set_xlabel("X (flight dir.)"); ax3d.set_ylabel("Y (spanwise)"); ax3d.set_zlabel("Z")
+        ax3d.set_xlabel(r"$x_\mathrm{w}\,(\mathrm{m})$")
+        ax3d.set_ylabel(r"$y_\mathrm{w}\,(\mathrm{m})$")
+        ax3d.set_zlabel(r"$z_\mathrm{w}\,(\mathrm{m})$")
         ax3d.set_xlim(*X_LIM); ax3d.set_ylim(*Y_LIM); ax3d.set_zlim(*Z_LIM)
-        ax3d.view_init(elev=30, azim=-45); ax3d.set_title("3D", fontsize=10); ax3d.grid(True)
-        plot_segments_scatter(ax_front, line_segments, points, 1, 2, "$y_w (m)$", "$z_w (m)$", Y_LIM, Z_LIM, "Front view $(y_w–z_w)$")
-        plot_segments_scatter(ax_side,  line_segments, points, 0, 2, "$x_w (m)$", "$z_w (m)$", X_LIM, Z_LIM, "Side view $(x_w–z_w)$")
-        plot_segments_scatter(ax_top,   line_segments, points, 0, 1, "$x_w (m)$", "$y_w (m)$", X_LIM, Y_LIM, "Top view $(x_w–y_w)$")
+        ax3d.view_init(elev=30, azim=-45); ax3d.grid(True, alpha=0.4)
 
-    # --- Rasterize ---
+        plot_segments_scatter(ax_front, line_segments, points, 1, 2,
+                              r"$y_\mathrm{w}\,(\mathrm{m})$", r"$z_\mathrm{w}\,(\mathrm{m})$", Y_LIM, Z_LIM)
+        plot_segments_scatter(ax_side,  line_segments, points, 0, 2,
+                              r"$x_\mathrm{w}\,(\mathrm{m})$", r"$z_\mathrm{w}\,(\mathrm{m})$", X_LIM, Z_LIM)
+        plot_segments_scatter(ax_top,   line_segments, points, 0, 1,
+                              r"$x_\mathrm{w}\,(\mathrm{m})$", r"$y_\mathrm{w}\,(\mathrm{m})$", X_LIM, Y_LIM)
+
+        if panel_letters:
+            letters = ["(a)", "(b)", "(c)", "(d)"]
+            for ax, lab in zip([ax3d, ax_front, ax_side, ax_top], letters):
+                pos = ax.get_position()
+                cx  = 0.5*(pos.x0 + pos.x1)
+                y   = pos.y0 - 0.02
+                fig.text(cx, y, lab, ha="center", va="top", fontsize=label_fontsize)
+
+    # --- Optional: save a clean vector PDF (great for Inkscape) ---
+    if pdf_path is not None:
+        # No subplot titles were used in 2D; in 3D/"all" we also avoided titles.
+        fig.savefig(pdf_path, format="pdf", bbox_inches="tight")
+
+    # --- Rasterize for video pipeline ---
     fig.tight_layout()
     fig.canvas.draw()
     img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
     img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
     plt.close(fig)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    # --- Optional resize (avoid forcing 800×800 on 2d) ---
-    if output_size is not None:
-        img = cv2.resize(img, output_size)
+
+    # Avoid resizing — if you must, use INTER_AREA (down) or INTER_LANCZOS4 (up)
+    if output_size is not None and (img.shape[1], img.shape[0]) != output_size:
+        interp = cv2.INTER_AREA if (output_size[0] < img.shape[1]) else cv2.INTER_LANCZOS4
+        img = cv2.resize(img, output_size, interpolation=interp)
+
     return img
 
 

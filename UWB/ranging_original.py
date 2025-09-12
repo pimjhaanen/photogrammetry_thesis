@@ -15,10 +15,13 @@ GPIO.setmode(GPIO.BCM)   # Use BCM numbering
 GPIO.setup(18, GPIO.OUT) # LED or sync pin on GPIO18
 
 def flash_sync(duration_ms=100):
-    print("⚡ Blinking LED for sync...")
     GPIO.output(18, GPIO.HIGH)
+    t0_epoch = time.time()  # epoch at the instant the LED is driven HIGH
+    print(f"⚡ Sync LED ON @ {datetime.fromtimestamp(t0_epoch, tz=timezone.utc).isoformat()}")
     time.sleep(duration_ms / 1000)
     GPIO.output(18, GPIO.LOW)
+    return t0_epoch
+
 
 # =========================
 # Post-processing
@@ -124,15 +127,15 @@ distances = []
 epochs = []
 
 try:
-    now_epoch = time.time()  # <<--- RAW EPOCH SECONDS (UTC-based)
-    epochs.append(now_epoch)
-    flash_sync()  # visual sync marker (optional)
+    # Take sync flash; first timestamp is t=0 reference
+    t0_epoch = flash_sync()
+    epochs.append(t0_epoch)
+    distances.append(np.nan)  # sync marker row (no distance)
+
     while True:
         status = pozyx.doRanging(destination_id, device_range, remote_id)
-        now_epoch = time.time()              # <<--- RAW EPOCH SECONDS (UTC-based)
-        epochs.append(now_epoch)
+        now_epoch = time.time()  # timestamp the just-returned ranging sample
 
-        # Optional hot-plug check
         if get_first_pozyx_serial_port() is None:
             print("Pozyx has been disconnected")
             break
@@ -140,15 +143,18 @@ try:
         if status == POZYX_SUCCESS:
             dist_m = device_range.distance / 1000.0
             distances.append(dist_m)
+            epochs.append(now_epoch)
             print(f"📏 Distance: {round(dist_m, 3)} m")
         else:
             print("⚠️ Sensors out of reach")
             distances.append(np.nan)
+            epochs.append(now_epoch)
 
         time.sleep(0.01)
 
 except KeyboardInterrupt:
     print("⏹️ Script interrupted with Ctrl+C. Saving...")
+
 
 finally:
     # === SAVE RAW ===

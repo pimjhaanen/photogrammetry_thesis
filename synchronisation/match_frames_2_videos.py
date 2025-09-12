@@ -179,7 +179,7 @@ def detect_flash_start_frame(
             post_brightness = brightness[k + 1]
             if post_brightness >= brightness_floor:
                 # The *first bright frame* is k+1 frames from start_frame
-                flash_start = start_frame + (k + 1)
+                flash_start = start_frame + (k)
                 break
 
     if plot:
@@ -190,7 +190,6 @@ def detect_flash_start_frame(
         plt.subplot(2, 1, 1)
         plt.plot(x_frames, brightness, label='Brightness')
         plt.xlim(occurs_after,occurs_before)
-        plt.ylim(-5,40)
         if flash_start is not None:
             plt.axvline(flash_start, linestyle='--', label='Flash start', linewidth=1.5)
         plt.ylabel("Brightness")
@@ -211,7 +210,7 @@ def detect_flash_start_frame(
     return flash_start
 
 
-frame_idx = detect_flash_start_frame("test_led_6.MP4")
+frame_idx = detect_flash_start_frame("test_led_7.MP4")
 
 
 def match_videos(video1_path, video2_path, start_seconds, match_duration=300, downsample_factor=50, plot=False, output_dir='matched_sync'):
