@@ -3,9 +3,9 @@ photogrammetry_env/
 .idea/
 
 UWB/output/
-main simulation/output/
-main simulation/left_videos/
-main simulation/right_videos/
+Photogrammetry/output/
+Photogrammetry/input/left_videos/
+Photogrammetry/input/right_videos/
 synchronisation/matched_sync/
 Practising_with_phones/time_series/
 
