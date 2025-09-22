@@ -1,8 +1,9 @@
-"""Here should be a code that takes the files from the KCU, and logs UTC, t, u_s, u_p and V_a (and maybe the angles)
+"""Here should be a code that takes the files from the KCU, and logs UTC, t, u_s, u_p and V_a (and maybe the angles and tether force)
 Lets say the KCU is started before the UWB, which should be the case. Then the UTC closest to the start UTC of the UWB
 should be found, and the corresponding time t should be set to zero. Then the moment of UWB ranging t=0, also on camera's
 (the frame should be set to 0) and also on the KCU and pitot.
-So it only writes to an output .csv file from the UTC corrsponding to the UWB in the output folder"""
+So it only writes to an output .csv file from the UTC corrsponding to the UWB in the output folder.
+Also, this should include calibration of the pitot"""
 
 #1) take KCU_pitot file
 #2) create a csv file with the columns UTC, t, u_s, u_p and V_a (and maybe the angles)

@@ -292,14 +292,14 @@ def run_photogrammetry(
 # ------------------------------- script main ---------------------------------
 if __name__ == "__main__":
     # === USER CONFIGURATION ===
-    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_wide_84cm_filtered.pkl"
-    LEFT_VIDEO = "input/left_videos/test_time.mp4"
-    RIGHT_VIDEO = "input/right_videos/test_time.mp4"
+    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_wide_84cm_wo_outliers.pkl"
+    LEFT_VIDEO = "input/left_videos/25_06_test1.mp4"
+    RIGHT_VIDEO = "input/right_videos/25_06_test1.mp4"
     SYNC_OUTPUT_DIR = "Synchronisation/synchronised_frame_indices"
 
     # Time window (in seconds) inside the matched pair sequence
-    SKIP_SECONDS = 601          # start at 601 s into the matched sequence
-    TAKE_SECONDS = 20           # process 20 s (601–621 s)
+    SKIP_SECONDS = 323          # start at 601 s into the matched sequence
+    TAKE_SECONDS = 17           # process 20 s (601–621 s)
     FPS = 30                    # nominal fps for window math
 
     # Stereo / detection / debug tunables (override any defaults you want)
@@ -338,6 +338,7 @@ if __name__ == "__main__":
         # --- debug overlay ---
         show_bright_frames=False,
         debug_every_n=30,
+        show_debug_frame=True,
         debug_flip_180=True,
         debug_display_scale=0.3,
         debug_window_title_prefix="[DEBUG] L+R Frame",

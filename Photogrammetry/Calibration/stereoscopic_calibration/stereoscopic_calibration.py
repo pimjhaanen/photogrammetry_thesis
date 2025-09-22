@@ -17,11 +17,11 @@ def stereo_calibrate_from_checkerboards(
     left_glob="left_camera_wide_84cm/*.jpg",
     right_glob="right_camera_wide_84cm/*.jpg",
     checkerboard=(9, 6),
-    square_size_m=3.9/100.0,
+    square_size_m=3.8767/100.0,
     intrinsics_cam1="../single-camera calibration/calibration_checkerboard_wide_camera_1.pkl",
     intrinsics_cam2="../single-camera calibration/calibration_checkerboard_wide_camera_2.pkl",
     exclude_frames=None,
-    output_basename="stereo_calibration_wide_84cm_filtered"
+    output_basename="stereo_calibration_wide_84cm"
 ):
     """RELEVANT FUNCTION INPUTS:
     - left_glob / right_glob: folders with frames from both cameras (e.g. frame_0001.jpg, …)
@@ -103,7 +103,8 @@ if __name__ == "__main__":
     stereo_calibrate_from_checkerboards(
         left_glob="left_camera_wide_84cm/*.jpg",
         right_glob="right_camera_wide_84cm/*.jpg",
-        intrinsics_cam1="../single-camera calibration/calibration_checkerboard_wide_camera_1.pkl",
-        intrinsics_cam2="../single-camera calibration/calibration_checkerboard_wide_camera_2.pkl",
-        output_basename="stereo_calibration_wide_84cm_filtered"
+        intrinsics_cam1="../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_1.pkl",
+        intrinsics_cam2="../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_2.pkl",
+        exclude_frames= [4, 5, 31, 32, 33, 34, 35, 36, 37],
+        output_basename="stereo_calibration_wide_84cm_wo_outliers"
     )

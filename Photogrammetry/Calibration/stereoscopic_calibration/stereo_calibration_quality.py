@@ -36,28 +36,35 @@ def calculate_epipolar_distance(cornersL: np.ndarray, cornersR: np.ndarray, F: n
     return float(total / n)
 
 def diagnose_stereo_pairs(
-    stereo_calib_pkl: str = "stereo_calibration_output/stereo_calibration_wide_84cm.pkl",
+    stereo_calib_pkl: str = "stereo_calibration_output/stereo_calibration_wide_84cm_wo_outliers.pkl",
     intrinsics_cam1: str = "../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_1.pkl",
     intrinsics_cam2: str = "../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_2.pkl",
     left_folder: str = "left_camera_wide_84cm",
     right_folder: str = "right_camera_wide_84cm",
     checkerboard: Tuple[int, int] = (9, 6),
-    square_size_m: float = 3.9/100.0
+    square_size_m: float = 3.9/100.0,
+    # --- NEW ---
+    exclude_indices: Tuple[int, ...] = (4, 5, 31, 32, 33, 34, 35, 36, 37),   # e.g. (4,5,31,32,33,34,35,36,37)
+    # optional caps (set to None to disable)
+    max_reproj_px: float = None,
+    max_epi_px: float = None,
+    max_dt_m: float = None,
+    max_dr_rad: float = None,
+    # print which frames were included/excluded at the end
+    report_selection: bool = True
 ) -> None:
-    """RELEVANT FUNCTION INPUTS:
-    - stereo_calib_pkl: path to the saved stereo calibration (.pkl) containing K1,D1,K2,D2,R,T
-    - intrinsics_cam1 / intrinsics_cam2: paths to single-camera intrinsics (.pkl) for both cameras
-    - left_folder / right_folder: folders containing synchronized left/right checkerboard frames
-    - checkerboard: inner corner grid size (cols, rows) of the checkerboard used for calibration
-    - square_size_m: physical side length of a checker square in meters
+    """Diagnose stereo calibration pair-by-pair and compare against total calibration.
+
+    Exclusions:
+      - 'exclude_indices' skips those pairs up-front (by loop index).
+      - Thresholds (max_reproj_px, max_epi_px, max_dt_m, max_dr_rad) auto-flag and exclude frames post-metrics.
+        Set a threshold to None to disable that particular filter.
     """
 
-    # --- Load stereo calibration (and ensure rectification fields exist for convenience) ---
     with open(stereo_calib_pkl, "rb") as f:
         stereo_data = pickle.load(f)
 
     if 'stereoRectify' not in stereo_data:
-        print("[INFO] Rectification data not found. Computing rectification matrices.")
         R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(
             stereo_data["camera_matrix_1"], stereo_data["dist_coeffs_1"],
             stereo_data["camera_matrix_2"], stereo_data["dist_coeffs_2"],
@@ -66,32 +73,41 @@ def diagnose_stereo_pairs(
         stereo_data["stereoRectify"] = (R1, R2, P1, P2, Q)
         with open(stereo_calib_pkl, "wb") as f:
             pickle.dump(stereo_data, f)
-        print("[INFO] Rectification data saved to the stereo calibration file.")
+        print("[INFO] Rectification data saved.")
     else:
         R1, R2, P1, P2, Q = stereo_data["stereoRectify"]
-        print("[INFO] Loaded rectification data from the stereo calibration file.")
+        print("[INFO] Loaded rectification data.")
 
     R_total = stereo_data["R"]
     T_total = stereo_data["T"].flatten()
 
-    # --- Load intrinsics (kept separate in case you want to override) ---
     K1, D1 = load_intrinsics(intrinsics_cam1)
     K2, D2 = load_intrinsics(intrinsics_cam2)
 
-    # --- Build object points for one checkerboard view ---
     objp = np.zeros((checkerboard[0]*checkerboard[1], 3), np.float32)
     objp[:, :2] = np.mgrid[0:checkerboard[0], 0:checkerboard[1]].T.reshape(-1, 2)
     objp *= square_size_m
 
-    # --- Collect image paths ---
     left_images  = sorted(glob.glob(os.path.join(left_folder,  "*.jpg")))
     right_images = sorted(glob.glob(os.path.join(right_folder, "*.jpg")))
     assert len(left_images) == len(right_images) and len(left_images) > 0, "Mismatch or no images found."
 
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)
 
+    # accumulators for averages (of kept frames)
+    reproj_errors, t_diffs, r_diffs, epi_dists = [], [], [], []
+
+    # tracking selections
+    excluded_manual = set(exclude_indices)
+    excluded_auto = []
+    kept_indices = []
+
     print("\n🔍 Comparing each pair to total calibration...")
     for i, (left_path, right_path) in enumerate(zip(left_images, right_images)):
+        if i in excluded_manual:
+            print(f"[{i:02d}] ⏭️  Skipped (manual exclude)")
+            continue
+
         imgL = cv2.imread(left_path)
         imgR = cv2.imread(right_path)
         if imgL is None or imgR is None:
@@ -101,7 +117,6 @@ def diagnose_stereo_pairs(
         grayL = cv2.cvtColor(imgL, cv2.COLOR_BGR2GRAY)
         grayR = cv2.cvtColor(imgR, cv2.COLOR_BGR2GRAY)
 
-        # Detect corners
         retL, cornersL = cv2.findChessboardCorners(grayL, checkerboard, None)
         retR, cornersR = cv2.findChessboardCorners(grayR, checkerboard, None)
         if not (retL and retR):
@@ -112,7 +127,6 @@ def diagnose_stereo_pairs(
         cornersR = cv2.cornerSubPix(grayR, cornersR, (11, 11), (-1, -1), criteria)
 
         try:
-            # Single-pair stereo (intrinsics fixed) to get R_i, T_i for diagnostics
             ret, _, _, _, _, R_i, T_i, _, _ = cv2.stereoCalibrate(
                 [objp], [cornersL], [cornersR],
                 K1, D1, K2, D2,
@@ -121,20 +135,61 @@ def diagnose_stereo_pairs(
                 criteria=criteria
             )
 
-            # ΔT (m) and ΔR (rad) vs overall calibration
             t_diff = float(np.linalg.norm(T_total - T_i.flatten()))
             r_diff = rodrigues_angle_diff(R_total, R_i)
 
-            # Fundamental matrix from detected correspondences (distorted pixels)
             F, _ = cv2.findFundamentalMat(cornersL, cornersR, method=cv2.FM_8POINT)
-
-            # Average epipolar distance (pixels)
             epi = calculate_epipolar_distance(cornersL, cornersR, F) if F is not None else float("nan")
 
-            print(f"[{i:02d}] ✅ reproj={ret:.4f}px | ΔT={t_diff:.4f} | ΔR={r_diff:.4f} rad | epi={epi:.4f}px")
+            line = f"[{i:02d}] ✅ reproj={ret:.4f}px | ΔT={t_diff:.4f} | ΔR={r_diff:.4f} rad | epi={epi:.4f}px"
+
+            # auto-exclusion based on thresholds
+            fails = []
+            if (max_reproj_px is not None) and (ret > max_reproj_px):
+                fails.append(f"reproj>{max_reproj_px}")
+            if (max_dt_m is not None) and (t_diff > max_dt_m):
+                fails.append(f"ΔT>{max_dt_m}")
+            if (max_dr_rad is not None) and (r_diff > max_dr_rad):
+                fails.append(f"ΔR>{max_dr_rad}")
+            if (max_epi_px is not None) and (not np.isnan(epi)) and (epi > max_epi_px):
+                fails.append(f"epi>{max_epi_px}")
+
+            if fails:
+                print(line + "  -> 🚫 excluded (" + ", ".join(fails) + ")")
+                excluded_auto.append(i)
+                continue
+
+            print(line)
+            # keep
+            kept_indices.append(i)
+            reproj_errors.append(ret)
+            t_diffs.append(t_diff)
+            r_diffs.append(r_diff)
+            if not np.isnan(epi):
+                epi_dists.append(epi)
 
         except cv2.error as e:
             print(f"[{i:02d}] ❌ Calibration failed: {e}")
+
+    # print averages over kept frames
+    if reproj_errors:
+        print("\n📊 Average over kept frames:")
+        print(f"   reproj={np.mean(reproj_errors):.4f}px | "
+              f"ΔT={np.mean(t_diffs):.4f} | "
+              f"ΔR={np.mean(r_diffs):.4f} rad | "
+              f"epi={np.mean(epi_dists) if epi_dists else float('nan'):.4f}px")
+
+    if report_selection:
+        kept_str = ", ".join(f"{k:02d}" for k in kept_indices)
+        excluded_manual_str = ", ".join(f"{k:02d}" for k in sorted(excluded_manual))
+        excluded_auto_str = ", ".join(f"{k:02d}" for k in excluded_auto)
+        print("\n✅ Kept indices:   [" + kept_str + "]")
+        if excluded_manual:
+            print("⏭️  Manually excluded:", "[" + excluded_manual_str + "]")
+        if excluded_auto:
+            print("🚫 Auto-excluded:     [" + excluded_auto_str + "]")
+
+
 
 if __name__ == "__main__":
     diagnose_stereo_pairs()

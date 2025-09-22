@@ -100,6 +100,7 @@ class StereoConfig:
 
     # Debug / visualization
     show_bright_frames: bool = False
+    show_debug_frame: bool = False
     debug_every_n: Optional[int] = 30
     debug_flip_180: bool = True
     debug_display_scale: float = 0.3
@@ -404,7 +405,7 @@ def process_stereo_pair(
             cv2.line(right_cross, (0, y), (right_cross.shape[1], y), (255, 0, 255), 1)
 
     # === Debug overlay every N frames (fully driven by cfg) ===
-    if cfg.debug_every_n and frame_counter % cfg.debug_every_n == 0:
+    if cfg.debug_every_n and frame_counter % cfg.debug_every_n == 0 and cfg.show_debug_frame:
         L_ann = _annotate_frame(left_cross,  state.tracked_cross_left_klt,
                                 aruco4=aruco_centers_L_4x4, aruco7=aruco_centers_L_7x7,
                                 flip=cfg.debug_flip_180, font_scale=1.6, thickness=2)

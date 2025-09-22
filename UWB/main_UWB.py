@@ -14,7 +14,6 @@ import json
 from typing import Optional, Tuple, List
 
 import numpy as np
-import matplotlib.pyplot as plt  # optional (not required for logging)
 from datetime import datetime, timezone
 
 # GPIO is only available on a Raspberry Pi; guard the import for portability.
