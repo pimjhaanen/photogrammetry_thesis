@@ -11,6 +11,12 @@ import cv2
 import numpy as np
 from typing import Tuple
 
+def get_images(patterns):
+    files = []
+    for pat in patterns:
+        files.extend(glob.glob(pat))
+    return sorted(files)
+
 def load_intrinsics(pkl_path: str) -> Tuple[np.ndarray, np.ndarray]:
     """Load camera intrinsics (K, dist) from a pickle produced by single-camera calibration."""
     with open(pkl_path, "rb") as f:
@@ -36,7 +42,7 @@ def calculate_epipolar_distance(cornersL: np.ndarray, cornersR: np.ndarray, F: n
     return float(total / n)
 
 def diagnose_stereo_pairs(
-    stereo_calib_pkl: str = "stereo_calibration_output/stereo_calibration_wide_84cm_wo_outliers.pkl",
+    stereo_calib_pkl: str = "stereo_calibration_output/final_stereo_calibration_V3.pkl",
     intrinsics_cam1: str = "../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_1.pkl",
     intrinsics_cam2: str = "../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_2.pkl",
     left_folder: str = "left_camera_wide_84cm",
@@ -44,7 +50,7 @@ def diagnose_stereo_pairs(
     checkerboard: Tuple[int, int] = (9, 6),
     square_size_m: float = 3.9/100.0,
     # --- NEW ---
-    exclude_indices: Tuple[int, ...] = (4, 5, 31, 32, 33, 34, 35, 36, 37),   # e.g. (4,5,31,32,33,34,35,36,37)
+    exclude_indices: Tuple[int, ...] = (0, 4, 5, 12, 16, 19, 23, 31, 32, 33, 34, 35, 36, 37, 43, 59),
     # optional caps (set to None to disable)
     max_reproj_px: float = None,
     max_epi_px: float = None,
@@ -88,8 +94,10 @@ def diagnose_stereo_pairs(
     objp[:, :2] = np.mgrid[0:checkerboard[0], 0:checkerboard[1]].T.reshape(-1, 2)
     objp *= square_size_m
 
-    left_images  = sorted(glob.glob(os.path.join(left_folder,  "*.jpg")))
-    right_images = sorted(glob.glob(os.path.join(right_folder, "*.jpg")))
+    left_images  = get_images(["left_camera_wide_84cm/*.jpg",
+                              "left_camera_wide_84cm/*.png"])
+    right_images = get_images(["right_camera_wide_84cm/*.jpg",
+                              "right_camera_wide_84cm/*.png"])
     assert len(left_images) == len(right_images) and len(left_images) > 0, "Mismatch or no images found."
 
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)

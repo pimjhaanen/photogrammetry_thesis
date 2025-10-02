@@ -6,13 +6,19 @@ import os, glob, pickle
 import cv2
 import numpy as np
 
+def get_images(patterns):
+    files = []
+    for pat in patterns:
+        files.extend(glob.glob(pat))
+    return sorted(files)
+
 def calibrate_checkerboard(
-    image_glob: str = 'Calibration_Videos_camera_1/checkerboard_linear/*.jpg',
+    image_glob: str = 'Calibration_Videos_camera_1/checkerboard_wide/*.png',
     checkerboard=(9, 6),
-    square_size_m: float = 3.9/100.0,
+    square_size_m: float = 3.8767/100.0,
     visualize: bool = False,
     save_undistorted: bool = False,
-    output_basename: str = 'calibration_checkerboard_linear_camera_1',
+    output_basename: str = 'calibration_checkerboard_wide_camera_1_revised',
     undist_out_suffix: str = '_undist'
 ):
 
@@ -36,7 +42,9 @@ def calibrate_checkerboard(
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     objpoints, imgpoints = [], []
-    images = sorted(glob.glob(image_glob))
+    images = get_images(["Calibration_Videos_camera_1/checkerboard_wide/*.png",
+                              "Calibration_Videos_camera_1/checkerboard_wide/*.jpg"])
+
     if not images:
         print(f"[checkerboard] No images matched: {image_glob}")
         return None

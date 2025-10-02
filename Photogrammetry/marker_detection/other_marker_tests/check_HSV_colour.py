@@ -14,7 +14,7 @@ def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         clicked_point = (x, y)
 
-def pick_color(frame, alpha=4.0, beta=20):
+def pick_color(frame, alpha=1.0, beta=0):
     """
     Adjusts brightness and contrast of the input BGR frame,
     displays it, and allows the user to click on pixels to get HSV values.
@@ -33,6 +33,7 @@ def pick_color(frame, alpha=4.0, beta=20):
     frame_hsv = cv2.cvtColor(adjusted_bgr, cv2.COLOR_BGR2HSV)
 
     # Step 3: Show the adjusted BGR image
+    adjusted_bgr = cv2.resize(adjusted_bgr, None, fx=0.5, fy=0.5)
     cv2.imshow("Adjusted Frame (BGR)", adjusted_bgr)
     cv2.setMouseCallback("Adjusted Frame (BGR)", mouse_callback)
 
@@ -69,5 +70,5 @@ def main(video_path):
 
     cap.release()
 # Call the main function with the video path
-video_path = "../../input/right_videos/25_06_test2_merged.mp4"  # Replace with your video file path
+video_path = "../../Accuracy_analysis/video_input/left camera/frame_003.jpg"  # Replace with your video file path
 main(video_path)

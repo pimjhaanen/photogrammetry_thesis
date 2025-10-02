@@ -7,7 +7,11 @@ exclude frames here to try and recalibrate, depending on prefered quality."""
 import os, glob, pickle
 import cv2
 import numpy as np
-
+def get_images(patterns):
+    files = []
+    for pat in patterns:
+        files.extend(glob.glob(pat))
+    return sorted(files)
 def load_intrinsics(pkl_path):
     with open(pkl_path, "rb") as f:
         d = pickle.load(f)
@@ -42,8 +46,10 @@ def stereo_calibrate_from_checkerboards(
     objp *= square_size_m
 
     objpoints, imgL_pts, imgR_pts = [], [], []
-    left_images  = sorted(glob.glob(left_glob))
-    right_images = sorted(glob.glob(right_glob))
+    left_images  = get_images(["left_camera_wide_84cm/*.jpg",
+                              "left_camera_wide_84cm/*.png"])
+    right_images = get_images(["right_camera_wide_84cm/*.jpg",
+                              "right_camera_wide_84cm/*.png"])
     assert len(left_images) == len(right_images), "Mismatch in number of left/right frames"
 
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)
@@ -77,7 +83,7 @@ def stereo_calibrate_from_checkerboards(
     if not objpoints:
         raise RuntimeError("No valid stereo pairs detected. Aborting.")
 
-    ret, newmtx1, newdist1, newmtx2, newdist2, R, T, E, F = cv2.stereoCalibrate(
+    ret, _, _, _, _, R, T, E, F = cv2.stereoCalibrate(
         objpoints, imgL_pts, imgR_pts,
         mtx1, dist1, mtx2, dist2,
         img_size,
@@ -93,18 +99,20 @@ def stereo_calibrate_from_checkerboards(
         pickle.dump({
             "R": R, "T": T, "E": E, "F": F,
             "reprojection_error": ret,
-            "camera_matrix_1": newmtx1, "dist_coeffs_1": newdist1,
-            "camera_matrix_2": newmtx2, "dist_coeffs_2": newdist2
+            "camera_matrix_1": mtx1, "dist_coeffs_1": dist1,
+            "camera_matrix_2": mtx2, "dist_coeffs_2": dist2
         }, f)
     print(f"\n✅ Saved: {out_path}")
     return out_path
 
 if __name__ == "__main__":
+
+
     stereo_calibrate_from_checkerboards(
         left_glob="left_camera_wide_84cm/*.jpg",
         right_glob="right_camera_wide_84cm/*.jpg",
         intrinsics_cam1="../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_1.pkl",
         intrinsics_cam2="../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_2.pkl",
-        exclude_frames= [4, 5, 31, 32, 33, 34, 35, 36, 37],
-        output_basename="stereo_calibration_wide_84cm_wo_outliers"
+        exclude_frames= [0, 4, 5, 12, 16, 19, 23, 31, 32, 33, 34, 35, 36, 37, 43, 59],
+        output_basename="stereo_calibration_wide_84cm_revised_wo_outliers_2"
     )

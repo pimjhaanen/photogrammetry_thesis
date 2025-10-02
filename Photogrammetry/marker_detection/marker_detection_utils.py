@@ -114,8 +114,285 @@ def deduplicate_centers(centres, min_dist=10):
             unique.append(pt)
     return unique
 
+import cv2
+import numpy as np
+from typing import List, Tuple
 
-def detect_crosses(frame, debug=False):
+def subpixel_cross_center(gray, approx_xy, patch=25, canny=(50,150), hough_thresh=25, min_len=8, max_gap=3):
+    """
+    Refine a cross center by line-fitting in a small ROI.
+    gray: grayscale image
+    approx_xy: (x,y) integer-ish seed (e.g., from contour bbox center)
+    Returns: (xc, yc) float or None if fail.
+    """
+    import numpy as np, cv2
+    x0, y0 = map(int, approx_xy)
+    h, w = gray.shape[:2]
+    x1 = max(0, x0 - patch); y1 = max(0, y0 - patch)
+    x2 = min(w, x0 + patch + 1); y2 = min(h, y0 + patch + 1)
+    roi = gray[y1:y2, x1:x2]
+    if roi.size == 0: return None
+
+    edges = cv2.Canny(roi, canny[0], canny[1])
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=hough_thresh,
+                            minLineLength=min_len, maxLineGap=max_gap)
+    if lines is None or len(lines) < 2:
+        return None
+
+    # Fit two dominant orientations (cluster by angle)
+    segs = []
+    for l in lines[:,0,:]:
+        xA,yA,xB,yB = map(float, l)
+        dx, dy = (xB-xA), (yB-yA)
+        if dx==0 and dy==0: continue
+        ang = np.arctan2(dy, dx)
+        segs.append((ang, xA,yA,xB,yB))
+    if len(segs) < 2: return None
+
+    # Normalize angles to [0,pi) and cluster into two groups ~ orthogonal
+    angs = np.array([ (a%(np.pi)) for a, *_ in segs ])
+    # pick first angle, split by closeness vs ~orthogonal
+    a0 = angs[0]
+    grp1 = [s for s,a in zip(segs, angs) if abs((a-a0+np.pi/2)%(np.pi)-np.pi/2) < np.pi/4]
+    grp2 = [s for s,a in zip(segs, angs) if abs((a-a0+np.pi/2)%(np.pi)-np.pi/2) >= np.pi/4]
+    if len(grp1)==0 or len(grp2)==0:
+        grp1, grp2 = segs[:len(segs)//2], segs[len(segs)//2:]
+
+    def fit_line(points):
+        # total least squares line fit: returns (vx,vy,xc,yc) as in fitLine
+        pts = np.array(points, float)
+        vx, vy, xc, yc = cv2.fitLine(pts, cv2.DIST_L2, 0, 1e-2, 1e-2)
+        return float(vx), float(vy), float(xc), float(yc)
+
+    # Collect endpoints and fit one line per group
+    p1 = []; p2 = []
+    for _,xA,yA,xB,yB in grp1: p1 += [(xA,yA), (xB,yB)]
+    for _,xA,yA,xB,yB in grp2: p2 += [(xA,yA), (xB,yB)]
+    vx1,vy1,xc1,yc1 = fit_line(p1)
+    vx2,vy2,xc2,yc2 = fit_line(p2)
+
+    # Line intersection (in ROI coords): p = p1 + t * v1 ; p = p2 + s * v2
+    A = np.array([[vx1, -vx2],[vy1, -vy2]], float)
+    b = np.array([xc2 - xc1, yc2 - yc1], float)
+    det = np.linalg.det(A)
+    if abs(det) < 1e-9:  # nearly parallel
+        return None
+    t, s = np.linalg.solve(A, b)
+    xi = xc1 + t*vx1
+    yi = yc1 + t*vy1
+
+    # Map back to full image coords
+    return (xi + x1, yi + y1)
+
+
+def _fit_line_through_points(xy: np.ndarray) -> Tuple[float, float]:
+    """
+    Fit y = a*x + b via least squares. xy: (N,2)
+    Returns (a, b). Handles verticals by swapping axes at caller.
+    """
+    x = xy[:, 0].astype(np.float64)
+    y = xy[:, 1].astype(np.float64)
+    A = np.vstack([x, np.ones_like(x)]).T
+    a, b = np.linalg.lstsq(A, y, rcond=None)[0]
+    return float(a), float(b)
+
+def _line_intersection(a1: float, b1: float, a2: float, b2: float) -> Tuple[float, float]:
+    """Intersect y=a1 x + b1 and y=a2 x + b2."""
+    denom = (a1 - a2)
+    if abs(denom) < 1e-9:
+        return np.nan, np.nan
+    x = (b2 - b1) / denom
+    y = a1 * x + b1
+    return float(x), float(y)
+
+def _angle_of_segment(p0, p1) -> float:
+    dx = p1[0] - p0[0]
+    dy = p1[1] - p0[1]
+    return float(np.degrees(np.arctan2(dy, dx)))
+
+def _cluster_by_angle(angles: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Cluster angles into two bins ~90° apart. Returns boolean masks (cluster1, cluster2).
+    Use k-means on angle modulo 180 to avoid wrap issues.
+    """
+    ang = angles.copy()
+    ang = (ang + 180.0) % 180.0  # map to [0,180)
+    data = ang.reshape(-1, 1).astype(np.float32)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 50, 0.01)
+    ret, labels, centers = cv2.kmeans(data, 2, None, criteria, 5, cv2.KMEANS_PP_CENTERS)
+    labels = labels.ravel().astype(bool)
+    # make first cluster the one with smaller center (just to be deterministic)
+    if centers[0, 0] > centers[1, 0]:
+        labels = ~labels
+        centers = centers[[1, 0]]
+    return labels, ~labels
+
+def _refine_with_subpix(gray_patch: np.ndarray, p: Tuple[float, float]) -> Tuple[float, float]:
+    """One-pt cornerSubPix refinement around p."""
+    x, y = p
+    win = (5, 5)
+    zero_zone = (-1, -1)
+    term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)
+    pts = np.array([[x, y]], dtype=np.float32).reshape(-1, 1, 2)
+    cv2.cornerSubPix(gray_patch, pts, win, zero_zone, term)
+    return float(pts[0, 0, 0]), float(pts[0, 0, 1])
+
+def detect_crosses(frame: np.ndarray, debug: bool = False) -> Tuple[List[Tuple[float, float]], np.ndarray]:
+    """
+    Detect red crosses and return sub-pixel centers by intersecting two dominant arms.
+    """
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Red ranges – yours, kept relatively tight
+    lower_red_1 = np.array([0, 20, 30],  dtype=np.uint8)
+    upper_red_1 = np.array([15, 255, 255], dtype=np.uint8)
+    lower_red_2 = np.array([165, 20, 30], dtype=np.uint8)
+    upper_red_2 = np.array([179, 255, 255], dtype=np.uint8)
+
+    mask = cv2.inRange(hsv, lower_red_1, upper_red_1) | cv2.inRange(hsv, lower_red_2, upper_red_2)
+
+    kernel = np.ones((3, 3), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+    mask = cv2.dilate(mask, kernel, iterations=1)
+
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    centres: List[Tuple[float, float]] = []
+
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if not (20 < area < 7000):
+            continue
+        x, y, w, h = cv2.boundingRect(cnt)
+        aspect = w / h if h > 0 else 0.0
+        if not (0.3 < aspect < 3.0):
+            continue
+
+        pad = 4
+        x1 = max(x - pad, 0)
+        y1 = max(y - pad, 0)
+        x2 = min(x + w + pad, frame.shape[1])
+        y2 = min(y + h + pad, frame.shape[0])
+
+        patch_gray = gray[y1:y2, x1:x2]
+        patch_mask = mask[y1:y2, x1:x2]
+
+        # Edges for Hough
+        edges = cv2.Canny(patch_mask, 50, 150, apertureSize=3, L2gradient=True)
+        lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=12, minLineLength=max(6, min(w, h)//3), maxLineGap=3)
+
+        cx, cy = (x + w / 2.0, y + h / 2.0)  # fallback
+        refined = subpixel_cross_center(gray, (cx, cy), patch=25)
+        if refined is not None:
+            cx, cy = refined
+        centres.append((float(cx), float(cy)))
+
+        ok = False
+        if lines is not None and len(lines) >= 2:
+            segs = []
+            angs = []
+            ptsA = []
+            ptsB = []
+
+            for l in lines[:, 0, :]:
+                xA, yA, xB, yB = map(int, l.tolist())
+                segs.append(((xA, yA), (xB, yB)))
+                angs.append(_angle_of_segment((xA, yA), (xB, yB)))
+                ptsA.append([xA, yA])
+                ptsB.append([xB, yB])
+
+            angs = np.array(angs, dtype=np.float32)
+            c1, c2 = _cluster_by_angle(angs)
+
+            def fit_from_cluster(mask_sel: np.ndarray):
+                sel = np.where(mask_sel)[0]
+                if sel.size < 2:
+                    return None
+                pts = []
+                for idx in sel:
+                    (xa, ya), (xb, yb) = segs[idx]
+                    # densify a bit to stabilize LS fit
+                    pts += [[xa, ya], [xb, yb]]
+                pts = np.asarray(pts, np.float32)
+                # choose axis to reduce vertical ill-conditioning:
+                # try both fits and pick the one with smaller residual
+                a1, b1 = _fit_line_through_points(pts)  # y = a1 x + b1
+                # vertical-esque alternative: x = ay + b  -> convert to y = (x - b)/a
+                a2, b2 = _fit_line_through_points(pts[:, ::-1])  # swap axes
+                # compute residuals quickly and pick better
+                y_hat1 = a1 * pts[:, 0] + b1
+                r1 = np.mean((pts[:, 1] - y_hat1) ** 2)
+                x_hat2 = a2 * pts[:, 1] + b2
+                y_hat2 = (pts[:, 0] - b2) / (a2 + 1e-12)
+                r2 = np.mean((pts[:, 1] - y_hat2) ** 2)
+                if r1 <= r2:
+                    return ("y=ax+b", a1, b1)
+                else:
+                    # convert x = a*y + b -> y = (x - b)/a
+                    return ("y=(x-b)/a", a2, b2)
+
+            L1 = fit_from_cluster(c1)
+            L2 = fit_from_cluster(c2)
+
+            if L1 and L2:
+                # Compute intersection in patch coords
+                # normalize both to y = a*x + b form
+                def to_ab(L):
+                    if L[0] == "y=ax+b":
+                        return L[1], L[2]
+                    else:
+                        a2, b2 = L[1], L[2]
+                        a = 1.0 / (a2 + 1e-12)
+                        b = -b2 / (a2 + 1e-12)
+                        return a, b
+                a1_, b1_ = to_ab(L1)
+                a2_, b2_ = to_ab(L2)
+                theta1 = np.degrees(np.arctan(a1_))
+                theta2 = np.degrees(np.arctan(a2_))
+                angle_diff = abs(((theta1 - theta2 + 90) % 180) - 90)  # shortest mod-180 diff
+
+                if 70 <= angle_diff <= 110:
+                    px, py = _line_intersection(a1_, b1_, a2_, b2_)
+                    if np.isfinite(px) and np.isfinite(py):
+                        # ensure inside patch
+                        if 0 <= px < (x2 - x1) and 0 <= py < (y2 - y1):
+                            # sub-pixel refine on grayscale
+                            rx, ry = _refine_with_subpix(patch_gray, (px, py))
+                            cx = x1 + rx
+                            cy = y1 + ry
+                            ok = True
+
+        if not ok:
+            # soft PCA fallback on skeleton-ish pixels
+            pts_bin = cv2.findNonZero(patch_mask)
+            if pts_bin is not None and len(pts_bin) > 20:
+                pts = pts_bin.reshape(-1, 2).astype(np.float32)
+                # coarse center as mean, refine with cornerSubPix
+                m = pts.mean(axis=0)
+                rx, ry = _refine_with_subpix(patch_gray, (m[0], m[1]))
+                cx = x1 + rx
+                cy = y1 + ry
+            # else keep bbox center fallback
+
+        centres.append((float(cx), float(cy)))
+
+    # de-duplicate nearby centers
+    centres = deduplicate_centers(centres, min_dist=60)  # keep your helper
+
+    if debug:
+        dbg = frame.copy()
+        for (cx, cy) in centres:
+            cv2.drawMarker(dbg, (int(round(cx)), int(round(cy))), (0, 255, 255), cv2.MARKER_CROSS, 15, 2)
+        cv2.imshow("crosses", cv2.resize(dbg, None, fx=0.4, fy=0.4))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    return centres, frame.copy()
+
+
+def detect_crosses2(frame, debug=False):
     """RELEVANT FUNCTION INPUTS:
     - frame: BGR image that may contain red cross-shaped markers.
     - debug: if True, shows intermediate HSV mask and masked frame windows.
@@ -123,11 +400,11 @@ def detect_crosses(frame, debug=False):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # Updated thresholds based on your clicked HSV values
-    lower_red_1 = np.array([0, 100, 150])    # Lower boundary for red (part 1)
-    upper_red_1 = np.array([10, 255, 255])   # Upper boundary for red (part 1)
+    lower_red_1 = np.array([0, 20, 30], dtype=np.uint8)
+    upper_red_1 = np.array([15, 255, 255], dtype=np.uint8)
 
-    lower_red_2 = np.array([170, 100, 150])  # Lower boundary for red (part 2)
-    upper_red_2 = np.array([179, 255, 255])  # Upper boundary for red (part 2)
+    lower_red_2 = np.array([165, 20, 30], dtype=np.uint8)
+    upper_red_2 = np.array([179, 255, 255], dtype=np.uint8)
 
     mask1 = cv2.inRange(hsv, lower_red_1, upper_red_1)
     mask2 = cv2.inRange(hsv, lower_red_2, upper_red_2)
@@ -142,7 +419,10 @@ def detect_crosses(frame, debug=False):
     # Apply the mask to the original frame
     masked_frame = cv2.bitwise_and(frame, frame, mask=mask)
 
+
     if debug:
+        mask = cv2.resize(mask, None, fx=0.3, fy=0.3)
+        masked_frame = cv2.resize(masked_frame, None, fx=0.3, fy=0.3)
         cv2.imshow("HSV Mask", mask)
         cv2.imshow("Masked Frame", masked_frame)
         cv2.waitKey(0)
@@ -155,7 +435,7 @@ def detect_crosses(frame, debug=False):
 
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        if 40 < area < 7000:
+        if 10 < area < 7000:
             x, y, w, h = cv2.boundingRect(cnt)
             aspect_ratio = float(w) / h if h > 0 else 0
             if 0.5 < aspect_ratio < 2.0:
@@ -172,7 +452,10 @@ def detect_crosses(frame, debug=False):
 
                 cx = int(x + w / 2)
                 cy = int(y + h / 2)
-                centres.append((cx, cy))
+                refined = subpixel_cross_center(gray, (cx, cy), patch=25)
+                if refined is not None:
+                    cx, cy = refined
+                centres.append((float(cx), float(cy)))
 
     centres = deduplicate_centers(centres, min_dist=100)
 
