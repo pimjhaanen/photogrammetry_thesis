@@ -21,25 +21,13 @@ fps_audio = 48000  # Unused directly; retained for clarity. Audio is extracted a
 
 # ----------------------------- Helpers -----------------------------
 def find_continuation_files(filepath: str):
-    """RELEVANT FUNCTION INPUTS:
-    - filepath: path to the first media file of a potential multi-file recording (e.g. 'GX010237.MP4').
-
-    Returns:
-    - list[str]: ordered list of file paths that continue the same recording (including the given file).
-
-    Notes:
-    - Supports GoPro-style continuations (GX010237 -> GX020237, GX030237, …) and generic suffix style
-      (file.mp4 -> file_2.mp4, file_3.mp4, …).
-    """
     dirname, filename = os.path.split(filepath)
     base, ext = os.path.splitext(filename)
-
     files = [os.path.join(dirname, filename)]
 
     if base.startswith("GX") and len(base) >= 6:
-        # GoPro-style continuation: GX010237.mp4 -> GX020237.mp4, GX030237.mp4, ...
-        base_prefix = base[:5]
-        base_suffix = base[5:]
+        # GX010323 -> want GX020323, GX030323, ...  keep the part after 'GX01' (index 4)
+        base_suffix = base[4:]  # <-- FIXED (was 5)
         for i in range(2, 10):
             continuation_name = f"GX0{i}{base_suffix}{ext}"
             candidate_path = os.path.join(dirname, continuation_name)
@@ -48,7 +36,7 @@ def find_continuation_files(filepath: str):
             else:
                 break
     else:
-        # Generic-style continuation: filename.mp4 -> filename_2.mp4, filename_3.mp4, ...
+        # filename.mp4 -> filename_2.mp4, filename_3.mp4, ...
         for i in range(2, 10):
             continuation_name = f"{base}_{i}{ext}"
             candidate_path = os.path.join(dirname, continuation_name)
@@ -58,6 +46,7 @@ def find_continuation_files(filepath: str):
                 break
 
     return files
+
 
 
 def extract_audio_signal(video_path: str,
@@ -261,7 +250,16 @@ def match_videos(video1_path: str,
                  match_duration: float = 300.0,
                  downsample_factor: int = 50,
                  plot: bool = False,
-                 output_dir: str = 'synchronised_frame_indices') -> str:
+                 output_dir: str = 'synchronised_frame_indices',
+                 # NEW: flash controls
+                 flash_occurs_after: float = 0.0,
+                 flash_occurs_before: Optional[float] = None,
+                 flash_center_fraction: float = 1/3,
+                 flash_min_jump: float = 20.0,
+                 flash_slope_ratio: float = 5.0,
+                 flash_baseline_window: int = 5,
+                 flash_brightness_floor: float = 0.0,
+                 flash_plot: bool = True) -> str:
     """RELEVANT FUNCTION INPUTS:
     - video1_path: path to the reference video (camera 1). The flash is assumed to be visible here.
     - video2_path: path to the second video (camera 2) to be aligned to camera 1.
@@ -327,8 +325,19 @@ def match_videos(video1_path: str,
         plt.legend(); plt.grid(True); plt.tight_layout(); plt.show()
 
     # Step 3: Detect start-of-flash in the reference video (video 1).
-    flash_video_path = video1_files[0]  # flash expected in camera 1 (reference)
-    flash_start_frame = detect_flash_start_frame(flash_video_path, plot=False)
+    # Step 3: Detect start-of-flash in the reference video (video 1).
+    flash_video_path = video1_files[0]
+    flash_start_frame = detect_flash_start_frame(
+        flash_video_path,
+        occurs_after=flash_occurs_after,
+        occurs_before=flash_occurs_before,
+        center_fraction=flash_center_fraction,
+        min_jump=flash_min_jump,
+        slope_ratio=flash_slope_ratio,
+        baseline_window=flash_baseline_window,
+        brightness_floor=flash_brightness_floor,
+        plot=flash_plot,
+    )
     use_flash_alignment = flash_start_frame is not None
 
     # Step 4: Frame timestamps

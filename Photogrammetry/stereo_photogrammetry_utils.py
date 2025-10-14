@@ -19,7 +19,7 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
 from scipy.optimize import linear_sum_assignment
-from Photogrammetry.marker_detection.marker_detection_utils import detect_crosses
+from Photogrammetry.marker_detection.marker_detection_utils import detect_crosses, apply_lr_gradient_gain
 
 # -------------------------- Common type aliases --------------------------
 
@@ -111,6 +111,22 @@ class StereoConfig:
 
     # Optional epipolar line overlay
     epipolar_lines: bool = False
+
+    # --- AUDIO SYNC (match_videos) ---
+    sync_start_seconds: float = 0.0          # where to start audio extraction
+    sync_match_duration: float = 300.0       # seconds of audio used for correlation
+    sync_downsample_factor: int = 50         # decimation factor (44.1 kHz / factor)
+    sync_plot_audio: bool = False            # quick visual check of audio alignment
+
+    # --- FLASH DETECTION (detect_flash_start_frame) ---
+    flash_occurs_after: float = 0.0          # search window start (s)
+    flash_occurs_before: Optional[float] = None  # search window end (s) or None
+    flash_center_fraction: float = 1/3       # central ROI box fraction
+    flash_min_jump: float = 20.0             # min Δ brightness to trigger
+    flash_slope_ratio: float = 5.0           # Δ must exceed this × baseline slope
+    flash_baseline_window: int = 5           # samples used for baseline slope
+    flash_brightness_floor: float = 0.0      # min post-jump brightness
+    flash_plot: bool = True                  # plot brightness/slope + marker
 
 
 @dataclass
@@ -307,8 +323,23 @@ def process_stereo_pair(
     right_cross = cv2.remap(right_bgr, map2x_c, map2y_c, cv2.INTER_LINEAR)
 
     # Optional brightness bump for cross frames
-    left_cross  = cv2.convertScaleAbs(left_cross,  alpha=cfg.brighten_alpha, beta=cfg.brighten_beta)
-    right_cross = cv2.convertScaleAbs(right_cross, alpha=cfg.brighten_alpha, beta=cfg.brighten_beta)
+    left_cross = apply_lr_gradient_gain(
+        left_cross,
+        bright_side_gain=(cfg.brighten_alpha - 2 , cfg.brighten_beta - 5 ),
+        dark_side_gain=(cfg.brighten_alpha + 2.0, cfg.brighten_beta + 5),
+        bands=1,
+        image = 'left',
+        smooth=True
+    )
+
+    right_cross = apply_lr_gradient_gain(
+        right_cross,
+        bright_side_gain=(cfg.brighten_alpha - 2.0, cfg.brighten_beta - 5 ),
+        dark_side_gain=(cfg.brighten_alpha +2, cfg.brighten_beta +5),
+        bands=1,
+        image = 'right',
+        smooth=True
+    )
 
     if cfg.show_bright_frames:
         # Quick preview of (optionally flipped) cross frames
@@ -362,7 +393,7 @@ def process_stereo_pair(
     cross_left_raw, _ = detect_crosses(left_cross)
     cross_right_raw, _ = detect_crosses(right_cross)
     cross_left_labeled = separate_fn(_coords_only(cross_left_raw), gray_left)
-
+    print(f"crosses detected in left frame: {len(cross_left_raw)}", f"crosses detected in right frame: {len(cross_right_raw)}")
     # === 3) Init/update stereo matches of crosses (refresh rule uses cfg.need_fresh_min_pairs) ===
     need_fresh = (state.n_pairs < cfg.need_fresh_min_pairs) or (state.n_pairs < state.len_initial_matches) or (state.n_pairs == 0)
     if need_fresh:

@@ -14,41 +14,44 @@ def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         clicked_point = (x, y)
 
-def pick_color(frame, alpha=1.0, beta=0):
+def pick_color(frame, alpha=4.0, beta=20, scale=0.5):
     """
-    Adjusts brightness and contrast of the input BGR frame,
-    displays it, and allows the user to click on pixels to get HSV values.
-
-    Parameters:
-    - frame: BGR image (numpy array)
-    - alpha: Contrast control (1.0 = no change)
-    - beta: Brightness control (0 = no change)
+    Shows a brightness/contrast boosted, *resized* frame and reports HSV values
+    from the *same* resized image (so clicks line up).
     """
     global clicked_point
 
-    # Step 1: Adjust brightness and contrast in BGR space
-    adjusted_bgr = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
+    # 1) Brightness/contrast boost (kept)
+    adjusted_bgr_full = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
 
-    # Step 2: Convert adjusted image to HSV for value lookup
-    frame_hsv = cv2.cvtColor(adjusted_bgr, cv2.COLOR_BGR2HSV)
+    # 2) Resize for display
+    disp_bgr = cv2.resize(adjusted_bgr_full, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
 
-    # Step 3: Show the adjusted BGR image
-    adjusted_bgr = cv2.resize(adjusted_bgr, None, fx=0.5, fy=0.5)
-    cv2.imshow("Adjusted Frame (BGR)", adjusted_bgr)
-    cv2.setMouseCallback("Adjusted Frame (BGR)", mouse_callback)
+    # 3) Build HSV of the *display* image so coordinates match
+    disp_hsv = cv2.cvtColor(disp_bgr, cv2.COLOR_BGR2HSV)
 
+    # 4) Show and read clicks
+    win = "Adjusted Frame (BGR)"
+    cv2.imshow(win, disp_bgr)
+    cv2.setMouseCallback(win, mouse_callback)
+
+    h, w = disp_hsv.shape[:2]
     while True:
         if clicked_point is not None:
             x, y = clicked_point
-            hsv_value = frame_hsv[y, x]
-            print(f"HSV value at ({x}, {y}): {hsv_value}")
-            clicked_point = None  # Reset click
+            # clamp into bounds
+            x = max(0, min(w - 1, x))
+            y = max(0, min(h - 1, y))
+            hsv_value = disp_hsv[y, x]
+            print(f"HSV value at ({x}, {y}) [scaled view]: {hsv_value}")
+            clicked_point = None
 
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
+        if key == ord('q') or key == 27:
             break
 
     cv2.destroyAllWindows()
+
 
 
 # Main function to load and show the frame
@@ -70,5 +73,5 @@ def main(video_path):
 
     cap.release()
 # Call the main function with the video path
-video_path = "../../Accuracy_analysis/video_input/left camera/frame_003.jpg"  # Replace with your video file path
+video_path = "../../input/right_videos/09_10_merged.MP4"  # Replace with your video file path
 main(video_path)

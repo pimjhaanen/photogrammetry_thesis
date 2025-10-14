@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
-
+import cv2
 
 # =============================== Module settings ===============================
 
@@ -34,77 +34,124 @@ filtered_axes: Dict[int, Tuple[np.ndarray, np.ndarray]] = {}
 
 # ============================== Cross LE/struts ===============================
 
+def _annulus_stats_fast(bgr_img: np.ndarray, cx: int, cy: int, r_in: int, r_out: int):
+    """Return (V_med, S_med) in an annulus around (cx,cy) using a small ROI for speed."""
+    h, w = bgr_img.shape[:2]
+    x1 = max(cx - r_out, 0); x2 = min(cx + r_out + 1, w)
+    y1 = max(cy - r_out, 0); y2 = min(cy + r_out + 1, h)
+    if x2 <= x1 or y2 <= y1:
+        return np.nan, np.nan
+
+    roi_bgr = bgr_img[y1:y2, x1:x2]
+    roi_hsv = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2HSV)
+
+    yy, xx = np.ogrid[y1:y2, x1:x2]
+    rr2 = (yy - cy) * (yy - cy) + (xx - cx) * (xx - cx)
+    mask = (rr2 >= r_in * r_in) & (rr2 <= r_out * r_out)
+    if not np.any(mask):
+        return np.nan, np.nan
+
+    V = roi_hsv[..., 2][mask]
+    S = roi_hsv[..., 1][mask]
+    return float(np.median(V)), float(np.median(S))
+
+
 def separate_LE_and_struts(
     cross_centres: Iterable[Tuple[float, float]],
     gray_img: np.ndarray,
-    patch_size: int = 20,
-    horizontal_spacing: float = 200.0,
+    *,
+    bgr_img: Optional[np.ndarray] = None,     # pass original BGR frame for color stats
+    horizontal_spacing: float = 150.0,
+    r_in: int = 6, r_out: int = 18,          # annulus radii
+    le_v_bias: float = 12.0,                 # lower V threshold by this many units for LE
+    le_s_max: float = 70.0,                  # if S_med <= this and V_med >= le_v_floor -> LE
+    le_v_floor: float = 100.0,               # minimum V for the saturation rule to apply
+    min_points_per_strut: int = 2,           # NEW: require at least this many points per strut column
 ) -> List[Tuple[float, float, Union[int, str]]]:
-    """RELEVANT FUNCTION INPUTS:
-    - cross_centres: iterable of (x, y) positions for detected crosses (any labels are ignored)
-    - gray_img: grayscale image used to estimate local background brightness
-    - patch_size: side length (px) of the patch around each cross for brightness estimation
-    - horizontal_spacing: max x-spread (px) when clustering strut points into columns
-
-    RETURNS:
-    - list of (x, y, label) where label is "LE" or a strut id "0".."7"
-
-    Behavior:
-    - Points with brightness > 1.2 × global mean are labeled "LE".
-    - Remaining points are clustered by x into columns; columns are numbered 0..7 (capped).
     """
-    cross_xy = [(float(c[0]), float(c[1])) for c in cross_centres]
-    if not cross_xy:
+    Labels crosses as 'LE' (white cloth) or strut ids '0'..'7'.
+    - Otsu on per-point background V to split bright vs dark.
+    - Bias V-threshold downward for LE (le_v_bias).
+    - Color tie-breaker: low S + bright V ⇒ LE.
+    - NEW: a strut column must contain at least `min_points_per_strut` points; singletons are reclassified as LE.
+    """
+    pts = [(float(x), float(y)) for (x, y) in cross_centres]
+    if not pts:
         return []
 
-    H, W = gray_img.shape[:2]
-    background_brightness: List[Tuple[float, float, float]] = []
+    if bgr_img is None:
+        # if not provided, build a quick BGR from gray (S will be ~0 everywhere)
+        bgr_img = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2BGR)
 
-    # Step 1: local brightness per cross
-    for (cx, cy) in cross_xy:
-        x1 = max(int(cx - patch_size // 2), 0)
-        y1 = max(int(cy - patch_size // 2), 0)
-        x2 = min(int(cx + patch_size // 2), W)
-        y2 = min(int(cy + patch_size // 2), H)
-        patch = gray_img[y1:y2, x1:x2]
-        mean_brightness = float(np.mean(patch)) if patch.size else 0.0
-        background_brightness.append((cx, cy, mean_brightness))
+    # --- 1) collect per-point background stats (median V, S in an annulus) ---
+    stats = []
+    for (cx, cy) in pts:
+        V_med, S_med = _annulus_stats_fast(bgr_img, int(round(cx)), int(round(cy)), r_in, r_out)
+        if np.isfinite(V_med):
+            stats.append((cx, cy, V_med, (S_med if np.isfinite(S_med) else 0.0)))
+    if not stats:
+        return []
 
-    # Step 2: global threshold
-    avg_brightness = float(np.mean([b for _, _, b in background_brightness])) if background_brightness else 0.0
+    V_vals = np.array([v for _, _, v, _ in stats], dtype=np.float32)
 
-    # Step 3: split into LE vs. strut candidates
+    # --- 2) Otsu on V ---
+    V_u8 = np.clip(V_vals, 0, 255).astype(np.uint8).reshape(-1, 1)
+    v_thr, _ = cv2.threshold(V_u8, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    v_thr = float(v_thr)
+
+    # --- 3) biased threshold + hysteresis + color tie-breaker ---
+    v_thr_le = max(0.0, v_thr - le_v_bias)   # LOWER threshold for LE
+    margin   = 4.0
+    v_hi, v_lo = v_thr_le + margin, v_thr_le - margin
+
     LE_points: List[Tuple[float, float, str]] = []
     strut_candidates: List[Tuple[float, float]] = []
-    for cx, cy, b in background_brightness:
-        if b > 1.2 * avg_brightness:
+
+    for (cx, cy, V_med, S_med) in stats:
+        if V_med >= v_hi:
+            LE_points.append((cx, cy, "LE"))
+            continue
+        if V_med <= v_lo:
+            strut_candidates.append((cx, cy))
+            continue
+
+        # tie-breaker with color: low S and reasonably bright V -> LE
+        if (S_med <= le_s_max) and (V_med >= le_v_floor):
             LE_points.append((cx, cy, "LE"))
         else:
-            strut_candidates.append((cx, cy))
+            if V_med >= v_thr_le:
+                LE_points.append((cx, cy, "LE"))
+            else:
+                strut_candidates.append((cx, cy))
 
-    # Step 4: greedy clustering along x
+    # --- 4) cluster strut candidates by x and assign ids 0..7 ---
     strut_candidates.sort(key=lambda p: p[0])
-    strut_clusters: List[List[Tuple[float, float]]] = []
-    current: List[Tuple[float, float]] = []
+    clusters: List[List[Tuple[float, float]]] = []
+    cur: List[Tuple[float, float]] = []
     for pt in strut_candidates:
-        if not current:
-            current.append(pt)
-            continue
-        first_x = current[0][0]
-        if abs(pt[0] - first_x) < horizontal_spacing:
-            current.append(pt)
+        if not cur or abs(pt[0] - cur[0][0]) < horizontal_spacing:
+            cur.append(pt)
         else:
-            strut_clusters.append(current)
-            current = [pt]
-    if current:
-        strut_clusters.append(current)
+            clusters.append(cur)
+            cur = [pt]
+    if cur:
+        clusters.append(cur)
 
-    # Step 5: number the clusters 0..7
+    # NEW: drop singleton (or too-small) clusters and reclassify them as LE
+    filtered_clusters: List[List[Tuple[float, float]]] = []
+    for col in clusters:
+        if len(col) < max(1, int(min_points_per_strut)):
+            # reclassify every point in this tiny "column" as LE to avoid shifting ids
+            for (cx, cy) in col:
+                LE_points.append((cx, cy, "LE"))
+        else:
+            filtered_clusters.append(col)
+
     labeled_struts: List[Tuple[float, float, str]] = []
-    for i, cluster in enumerate(strut_clusters):
-        strut_id = str(min(i, 7))
-        for cx, cy in cluster:
-            labeled_struts.append((cx, cy, strut_id))
+    for i, col in enumerate(filtered_clusters):
+        sid = str(min(i, 7))
+        for (cx, cy) in col:
+            labeled_struts.append((cx, cy, sid))
 
     return LE_points + labeled_struts
 

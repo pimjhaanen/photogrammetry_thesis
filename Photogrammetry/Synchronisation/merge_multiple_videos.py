@@ -1,49 +1,32 @@
-"""This code can be used to merge split GoPro (and similar) video segments into a single file
-using FFmpeg’s concat demuxer. It supports the GoPro naming scheme 'GX01… → GX02… → …'
-as well as generic continuations like '<base>_2.mp4', '<base>_3.mp4'.
-
-You can adapt the filename patterns, output naming, or FFmpeg flags to your dataset.
-"""
-
 import os
 import subprocess
+import shutil
 
-
-def merge_two_videos(filepath: str, output_path: str = None) -> str:
-    """RELEVANT FUNCTION INPUTS:
-    - filepath: path to the first (or only) video segment, e.g. '.../GX01abcd.mp4'
-                or '.../session.mp4' when using the '<base>_2.mp4' pattern.
-    - output_path: optional explicit path for the merged file. If None, the merged file
-                   is written next to the inputs as '<base>_merged<ext>'.
-
-    RETURNS:
-    - Absolute path to the merged (or original, if no continuations found) video file.
-
-    Behavior:
-    - If 'GX01…' is detected, it searches for 'GX02…' to 'GX09…' in the same folder.
-    - Otherwise, it searches for '<base>_2', '<base>_3', … in the same folder.
-    - If no continuation segments exist, the original file path is returned.
-    - If segments exist, an FFmpeg concat list is created and merged with stream copy.
-    """
+def merge_multiple_videos(filepath: str, output_path: str = None) -> str:
     dirname, filename = os.path.split(filepath)
     base, ext = os.path.splitext(filename)
+    verbose = True
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError(f"First segment not found: {filepath}")
 
-    # Always include the original file
+    if shutil.which("ffmpeg") is None:
+        raise RuntimeError("ffmpeg not found in PATH. Install it or add to PATH.")
+
     files = [os.path.join(dirname, filename)]
 
     # Pattern 1: GoPro 'GX01xxxx.ext' → 'GX02xxxx.ext', ...
     if base.startswith("GX") and len(base) >= 6:
-        base_suffix = base[5:]  # keep trailing part after 'GX0?'
-        for i in range(2, 10):
+        base_suffix = base[4:]  # keep part after 'GX01'
+        for i in range(2, 100):  # allow many segments
             continuation_name = f"GX0{i}{base_suffix}{ext}"
             candidate_path = os.path.join(dirname, continuation_name)
             if os.path.exists(candidate_path):
                 files.append(candidate_path)
             else:
                 break
-    # Pattern 2: '<base>.ext' → '<base>_2.ext', '<base>_3.ext', ...
     else:
-        for i in range(2, 10):
+        # Pattern 2: '<base>.ext' → '<base>_2.ext', '<base>_3.ext', ...
+        for i in range(2, 100):
             continuation_name = f"{base}_{i}{ext}"
             candidate_path = os.path.join(dirname, continuation_name)
             if os.path.exists(candidate_path):
@@ -51,32 +34,46 @@ def merge_two_videos(filepath: str, output_path: str = None) -> str:
             else:
                 break
 
-    # If there are no continuation files, return original path
+    if verbose:
+        print("[merge] Found segments:")
+        for p in files:
+            print("  -", os.path.abspath(p))
+
+    # If there are no continuation files, return original path (but tell the user)
     if len(files) == 1:
+        if verbose:
+            print("[merge] No continuation segments found. Returning original file.")
         return os.path.abspath(files[0])
 
-    # Otherwise, merge via FFmpeg concat demuxer
     abs_paths = [os.path.abspath(p).replace("\\", "/") for p in files]
     list_file_path = os.path.join(dirname, "concat_list.txt")
 
-    if output_path is None:
-        output_path = os.path.join(dirname, f"{base}_merged{ext}")
+    # Build output path
+    if output_path is None or os.path.isdir(output_path):
+        out_dir = dirname if output_path is None else output_path
+        output_path = os.path.join(out_dir, f"{base}_merged{ext}")
     output_path = os.path.abspath(output_path).replace("\\", "/")
 
-    # Write concat list and run ffmpeg; always clean up the list file
-    try:
-        with open(list_file_path, "w", encoding="utf-8") as f:
-            for path in abs_paths:
-                f.write(f"file '{path}'\n")
+    # Write concat list
+    with open(list_file_path, "w", encoding="utf-8") as f:
+        for path in abs_paths:
+            f.write(f"file '{path}'\n")
 
-        cmd = [
-            "ffmpeg", "-y",           # overwrite without prompt
-            "-f", "concat", "-safe", "0",
-            "-i", list_file_path,
-            "-c", "copy",             # stream copy (fast, lossless)
-            output_path
-        ]
-        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # Run ffmpeg and capture errors
+    cmd = [
+        "ffmpeg", "-y",
+        "-f", "concat", "-safe", "0",
+        "-i", list_file_path,
+        "-c", "copy",
+        output_path
+    ]
+    if verbose:
+        print("[merge] Running:", " ".join(cmd))
+
+    try:
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"ffmpeg failed ({result.returncode}):\n{result.stderr}")
     finally:
         try:
             os.remove(list_file_path)
@@ -85,7 +82,9 @@ def merge_two_videos(filepath: str, output_path: str = None) -> str:
 
     return output_path
 
-
-# Utilities module; no runnable demo here.
 if __name__ == "__main__":
-    pass
+    out = merge_multiple_videos(
+        r"C:\Users\pimha\PycharmProjects\photogrammetry_thesis\Photogrammetry\input\right_videos\GX010353.MP4"
+    )
+    print("RESULT:", out)
+

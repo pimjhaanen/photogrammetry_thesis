@@ -127,11 +127,21 @@ def run_photogrammetry(
     sync_csv = match_videos(
         left_video_path,
         right_video_path,
-        start_seconds=0,             # keep as in your original call
-        match_duration=600,
-        downsample_factor=50,
-        plot=False,
+        start_seconds=cfg.sync_start_seconds,  # was 0
+        match_duration=cfg.sync_match_duration,  # was 600
+        downsample_factor=cfg.sync_downsample_factor,  # was 50
+        plot=cfg.sync_plot_audio,  # was True/False
         output_dir=sync_output_dir,
+
+        # Flash configurations
+        flash_occurs_after=cfg.flash_occurs_after,
+        flash_occurs_before=cfg.flash_occurs_before,
+        flash_center_fraction=cfg.flash_center_fraction,
+        flash_min_jump=cfg.flash_min_jump,
+        flash_slope_ratio=cfg.flash_slope_ratio,
+        flash_baseline_window=cfg.flash_baseline_window,
+        flash_brightness_floor=cfg.flash_brightness_floor,
+        flash_plot=cfg.flash_plot,
     )
 
     matched = _read_matched_indices(sync_csv)
@@ -224,6 +234,7 @@ def run_photogrammetry(
                 "translation_z": float(tv[2]),
             })
 
+        """
         # Save 4×4 ArUco 3D centers
         for j, aruco_id in enumerate(aruco_ids_4x4):
             coord = aruco_3d_4x4[j]
@@ -249,9 +260,9 @@ def run_photogrammetry(
                 "y": float(coord[1]),
                 "z": float(coord[2]),
             })
-
+        """
         print(f"[frame: {i - start_index:5d}/{end_index - start_index}] processed… "
-              f"pairs in use: {state.n_pairs}, ArUco's detected: {len(aruco_ids_4x4)+len(aruco_ids_7x7)} ")
+              f"pairs in use: {state.n_pairs}")
 
     # 8) Cleanup video resources
     cap_left.release()
@@ -272,7 +283,7 @@ def run_photogrammetry(
                 "z": float(xyz[2]),
             })
     pd.DataFrame(cross_rows).to_csv(
-        f"output/3d_coordinates_{video_name}.csv", index=False
+        f"output/{video_name}_downloop_03_38.csv", index=False
     )
 
     # 7×7 pose (rvec/tvec from PnP on left image)
@@ -292,22 +303,22 @@ def run_photogrammetry(
 # ------------------------------- script main ---------------------------------
 if __name__ == "__main__":
     # === USER CONFIGURATION ===
-    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_wide_84cm_wo_outliers.pkl"
-    LEFT_VIDEO = "input/left_videos/25_06_test1.mp4"
-    RIGHT_VIDEO = "input/right_videos/25_06_test1.mp4"
+    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
+    LEFT_VIDEO = "input/left_videos/09_10_merged.mp4"
+    RIGHT_VIDEO = "input/right_videos/09_10_merged.mp4"
     SYNC_OUTPUT_DIR = "Synchronisation/synchronised_frame_indices"
 
     # Time window (in seconds) inside the matched pair sequence
-    SKIP_SECONDS = 323          # start at 601 s into the matched sequence
-    TAKE_SECONDS = 17           # process 20 s (601–621 s)
+    SKIP_SECONDS = 218          # start at 601 s into the matched sequence
+    TAKE_SECONDS = 8           # process 20 s (601–621 s)
     FPS = 30                    # nominal fps for window math
 
     # Stereo / detection / debug tunables (override any defaults you want)
     cfg = StereoConfig(
         # --- matching thresholds ---
-        max_vertical_disparity=70.0,
-        max_total_distance=500.0,
-        min_horizontal_disparity=0.0,
+        max_vertical_disparity=40.0,
+        max_total_distance=600.0,
+        min_horizontal_disparity=200.0,
 
         # --- KLT parameters ---
         lk_win_size=(31, 31),
@@ -338,17 +349,33 @@ if __name__ == "__main__":
         # --- debug overlay ---
         show_bright_frames=False,
         debug_every_n=30,
-        show_debug_frame=True,
+        show_debug_frame=False,
         debug_flip_180=True,
         debug_display_scale=0.3,
         debug_window_title_prefix="[DEBUG] L+R Frame",
 
         # --- refresh rule ---
-        need_fresh_min_pairs=30,
+        need_fresh_min_pairs=50,
 
         # --- epipolar lines overlay ---
-        epipolar_lines=False,
-    )
+        epipolar_lines=True,
+
+        # --- SYNC (audio) ---
+        sync_start_seconds=0.0,
+        sync_match_duration=10.0,
+        sync_downsample_factor=50,
+        sync_plot_audio=True,
+
+        # --- FLASH detection ---
+        flash_occurs_after=15,  # e.g., if you know you flashed ~10s in: set 8.0
+        flash_occurs_before=39,  # or a number to limit search window
+        flash_center_fraction=0.33,
+        flash_min_jump=20.0,
+        flash_slope_ratio=5.0,
+        flash_baseline_window=5,
+        flash_brightness_floor=0.0,
+        flash_plot=True,
+        )
 
     # Run
     run_photogrammetry(

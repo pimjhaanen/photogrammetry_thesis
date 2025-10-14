@@ -237,162 +237,272 @@ def _refine_with_subpix(gray_patch: np.ndarray, p: Tuple[float, float]) -> Tuple
     cv2.cornerSubPix(gray_patch, pts, win, zero_zone, term)
     return float(pts[0, 0, 0]), float(pts[0, 0, 1])
 
-def detect_crosses(frame: np.ndarray, debug: bool = False) -> Tuple[List[Tuple[float, float]], np.ndarray]:
+def apply_lr_gradient_gain(
+    img_bgr: np.ndarray,
+    bright_side_gain=(4.0, 20.0),   # (alpha, beta) for the brighter half
+    dark_side_gain=(5.0, 25.0),     # (alpha, beta) for the darker half
+    bands: int = 5,                 # 1 = smooth ramp; >1 = step-wise bands
+    image: str = "left",            # Whether its the left or right frame
+    smooth: bool = True  ,          # if True: smooth ramp even when bands>1
+    show_rio: bool = True          # if True: shows ROI for brightness consideration
+) -> np.ndarray:
     """
-    Detect red crosses and return sub-pixel centers by intersecting two dominant arms.
+    Apply a left<->right gradient brightness/contrast on HSV V to handle uneven lighting.
+    Bright vs dark side is decided from a fixed ROI: x=[450,1850], y=[600,800].
+    The brighter side uses bright_side_gain; the darker side uses dark_side_gain.
+    Also draws the ROI, the midline, and 'B'/'D' on the corresponding halves.
+    """
+    h, w = img_bgr.shape[:2]
+
+    # --- decide bright/dark using the fixed rectangular ROI on V channel ---
+
+    x0, x1 = 450*2, 1850*2
+    y0, y1 = 600*2, 800*2
+    if image=='left': #estimated disparity, different block
+        x0+=300
+        x1+=300
+
+    # clamp to image bounds
+    x0 = max(0, min(x0, w - 1)); x1 = max(0, min(x1, w))
+    y0 = max(0, min(y0, h - 1)); y1 = max(0, min(y1, h))
+
+    hsv_tmp = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    V_all   = hsv_tmp[..., 2]
+
+    if x1 <= x0 or y1 <= y0:
+        # fallback to halves if ROI invalid
+        mean_left  = float(np.median(V_all[:, :w//2])) if w >= 2 else float(np.median(V_all))
+        mean_right = float(np.median(V_all[:, w//2:])) if w >= 2 else float(np.median(V_all))
+        mid_x = w // 2
+        roi_ok = False
+    else:
+        mid_x = (x0 + x1) // 2
+        V_left  = V_all[y0:y1, x0:mid_x]
+        V_right = V_all[y0:y1, mid_x:x1]
+        mean_left  = float(np.median(V_left))  if V_left.size  else float(np.median(V_all))
+        mean_right = float(np.median(V_right)) if V_right.size else float(np.median(V_all))
+        roi_ok = True
+
+    # assign endpoint gains left->right
+    left_is_brighter = (mean_left >= mean_right)
+    if left_is_brighter:
+        a_left,  b_left  = bright_side_gain
+        a_right, b_right = dark_side_gain
+    else:
+        a_left,  b_left  = dark_side_gain
+        a_right, b_right = bright_side_gain
+
+    # --- build horizontal alpha/beta maps ---
+    if smooth or bands <= 1:
+        t_line = np.linspace(0.0, 1.0, w, dtype=np.float32)        # smooth ramp
+    else:
+        # step-wise bands: t = i/(bands-1) per band (bands=2 => t=0 left, t=1 right)
+        edges    = np.linspace(0.0, 1.0, bands + 1, dtype=np.float32)
+        t_values = np.linspace(0.0, 1.0, bands,     dtype=np.float32)
+        x        = np.linspace(0.0, 1.0, w,         dtype=np.float32)
+        band_idx = np.digitize(x, edges[1:-1], right=False)
+        t_line   = t_values[band_idx]
+
+    alpha_line = a_left  + (a_right  - a_left)  * t_line
+    beta_line  = b_left  + (b_right  - b_left)  * t_line
+    alpha_map  = np.tile(alpha_line, (h, 1)).astype(np.float32)
+    beta_map   = np.tile(beta_line,  (h, 1)).astype(np.float32)
+
+    # --- apply on V only (preserve hue/sat) ---
+    Vf    = V_all.astype(np.float32)
+    V_out = np.clip(Vf * alpha_map + beta_map, 0, 255).astype(np.uint8)
+    hsv_out = hsv_tmp.copy()
+    hsv_out[..., 2] = V_out
+    out_bgr = cv2.cvtColor(hsv_out, cv2.COLOR_HSV2BGR)
+
+    # --- draw ROI, midline, and labels on the returned frame ---
+    # yellow lines
+    line_color = (0, 255, 255)
+    if roi_ok and show_rio:
+        cv2.rectangle(out_bgr, (x0, y0), (x1, y1), line_color, 2)
+        cv2.line(out_bgr, (mid_x, y0), (mid_x, y1), line_color, 2)
+
+        # label positions (roughly centered in each half of the ROI)
+        cx_left  = (x0 + mid_x) // 2
+        cx_right = (mid_x + x1) // 2
+        cy_text  = y0 + int(0.25 * (y1 - y0))  # upper quarter inside ROI
+
+        # Draw big black boxes behind the letters for visibility
+        def put_big_label(img, text, pos):
+            font, scale, thick = cv2.FONT_HERSHEY_SIMPLEX, 2.0, 4
+            (tw, th), base = cv2.getTextSize(text, font, scale, thick)
+            tx, ty = pos
+            pad = 6
+            cv2.rectangle(img,
+                          (tx - pad, ty - th - pad),
+                          (tx + tw + pad, ty + base + pad),
+                          (0, 0, 0), -1)
+            cv2.putText(img, text, (tx, ty), font, scale, line_color, thick, cv2.LINE_AA)
+
+        if left_is_brighter:
+            put_big_label(out_bgr, "B", (cx_left - 15,  cy_text))
+            put_big_label(out_bgr, "D", (cx_right - 15, cy_text))
+        else:
+            put_big_label(out_bgr, "D", (cx_left - 15,  cy_text))
+            put_big_label(out_bgr, "B", (cx_right - 15, cy_text))
+    else:
+        # fallback annotation at image mid if ROI invalid
+        cv2.line(out_bgr, (w//2, 0), (w//2, h-1), line_color, 2)
+        txt = "B|D" if left_is_brighter else "D|B"
+        cv2.putText(out_bgr, txt, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, line_color, 3, cv2.LINE_AA)
+
+    return out_bgr
+
+def detect_crosses(frame, debug_mask=False, show_annot=False, min_area=70, min_dist=50):
+    """
+    Detect red crosses and return only the kept (deduplicated) centres, an annotated image,
+    and print a table where K-IDs match the labels drawn on the debug frame.
+
+    Returns:
+      centres : List[(cx, cy)] for kept detections (after dedup)
+      annotated_frame : BGR image with K-IDs drawn (same shape as input)
     """
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Red ranges – yours, kept relatively tight
-    lower_red_1 = np.array([0, 20, 30],  dtype=np.uint8)
-    upper_red_1 = np.array([15, 255, 255], dtype=np.uint8)
-    lower_red_2 = np.array([165, 20, 30], dtype=np.uint8)
-    upper_red_2 = np.array([179, 255, 255], dtype=np.uint8)
+    # --- red mask (wrap-around near 0/180) ---
+    lower_red_1 = np.array([0,   100,  45], dtype=np.uint8)
+    upper_red_1 = np.array([6, 255, 255], dtype=np.uint8)
+    lower_red_2 = np.array([172, 110,  45], dtype=np.uint8)
+    upper_red_2 = np.array([180, 255, 255], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower_red_1, upper_red_1) | cv2.inRange(hsv, lower_red_2, upper_red_2)
 
+    # --- morphology ---
     kernel = np.ones((3, 3), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
     mask = cv2.dilate(mask, kernel, iterations=1)
 
+    if debug_mask:
+        msmall = cv2.resize(mask, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_NEAREST)
+        cv2.imshow("HSV Mask", msmall); cv2.waitKey(0); cv2.destroyAllWindows()
+
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    centres: List[Tuple[float, float]] = []
+    h_img, w_img = frame.shape[:2]
+    candidates = []  # diagnostics for all candidates BEFORE dedup
 
-    for cnt in contours:
+    for raw_id, cnt in enumerate(contours):
         area = cv2.contourArea(cnt)
-        if not (20 < area < 7000):
+        if area < min_area:
             continue
+
         x, y, w, h = cv2.boundingRect(cnt)
-        aspect = w / h if h > 0 else 0.0
-        if not (0.3 < aspect < 3.0):
+        if h <= 0 or w <= 0:
             continue
 
-        pad = 4
-        x1 = max(x - pad, 0)
-        y1 = max(y - pad, 0)
-        x2 = min(x + w + pad, frame.shape[1])
-        y2 = min(y + h + pad, frame.shape[0])
+        ar = float(w) / float(h)
+        if not (0.5 < ar < 2.2):
+            continue
 
-        patch_gray = gray[y1:y2, x1:x2]
-        patch_mask = mask[y1:y2, x1:x2]
+        # shape cues
+        hull = cv2.convexHull(cnt)
+        hull_area = cv2.contourArea(hull) + 1e-6
+        solidity = float(area) / hull_area
+        extent   = float(area) / float(w * h)
 
-        # Edges for Hough
-        edges = cv2.Canny(patch_mask, 50, 150, apertureSize=3, L2gradient=True)
-        lines = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=12, minLineLength=max(6, min(w, h)//3), maxLineGap=3)
+        # center
+        cx = int(x + w / 2)
+        cy = int(y + h / 2)
 
-        cx, cy = (x + w / 2.0, y + h / 2.0)  # fallback
-        refined = subpixel_cross_center(gray, (cx, cy), patch=25)
-        if refined is not None:
-            cx, cy = refined
-        centres.append((float(cx), float(cy)))
+        # mean HSV within the contour
+        cnt_mask = np.zeros((h_img, w_img), dtype=np.uint8)
+        cv2.drawContours(cnt_mask, [cnt], -1, 255, thickness=cv2.FILLED)
+        mean_bgr = cv2.mean(frame, mask=cnt_mask)[:3]
+        mean_hsv = cv2.cvtColor(np.uint8([[mean_bgr]]), cv2.COLOR_BGR2HSV)[0, 0]  # [H,S,V]
 
-        ok = False
-        if lines is not None and len(lines) >= 2:
-            segs = []
-            angs = []
-            ptsA = []
-            ptsB = []
+        candidates.append({
+            "raw_id": raw_id,
+            "center": (cx, cy),
+            "area": float(area),
+            "bbox_wh": (int(w), int(h)),
+            "aspect_ratio": float(ar),
+            "mean_hsv": (int(mean_hsv[0]), int(mean_hsv[1]), int(mean_hsv[2])),
+            "solidity": float(solidity),
+            "extent": float(extent),
+        })
 
-            for l in lines[:, 0, :]:
-                xA, yA, xB, yB = map(int, l.tolist())
-                segs.append(((xA, yA), (xB, yB)))
-                angs.append(_angle_of_segment((xA, yA), (xB, yB)))
-                ptsA.append([xA, yA])
-                ptsB.append([xB, yB])
+    # --- deduplicate by distance (greedy) on candidate centers ---
+    def _dedup_by_distance(points, r=min_dist):
+        kept = []
+        taken = np.zeros(len(points), dtype=bool)
+        r2 = r * r
+        for i, p in enumerate(points):
+            if taken[i]:
+                continue
+            kept.append(i)
+            (x0, y0) = p
+            # mark neighbors as taken
+            for j in range(i + 1, len(points)):
+                if taken[j]:
+                    continue
+                (x1, y1) = points[j]
+                if (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0) <= r2:
+                    taken[j] = True
+        return kept
 
-            angs = np.array(angs, dtype=np.float32)
-            c1, c2 = _cluster_by_angle(angs)
+    centres_all = [c["center"] for c in candidates]
+    kept_idx = _dedup_by_distance(centres_all, r=min_dist)
 
-            def fit_from_cluster(mask_sel: np.ndarray):
-                sel = np.where(mask_sel)[0]
-                if sel.size < 2:
-                    return None
-                pts = []
-                for idx in sel:
-                    (xa, ya), (xb, yb) = segs[idx]
-                    # densify a bit to stabilize LS fit
-                    pts += [[xa, ya], [xb, yb]]
-                pts = np.asarray(pts, np.float32)
-                # choose axis to reduce vertical ill-conditioning:
-                # try both fits and pick the one with smaller residual
-                a1, b1 = _fit_line_through_points(pts)  # y = a1 x + b1
-                # vertical-esque alternative: x = ay + b  -> convert to y = (x - b)/a
-                a2, b2 = _fit_line_through_points(pts[:, ::-1])  # swap axes
-                # compute residuals quickly and pick better
-                y_hat1 = a1 * pts[:, 0] + b1
-                r1 = np.mean((pts[:, 1] - y_hat1) ** 2)
-                x_hat2 = a2 * pts[:, 1] + b2
-                y_hat2 = (pts[:, 0] - b2) / (a2 + 1e-12)
-                r2 = np.mean((pts[:, 1] - y_hat2) ** 2)
-                if r1 <= r2:
-                    return ("y=ax+b", a1, b1)
-                else:
-                    # convert x = a*y + b -> y = (x - b)/a
-                    return ("y=(x-b)/a", a2, b2)
+    # Prepare annotated output and centres list
+    annotated = frame.copy()
+    centres = []
 
-            L1 = fit_from_cluster(c1)
-            L2 = fit_from_cluster(c2)
+    # ---- print only kept detections so numbers match the overlay ----
+    print(f"[detect_crosses] kept {len(kept_idx)} / {len(contours)} (post filters: {len(candidates)})")
+    for kept_id, ci in enumerate(kept_idx):
+        d = candidates[ci]
+        centres.append(d["center"])
+        cx, cy = d["center"]
 
-            if L1 and L2:
-                # Compute intersection in patch coords
-                # normalize both to y = a*x + b form
-                def to_ab(L):
-                    if L[0] == "y=ax+b":
-                        return L[1], L[2]
-                    else:
-                        a2, b2 = L[1], L[2]
-                        a = 1.0 / (a2 + 1e-12)
-                        b = -b2 / (a2 + 1e-12)
-                        return a, b
-                a1_, b1_ = to_ab(L1)
-                a2_, b2_ = to_ab(L2)
-                theta1 = np.degrees(np.arctan(a1_))
-                theta2 = np.degrees(np.arctan(a2_))
-                angle_diff = abs(((theta1 - theta2 + 90) % 180) - 90)  # shortest mod-180 diff
+        # draw cross
+        cv2.drawMarker(annotated, (cx, cy), (0, 255, 255),
+                       markerType=cv2.MARKER_CROSS, markerSize=20, thickness=2)
 
-                if 70 <= angle_diff <= 110:
-                    px, py = _line_intersection(a1_, b1_, a2_, b2_)
-                    if np.isfinite(px) and np.isfinite(py):
-                        # ensure inside patch
-                        if 0 <= px < (x2 - x1) and 0 <= py < (y2 - y1):
-                            # sub-pixel refine on grayscale
-                            rx, ry = _refine_with_subpix(patch_gray, (px, py))
-                            cx = x1 + rx
-                            cy = y1 + ry
-                            ok = True
+        # --- yellow text on black box ---
+        label = f"K{kept_id}"
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 0.6
+        thick = 2
+        (tw, th), baseline = cv2.getTextSize(label, font, scale, thick)
 
-        if not ok:
-            # soft PCA fallback on skeleton-ish pixels
-            pts_bin = cv2.findNonZero(patch_mask)
-            if pts_bin is not None and len(pts_bin) > 20:
-                pts = pts_bin.reshape(-1, 2).astype(np.float32)
-                # coarse center as mean, refine with cornerSubPix
-                m = pts.mean(axis=0)
-                rx, ry = _refine_with_subpix(patch_gray, (m[0], m[1]))
-                cx = x1 + rx
-                cy = y1 + ry
-            # else keep bbox center fallback
+        # text anchor (top-left of text box)
+        tx = cx + 6
+        ty = cy - 6
 
-        centres.append((float(cx), float(cy)))
+        # black rectangle background (with small padding)
+        pad = 3
+        x1 = max(0, tx - pad)
+        y1 = max(0, ty - th - pad)
+        x2 = min(annotated.shape[1] - 1, tx + tw + pad)
+        y2 = min(annotated.shape[0] - 1, ty + baseline + pad)
+        cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 0, 0), thickness=-1)
 
-    # de-duplicate nearby centers
-    centres = deduplicate_centers(centres, min_dist=60)  # keep your helper
+        # yellow text
+        cv2.putText(annotated, label, (tx, ty), font, scale, (0, 255, 255), thick, cv2.LINE_AA)
 
-    if debug:
-        dbg = frame.copy()
-        for (cx, cy) in centres:
-            cv2.drawMarker(dbg, (int(round(cx)), int(round(cy))), (0, 255, 255), cv2.MARKER_CROSS, 15, 2)
-        cv2.imshow("crosses", cv2.resize(dbg, None, fx=0.4, fy=0.4))
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    return centres, frame.copy()
+    # Optional quick view; remove if you don't want a window
+    if show_annot:
+        # print row
+        print(f"K{kept_id:02d} (raw #{d['raw_id']:02d}) @ {d['center']}  "
+              f"area={d['area']:.1f}  wh={d['bbox_wh'][0]}x{d['bbox_wh'][1]}  "
+              f"ar={d['aspect_ratio']:.2f}  HSV={d['mean_hsv']}  "
+              f"sol={d['solidity']:.2f}  ext={d['extent']:.2f}")
+        preview = cv2.resize(annotated, None, fx=0.45, fy=0.45, interpolation=cv2.INTER_AREA)
+        cv2.imshow("Cross detections (K-IDs match console)", preview)
+        cv2.waitKey(1)
 
+    return centres, annotated
 
-def detect_crosses2(frame, debug=False):
+def detect_crosses_accuracy_test(frame, debug=False):
     """RELEVANT FUNCTION INPUTS:
     - frame: BGR image that may contain red cross-shaped markers.
     - debug: if True, shows intermediate HSV mask and masked frame windows.
@@ -435,10 +545,10 @@ def detect_crosses2(frame, debug=False):
 
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        if 10 < area < 7000:
+        if 10 < area :
             x, y, w, h = cv2.boundingRect(cnt)
             aspect_ratio = float(w) / h if h > 0 else 0
-            if 0.5 < aspect_ratio < 2.0:
+            if 0.3 < aspect_ratio < 3.0:
                 pad = 2
                 x1 = max(x - pad, 0)
                 y1 = max(y - pad, 0)

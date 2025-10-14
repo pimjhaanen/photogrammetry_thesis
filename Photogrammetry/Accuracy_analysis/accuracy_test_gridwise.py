@@ -11,7 +11,7 @@ from typing import List, Tuple, Optional
 from Photogrammetry.marker_detection.marker_detection_utils import (
     detect_circles_blob,
     detect_aruco_pose,
-    detect_crosses2,
+    detect_crosses_accuracy_test,
     get_subpixel_centers_gaussian,
 )
 from Photogrammetry.Accuracy_analysis.subpixel_accuracy_test import show_frame, zoom_in_on_circle, zoom_debug_windows_crosses
@@ -143,7 +143,7 @@ def process_side(
         blue_centers = [(br[0], br[1]) for br in blue_raw]
 
     # Red crosses
-    crosses, _ = detect_crosses2(frame)
+    crosses, _ = detect_crosses_accuracy_test(frame)
     print(f"amount of detected crosses: {len(crosses)}")
     # Sort both sets grid-wise (your utility)
     blue_sorted = sort_markers_gridwise(blue_centers)
