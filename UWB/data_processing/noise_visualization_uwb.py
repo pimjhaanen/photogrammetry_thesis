@@ -62,4 +62,4 @@ def plot_distance_from_csv(csv_path: str) -> None:
 
 if __name__ == "__main__":
     # Example usage — replace with your file path
-    plot_distance_from_csv("output/testing_noise_reduction_raw.csv")
+    plot_distance_from_csv("../output/testing_noise_reduction_raw.csv")

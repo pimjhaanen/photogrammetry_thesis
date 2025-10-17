@@ -325,7 +325,7 @@ def process_stereo_pair(
     # Optional brightness bump for cross frames
     left_cross = apply_lr_gradient_gain(
         left_cross,
-        bright_side_gain=(cfg.brighten_alpha - 2 , cfg.brighten_beta - 5 ),
+        bright_side_gain=(cfg.brighten_alpha - 2 , cfg.brighten_beta - 10 ),
         dark_side_gain=(cfg.brighten_alpha + 2.0, cfg.brighten_beta + 5),
         bands=1,
         image = 'left',
@@ -334,7 +334,7 @@ def process_stereo_pair(
 
     right_cross = apply_lr_gradient_gain(
         right_cross,
-        bright_side_gain=(cfg.brighten_alpha - 2.0, cfg.brighten_beta - 5 ),
+        bright_side_gain=(cfg.brighten_alpha - 2.0, cfg.brighten_beta - 10 ),
         dark_side_gain=(cfg.brighten_alpha +2, cfg.brighten_beta +5),
         bands=1,
         image = 'right',

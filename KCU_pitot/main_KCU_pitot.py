@@ -7,7 +7,7 @@ Steps:
 3) normalize & UTC-shift time_of_day (Ireland -> default −2 h),
 4) copy selected KCU signals,
 5) calibrate kite_measured_va from a calibration CSV,
-6) apply exponential LPF (alpha=0.95 default) to calibrated pitot,
+6) apply zero-phase exponential LPF (alpha=0.95 default) to calibrated pitot (no lag),
 7) scale steering/depower by /100 and round(4),
 8) write to output CSV.
 
@@ -130,32 +130,15 @@ def apply_pitot_calibration(series: pd.Series, cal_spec):
 
 def exponential_lpf(series: pd.Series, alpha: float = 0.95) -> pd.Series:
     """
-    Exponential low-pass filter (EMA) for noise reduction:
-      y[t] = alpha*y[t-1] + (1-alpha)*x[t],  alpha in (0,1).
-    Initialization: first output equals first valid input.
-    NaNs are propagated: if x[t] is NaN, y[t] = y[t-1].
-
-    Parameters
-    ----------
-    series : pd.Series
-        Input numeric series.
-    alpha : float
-        Smoothing factor (closer to 1.0 = heavier smoothing).
-
-    Returns
-    -------
-    pd.Series
-        Filtered series (float).
+    Causal EMA (kept for reference):
+      y[t] = alpha*y[t-1] + (1-alpha)*x[t]
     """
     x = pd.to_numeric(series, errors="coerce").astype(float).values
     y = np.empty_like(x)
     y[:] = np.nan
-
-    # find first valid sample
     valid = np.where(~np.isnan(x))[0]
     if len(valid) == 0:
         return pd.Series(y, index=series.index, dtype=float)
-
     y[valid[0]] = x[valid[0]]
     for i in range(valid[0] + 1, len(x)):
         xi = x[i]
@@ -163,8 +146,41 @@ def exponential_lpf(series: pd.Series, alpha: float = 0.95) -> pd.Series:
             y[i] = y[i - 1]
         else:
             y[i] = alpha * y[i - 1] + (1.0 - alpha) * xi
-
     return pd.Series(y, index=series.index, dtype=float)
+
+def _ema_pass(x: np.ndarray, alpha: float) -> np.ndarray:
+    """
+    One directional EMA with NaN handling; starts at first finite value.
+    """
+    y = np.empty_like(x, dtype=float)
+    y[:] = np.nan
+    idx = np.where(np.isfinite(x))[0]
+    if len(idx) == 0:
+        return y
+    i0 = idx[0]
+    y[i0] = x[i0]
+    for i in range(i0 + 1, len(x)):
+        xi = x[i]
+        y[i] = (alpha * y[i-1] + (1.0 - alpha) * xi) if np.isfinite(xi) else y[i-1]
+    return y
+
+def zero_phase_exponential_lpf(series: pd.Series, alpha: float = 0.95) -> pd.Series:
+    """
+    Zero-phase (acausal) EMA by forward-backward filtering (no lag).
+    Steps:
+      1) fwd[t] = alpha*fwd[t-1] + (1-alpha)*x[t]
+      2) bwd_rev[k] = alpha*bwd_rev[k-1] + (1-alpha)*fwd_rev[k]
+         where fwd_rev is fwd reversed in time; final output = reverse(bwd_rev).
+
+    Note: magnitude response is effectively squared (heavier smoothing than one-pass EMA),
+    so you may want a slightly smaller alpha than your causal setting.
+    """
+    x = pd.to_numeric(series, errors="coerce").to_numpy(dtype=float)
+    if x.size == 0:
+        return pd.Series([], index=series.index, dtype=float)
+    fwd = _ema_pass(x, alpha)
+    bwd = _ema_pass(fwd[::-1], alpha)[::-1]
+    return pd.Series(bwd, index=series.index, dtype=float)
 
 
 # ------------------------------ Core transform --------------------------------
@@ -185,25 +201,26 @@ REQUIRED_PASSTHROUGH_COLS: List[str] = [
 
 
 def compute_timestamp(df: pd.DataFrame, time_col: str = "time") -> pd.Series:
-    """Compute relative time: timestamp = time - time.iloc[0]."""
+    """Compute relative time: timestamp = time - time.iloc[0], rounded to 0.1 s."""
     if time_col not in df.columns:
         return pd.Series(dtype=float)
     t = pd.to_numeric(df[time_col], errors="coerce")
     if t.empty or t.isna().all():
         return pd.Series(dtype=float)
-    return np.round(t - t.iloc[0],1)
+    return np.round(t - t.iloc[0], 1)
 
 
 def build_output(df: pd.DataFrame,
                  utc_shift_hours: int,
                  cal_spec: Optional[Tuple[str, Tuple[np.ndarray, np.ndarray]]] = None,
-                 pitot_lpf_alpha: float = 0.95) -> pd.DataFrame:
+                 pitot_lpf_alpha: float = 0.95,
+                 pitot_zero_phase: bool = True) -> pd.DataFrame:
     """
     Build output dataframe:
       - timestamp from 'time'
-      - time_of_day_utc (parse + shift)
+      - time_of_day_utc (recomputed from epoch 'time')
       - passthrough telemetry
-      - kite_measured_va: calibrate -> LPF(α)
+      - kite_measured_va: calibrate -> zero-phase LPF(α)  [no lag]
       - steering/depower: /100, round(4)
     """
     out = pd.DataFrame(index=df.index)
@@ -211,10 +228,8 @@ def build_output(df: pd.DataFrame,
     # 1) timestamp
     out["timestamp"] = compute_timestamp(df, time_col="time")
 
-    # 2) time_of_day_utc
-    # 2) time_of_day_utc / local: RECOMPUTE from epoch 'time' to avoid missing hours in source CSV
+    # 2) time_of_day_utc (from epoch seconds)
     if "time" in df.columns:
-        # UTC (no offset)
         out["time_of_day_utc"] = epoch_to_hms_str(df["time"], tz_offset_hours=0, decimals=1)
 
     # 3) passthrough telemetry
@@ -222,10 +237,13 @@ def build_output(df: pd.DataFrame,
         if col in df.columns:
             out[col] = df[col]
 
-    # 4) pitot: calibrate then LPF
+    # 4) pitot: calibrate then LPF (zero-phase to remove lag)
     if "kite_measured_va" in df.columns:
         va_cal = apply_pitot_calibration(df["kite_measured_va"], cal_spec)
-        va_filt = exponential_lpf(va_cal, alpha=pitot_lpf_alpha)
+        if pitot_zero_phase:
+            va_filt = zero_phase_exponential_lpf(va_cal, alpha=pitot_lpf_alpha)
+        else:
+            va_filt = exponential_lpf(va_cal, alpha=pitot_lpf_alpha)
         out["kite_measured_va"] = va_filt
 
     # 5) steering/depower scaling
@@ -257,7 +275,8 @@ def main():
     CALIBRATION_FILE = r"Pitot/Calibration/pitot_calibration.json"
     OUTPUT_FILE = r"output/KCU_output_09_10.csv"
     UTC_SHIFT_HOURS = -2                               # Ireland time → UTC
-    PITOT_LPF_ALPHA = 0.95                             # LPF smoothing factor
+    PITOT_LPF_ALPHA = 0.95                             # EMA smoothing factor
+    PITOT_ZERO_PHASE = True                            # Use forward-backward (no lag)
 
     # 1) Read input CSV
     try:
@@ -283,7 +302,8 @@ def main():
         df_in,
         utc_shift_hours=UTC_SHIFT_HOURS,
         cal_spec=cal_spec,
-        pitot_lpf_alpha=PITOT_LPF_ALPHA
+        pitot_lpf_alpha=PITOT_LPF_ALPHA,
+        pitot_zero_phase=PITOT_ZERO_PHASE
     )
 
     for col in ("time_of_day_utc", "time_of_day_local"):
@@ -292,7 +312,6 @@ def main():
 
     # 4) Write to CSV
     try:
-        # --- Force Excel to treat time_of_day_utc as TEXT and show hours+decimals ---
         write_output_csv(df_out, OUTPUT_FILE)
         print(f"[✓] Wrote output to: {OUTPUT_FILE}")
         print(f"[→] Columns: {', '.join(df_out.columns)}")

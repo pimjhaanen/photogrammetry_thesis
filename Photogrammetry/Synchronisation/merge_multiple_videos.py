@@ -84,7 +84,7 @@ def merge_multiple_videos(filepath: str, output_path: str = None) -> str:
 
 if __name__ == "__main__":
     out = merge_multiple_videos(
-        r"C:\Users\pimha\PycharmProjects\photogrammetry_thesis\Photogrammetry\input\right_videos\GX010353.MP4"
+        r"C:\Users\pimha\PycharmProjects\photogrammetry_thesis\Photogrammetry\static_experiments\left_input_static\GX010332.MP4"
     )
     print("RESULT:", out)
 

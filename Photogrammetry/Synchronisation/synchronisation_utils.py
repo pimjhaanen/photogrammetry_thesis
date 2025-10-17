@@ -396,12 +396,12 @@ if __name__ == "__main__":
     # Example call (edit paths):
     # The output CSV will include a Time_s column with t=0 at the flash (if detected).
     csv_path = match_videos(
-        video1_path="PATH/TO/CAM1.MP4",     # reference camera (flash visible here)
-        video2_path="PATH/TO/CAM2.MP4",     # secondary camera
+        video1_path="../static_experiments/left_input_static/GX010332_merged.MP4",     # reference camera (flash visible here)
+        video2_path="../static_experiments/right_input_static/GX010359_merged.MP4",     # secondary camera
         start_seconds=0.0,
-        match_duration=300.0,
+        match_duration=30.0,
         downsample_factor=50,
-        plot=False,
+        plot=True,
         output_dir="synchronised_frame_indices"
     )
     print(csv_path)

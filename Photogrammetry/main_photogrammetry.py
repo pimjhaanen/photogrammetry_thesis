@@ -303,7 +303,7 @@ def run_photogrammetry(
 # ------------------------------- script main ---------------------------------
 if __name__ == "__main__":
     # === USER CONFIGURATION ===
-    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
+    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_ireland.pkl"
     LEFT_VIDEO = "input/left_videos/09_10_merged.mp4"
     RIGHT_VIDEO = "input/right_videos/09_10_merged.mp4"
     SYNC_OUTPUT_DIR = "Synchronisation/synchronised_frame_indices"
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     # Stereo / detection / debug tunables (override any defaults you want)
     cfg = StereoConfig(
         # --- matching thresholds ---
-        max_vertical_disparity=40.0,
+        max_vertical_disparity=30.0,
         max_total_distance=600.0,
         min_horizontal_disparity=200.0,
 
@@ -349,7 +349,7 @@ if __name__ == "__main__":
         # --- debug overlay ---
         show_bright_frames=False,
         debug_every_n=30,
-        show_debug_frame=False,
+        show_debug_frame=True,
         debug_flip_180=True,
         debug_display_scale=0.3,
         debug_window_title_prefix="[DEBUG] L+R Frame",

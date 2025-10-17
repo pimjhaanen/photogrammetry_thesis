@@ -46,10 +46,9 @@ def stereo_calibrate_from_checkerboards(
     objp *= square_size_m
 
     objpoints, imgL_pts, imgR_pts = [], [], []
-    left_images  = get_images(["left_camera_wide_84cm/*.jpg",
-                              "left_camera_wide_84cm/*.png"])
-    right_images = get_images(["right_camera_wide_84cm/*.jpg",
-                              "right_camera_wide_84cm/*.png"])
+    left_images = get_images([left_glob])
+    right_images = get_images([right_glob])
+
     assert len(left_images) == len(right_images), "Mismatch in number of left/right frames"
 
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)
@@ -109,10 +108,10 @@ if __name__ == "__main__":
 
 
     stereo_calibrate_from_checkerboards(
-        left_glob="left_camera_wide_84cm/*.jpg",
-        right_glob="right_camera_wide_84cm/*.jpg",
+        left_glob="left_camera_ireland/*.jpg",
+        right_glob="right_camera_ireland/*.jpg",
         intrinsics_cam1="../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_1.pkl",
         intrinsics_cam2="../single-camera calibration/single_calibration_output/calibration_checkerboard_wide_camera_2.pkl",
-        exclude_frames= [0, 4, 5, 12, 16, 19, 23, 31, 32, 33, 34, 35, 36, 37, 43, 59],
-        output_basename="stereo_calibration_wide_84cm_revised_wo_outliers_2"
+        exclude_frames= None,
+        output_basename="stereo_calibration_ireland"
     )

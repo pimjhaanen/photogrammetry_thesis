@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """
-Render multi-view videos (front/side/top/3D) from the COMPLETE (synced) dataset only.
+Render multi-view videos (front/side/bottom/3D) from the COMPLETE (synced) dataset only.
 
-Features:
-- Uses one CSV that already contains: frame_idx, marker_id, x, y, z, timestamp, utc, and telemetry.
-- Fixed wireframe colors (LE yellow; struts 0..7 constant colors)
-- Wireframe on/off toggle
-- 2D/3D modes show Va/Depower/Steering/Tether Force below the plot
-- "ALL" mode: 2×4 grid:
-  Row1: [3D] [Top(+Sideslip)] [Video spans two cells]
-  Row2: [Front] [Side(+AOA)] [Hemisphere(lat/long/r=tether)] [Metrics block]
-- Video overlay shows UTC string from the dataset; video time is aligned by (timestamp - first_timestamp) + start offset.
-
-Inputs set under __main__.
+Changes in this version:
+- ALL layout (2×4):
+  TOP:   [3D] [Bottom(y,x)] [Front(z,x)] [Side(x,z)]
+  BOTTOM:[Video(180°, spans 2 cells)] [Hemisphere] [Metrics]
+- Front view uses axes (z,x); Bottom view uses (y,x).
+- AOA shown on Front; Span (UWB) on Side; Sideslip on Bottom.
+- Video overlay shows 'UTC: …'.
+- Span formatted to ≥3 decimals.
+- Tether force displayed in kg; zero-phase telemetry filtering retained.
 """
 
 import os
@@ -24,7 +22,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
+
+G0 = 9.80665  # N per kg
 
 # ============================ Fixed colors ============================
 COLORS = {
@@ -47,7 +47,6 @@ def _ensure_dir(path: str):
         os.makedirs(d, exist_ok=True)
 
 def _draw_cv_text_box(img, text, org, font_scale=0.7, thickness=2, inv=False):
-    """Draw black-on-white (inv=False) or white-on-black (inv=True) boxed text."""
     if not text:
         return img
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -77,43 +76,39 @@ def _matfig_to_bgr(fig, output_size=None, dpi=200):
 def _format_metrics_line(m):
     if m is None:
         return ""
-    va  = m.get("kite_measured_va")
-    dep = m.get("kite_actual_depower")
-    ste = m.get("kite_actual_steering")
-    tf  = m.get("ground_tether_force")
+    va  = m.get("kite_measured_va_filt", m.get("kite_measured_va"))
+    dep = m.get("kite_actual_depower_filt", m.get("kite_actual_depower"))
+    ste = m.get("kite_actual_steering_filt", m.get("kite_actual_steering"))
+    tfN = m.get("ground_tether_force_filt", m.get("ground_tether_force"))
+    tfkg = (tfN / G0) if pd.notna(tfN) else np.nan
     parts = []
-    if pd.notna(va):  parts.append(f"Va: {va:.2f} m/s")
-    if pd.notna(dep): parts.append(f"Depower: {dep:.2f} (-)")
-    if pd.notna(ste): parts.append(f"Steering: {ste:.2f} (-)")
-    if pd.notna(tf):  parts.append(f"Tether F: {tf:.0f} N")
+    if pd.notna(va):   parts.append(f"Va: {va:.2f} m/s")
+    if pd.notna(dep):  parts.append(f"Depower: {dep:.2f} (-)")
+    if pd.notna(ste):  parts.append(f"Steering: {ste:.2f} (-)")
+    if pd.notna(tfkg): parts.append(f"Tether: {tfkg:.1f} kg")
     return "   |   ".join(parts)
 
-def _get_video_frame(cap, t_sec, target_size=None, utc_text=None):
-    """Grab frame at given time (sec) using POS_MSEC seek; overlay UTC if provided."""
+def _get_video_frame(cap, t_sec, target_size=None, utc_text=None, rotate_180=False):
     cap.set(cv2.CAP_PROP_POS_MSEC, t_sec * 1000.0)
     ok, frame = cap.read()
     if not ok or frame is None:
         return None
+    if rotate_180:
+        frame = cv2.rotate(frame, cv2.ROTATE_180)
     if target_size is not None:
         tw, th = target_size
         frame = cv2.resize(frame, (tw, th), interpolation=cv2.INTER_AREA)
-    # UTC overlay (white box bottom-left)
     if utc_text:
         h = frame.shape[0]
-        _draw_cv_text_box(frame, utc_text, org=(10, h - 10), font_scale=0.8, thickness=2, inv=False)
+        _draw_cv_text_box(frame, f"UTC: {utc_text}", org=(10, h - 10), font_scale=0.8, thickness=2, inv=False)
     return frame
 
-# ---------- simple smoothing by matching (no ArUco deps) ----------
+# ---------- simple smoothing by matching (for points) ----------
 
 def smooth_points_by_matching_local(points: np.ndarray,
                                     prev_points: Optional[np.ndarray],
                                     alpha: float = 0.9,
                                     max_dist: float = 0.35) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    EMA smoothing by nearest-neighbor matching to previous points.
-    y = alpha * prev + (1-alpha) * current, if matched within max_dist; else use current.
-    Returns (smoothed_points, match_indices_of_prev or -1).
-    """
     if points is None or len(points) == 0:
         return points, np.array([], dtype=int)
     pts = points.copy()
@@ -131,28 +126,20 @@ def smooth_points_by_matching_local(points: np.ndarray,
             prev_used[j] = True
     return pts, match_idx
 
-# ---------- basic line fit & LE path (no external utils) ----------
+# ---------- basic line fit & LE path ----------
 
 def fit_line_3d_local(points: np.ndarray, num_samples: int = 60) -> np.ndarray:
-    """
-    Fit a 3D line via PCA first component and return a sampled segment along min/max projections.
-    """
     if points.shape[0] < 2:
         return points
     P = points - points.mean(axis=0, keepdims=True)
     U, S, Vt = np.linalg.svd(P, full_matrices=False)
-    dir_vec = Vt[0]  # principal direction
+    dir_vec = Vt[0]
     t = P @ dir_vec
-    tmin, tmax = t.min(), t.max()
-    ts = np.linspace(tmin, tmax, num_samples)
+    ts = np.linspace(t.min(), t.max(), num_samples)
     seg = points.mean(axis=0) + np.outer(ts, dir_vec)
     return seg
 
 def le_shortest_path_3d_local(points: np.ndarray) -> np.ndarray:
-    """
-    Greedy nearest-neighbor path through the set of points.
-    Start at point with smallest x then connect nearest unused.
-    """
     if points.shape[0] < 2:
         return points
     pts = points.copy()
@@ -173,13 +160,48 @@ def le_shortest_path_3d_local(points: np.ndarray) -> np.ndarray:
         curr = j
     return pts[path]
 
+# ---------- zero-phase EMA for telemetry (no lag) ----------
+
+def _ema_pass(x: np.ndarray, alpha: float) -> np.ndarray:
+    y = np.empty_like(x, dtype=float); y[:] = np.nan
+    idx = np.where(np.isfinite(x))[0]
+    if len(idx) == 0: return y
+    i0 = idx[0]; y[i0] = x[i0]
+    for i in range(i0 + 1, len(x)):
+        xi = x[i]
+        y[i] = (alpha * y[i-1] + (1.0 - alpha) * xi) if np.isfinite(xi) else y[i-1]
+    return y
+
+def zero_phase_ema(series: pd.Series, alpha: float) -> pd.Series:
+    x = pd.to_numeric(series, errors="coerce").to_numpy(dtype=float)
+    if x.size == 0: return series.astype(float)
+    fwd = _ema_pass(x, alpha)
+    bwd = _ema_pass(fwd[::-1], alpha)[::-1]
+    return pd.Series(bwd, index=series.index, dtype=float)
+
+def apply_zero_phase_to_per_frame(per_frame: pd.DataFrame, columns: List[str],
+                                  alpha: float, suffix: str = "_filt") -> pd.DataFrame:
+    for col in columns:
+        if col in per_frame.columns:
+            per_frame[col + suffix] = zero_phase_ema(per_frame[col], alpha)
+    return per_frame
+
 # ---------- panel renders ----------
 
 def _render_points_panel(points, segments_map, view, xlim, ylim, zlim, show_wireframe=True,
                          annotate=None, output_size=None, dpi=200, base_fontsize=14, lw=2.2):
     """
-    view: '3d', 'front', 'side', 'top'
-    annotate: optional dict {'text': 'Sideslip: 3.2°'} -> placed top-right
+    view:
+      - '3d'
+      - 'front'     -> (y, z)
+      - 'side'      -> (x, z)
+      - 'bottom'    -> (x, y)
+      - 'side_yz'   -> (y, z)     # requested side view (y horizontal, z vertical)
+      - 'front_xz'  -> (x, z)     # alias so we can set titles/flip separately
+    annotate: dict with optional keys:
+      - 'text':     overlay text (top-right)
+      - 'title':    title above axes
+      - 'invert_x': bool to invert x-axis (mirror left/right)
     """
     rcParams.update({
         "font.size": base_fontsize,
@@ -189,6 +211,11 @@ def _render_points_panel(points, segments_map, view, xlim, ylim, zlim, show_wire
         "xtick.labelsize": base_fontsize-2,
         "ytick.labelsize": base_fontsize-2,
     })
+
+    ann = annotate or {}
+    ann_text   = ann.get("text", "")
+    ann_title  = ann.get("title", None)
+    ann_flip_x = bool(ann.get("invert_x", False))
 
     if view == "3d":
         fig = plt.figure(figsize=(6,6), dpi=dpi)
@@ -207,17 +234,23 @@ def _render_points_panel(points, segments_map, view, xlim, ylim, zlim, show_wire
         ax.set_xlim(*xlim); ax.set_ylim(*ylim); ax.set_zlim(*zlim)
         ax.view_init(elev=30, azim=-45)
         ax.grid(True, alpha=0.4)
+        if ann_title: ax.set_title(ann_title)
         return _matfig_to_bgr(fig, output_size=output_size, dpi=dpi)
 
-    # 2D orthographic
+    # ---------- 2D orthographic ----------
     fig = plt.figure(figsize=(5,5), dpi=dpi)
     ax = fig.add_subplot(1,1,1)
-    if view == "front":   # (y,z)
+
+    if view == "front":         # (y, z)
         xi, yi = 1, 2; xlab, ylab = "y (m)", "z (m)"; xlim_, ylim_ = ylim, zlim
-    elif view == "side":  # (x,z)
+    elif view == "side":        # (x, z)
         xi, yi = 0, 2; xlab, ylab = "x (m)", "z (m)"; xlim_, ylim_ = xlim, zlim
-    elif view == "top":   # (x,y)
+    elif view == "bottom":      # (x, y)
         xi, yi = 0, 1; xlab, ylab = "x (m)", "y (m)"; xlim_, ylim_ = xlim, ylim
+    elif view == "side_yz":     # (y, z)  ← requested mapping
+        xi, yi = 1, 2; xlab, ylab = "y (m)", "z (m)"; xlim_, ylim_ = ylim, zlim
+    elif view == "front_xz":    # (x, z)  front with possible x-flip
+        xi, yi = 0, 2; xlab, ylab = "x (m)", "z (m)"; xlim_, ylim_ = xlim, zlim
     else:
         raise ValueError("Unknown view")
 
@@ -237,17 +270,20 @@ def _render_points_panel(points, segments_map, view, xlim, ylim, zlim, show_wire
     ax.set_aspect('equal', adjustable='box')
     ax.grid(True, alpha=0.4)
 
-    if annotate and "text" in annotate and annotate["text"]:
-        ax.text(0.98, 0.98, annotate["text"], transform=ax.transAxes,
+    if ann_flip_x:
+        ax.invert_xaxis()
+    if ann_title:
+        ax.set_title(ann_title)
+    if ann_text:
+        ax.text(0.98, 0.98, ann_text, transform=ax.transAxes,
                 ha="right", va="top", fontsize=base_fontsize-2,
                 bbox=dict(facecolor="white", edgecolor="black", linewidth=0.5, alpha=0.7))
 
     return _matfig_to_bgr(fig, output_size=output_size, dpi=dpi)
 
+
+
 def _render_hemisphere_panel(lat_deg, lon_deg, radius, output_size, dpi=200, base_fontsize=12):
-    """
-    Draw an upper hemisphere with a point at (lat, lon), at distance = radius (tether length).
-    """
     lat = float(lat_deg) if pd.notna(lat_deg) else 0.0
     lon = float(lon_deg) if pd.notna(lon_deg) else 0.0
     r   = float(radius) if pd.notna(radius) else 1.0
@@ -281,14 +317,13 @@ def _render_hemisphere_panel(lat_deg, lon_deg, radius, output_size, dpi=200, bas
 
     return _matfig_to_bgr(fig, output_size=output_size, dpi=dpi)
 
-def _compose_all_frame(img_3d, img_top, img_front, img_side,
-                       video_img, hemi_img, metrics_block,
-                       out_size):
+def _compose_all_frame_top4(img_3d, img_bottom, img_front, img_side,
+                            video_img, hemi_img, metrics_block,
+                            out_size):
     """
     Compose 2 rows × 4 columns grid.
-    Layout:
-      Row1: [3D] [Top] [Video spans two cells]
-      Row2: [Front] [Side] [Hemisphere] [Metrics]
+    Row1: [3D] [Bottom] [Front] [Side]
+    Row2: [Video (colspan=2)] [Hemisphere] [Metrics]
     """
     W, H = out_size
     cw, ch = W // 4, H // 2
@@ -310,31 +345,38 @@ def _compose_all_frame(img_3d, img_top, img_front, img_side,
         canvas[y:y+new_h, x:x+new_w] = resized
 
     # Row 1
-    place(img_3d,   0, 0)
-    place(img_top,  0, 1)
-    place(video_img,0, 2, colspan=2)
+    place(img_3d,     0, 0)
+    place(img_bottom, 0, 1)
+    place(img_front,  0, 2)
+    place(img_side,   0, 3)
 
-    # Row 2
-    place(img_front, 1, 0)
-    place(img_side,  1, 1)
-    place(hemi_img,  1, 2)
+    # Row 2  ← video spans two blocks now
+    place(video_img,     1, 0, colspan=2)
+    place(hemi_img,      1, 2)
     place(metrics_block, 1, 3)
 
     return canvas
 
+
 def _make_metrics_block(m, size=(480, 540)):
-    """Render a simple stacked values panel (white background)."""
     w, h = size
     img = np.full((h, w, 3), 255, np.uint8)
     def fmt(v, unit="", prec=2):
         return f"{v:.{prec}f} {unit}".strip() if pd.notna(v) else "—"
-    lines = []
-    lines.append(f"UTC: {m.get('utc', '')}")
-    lines.append(f"Va (m/s): {fmt(m.get('kite_measured_va'), prec=2)}")
-    lines.append(f"Depower (-): {fmt(m.get('kite_actual_depower'), prec=2)}")
-    lines.append(f"Steering (-): {fmt(m.get('kite_actual_steering'), prec=2)}")
-    lines.append(f"Tether force (N): {fmt(m.get('ground_tether_force'), prec=0)}")
-    lines.append(f"Reelout speed (m/s): {fmt(m.get('ground_tether_reelout_speed'), prec=2)}")
+    va  = m.get('kite_measured_va_filt', m.get('kite_measured_va'))
+    dep = m.get('kite_actual_depower_filt', m.get('kite_actual_depower'))
+    ste = m.get('kite_actual_steering_filt', m.get('kite_actual_steering'))
+    tfN = m.get('ground_tether_force_filt', m.get('ground_tether_force'))
+    tfkg = (tfN / G0) if pd.notna(tfN) else np.nan
+    ro  = m.get('ground_tether_reelout_speed_filt', m.get('ground_tether_reelout_speed'))
+
+    lines = [
+        f"Va (m/s): {fmt(va, prec=2)}",
+        f"Depower (-): {fmt(dep, prec=2)}",
+        f"Steering (-): {fmt(ste, prec=2)}",
+        f"Tether force (kg): {fmt(tfkg, prec=1)}",
+        f"Reelout speed (m/s): {fmt(ro, prec=2)}",
+    ]
     y = 60
     for s in lines:
         _draw_cv_text_box(img, s, org=(20, y), font_scale=0.8, thickness=2, inv=False)
@@ -348,20 +390,22 @@ def render_video(
     output_video="output/out.mp4",
     mode="2d",                # "2d" | "3d" | "all"
     fps=30,
-    # smoothing (no ArUco)
+    # smoothing for points (frame-to-frame)
     smooth_points=True,
     point_alpha=0.9,
     match_radius=0.35,
     show_wireframe=True,
+    # telemetry smoothing (zero-phase EMA)
+    telemetry_zero_phase_alpha=0.95,
     # Axes limits
     x_lim=(-5,5), y_lim=(-3,3), z_lim=(3,8),
-    # Video inputs for ALL mode
+    # Video (ALL mode)
     input_video_path=None,
     input_video_start_s=0.0,
     # Sizes
-    size_2d=(2400,800),  # wide so each 2D subplot is square
+    size_2d=(2400,800),
     size_3d=(1200,1200),
-    size_all=(1920,1080),  # 2 rows × 4 cols grid
+    size_all=(1920,1080),
 ):
     """
     Render from a single complete dataset CSV that includes points and metrics.
@@ -369,33 +413,43 @@ def render_video(
     """
     df = pd.read_csv(dataset_csv)
 
-    # Ensure required columns
     needed_pts = {"frame_idx", "marker_id", "x", "y", "z"}
     if not needed_pts.issubset(df.columns):
         raise ValueError(f"dataset_csv missing point columns: {needed_pts - set(df.columns)}")
     if "timestamp" not in df.columns:
         raise ValueError("dataset_csv missing 'timestamp' column")
     if "utc" not in df.columns:
-        df["utc"] = ""  # not fatal
+        df["utc"] = ""
 
-    # Make sure telemetry fields exist (fill NaN if absent)
     telemetry_cols = [
         "kite_measured_va", "kite_actual_depower", "kite_actual_steering",
         "ground_tether_force", "ground_tether_reelout_speed",
         "airspeed_angle_of_attack", "airspeed_sideslip_angle",
-        "kite_0_latitude", "kite_0_longitude", "ground_tether_length"
+        "kite_0_latitude", "kite_0_longitude", "ground_tether_length",
+        "uwb_distance_m"
     ]
     for c in telemetry_cols:
         if c not in df.columns:
             df[c] = np.nan
 
-    # Unique frames
     unique_frames = np.sort(df["frame_idx"].unique().astype(int))
-
-    # Per-frame metrics (take first occurrence)
     per_frame = df.sort_values("frame_idx").groupby("frame_idx", as_index=True).first()
 
-    # Video capture for ALL mode
+    # zero-phase (acausal) smoothing
+    TELEMETRY_SMOOTH_COLS = [
+        "kite_measured_va",
+        "ground_tether_force",
+        "ground_tether_reelout_speed",
+        "kite_actual_depower",
+        "kite_actual_steering",
+        "airspeed_angle_of_attack",
+        "airspeed_sideslip_angle",
+        "uwb_distance_m",
+    ]
+    per_frame = apply_zero_phase_to_per_frame(
+        per_frame, TELEMETRY_SMOOTH_COLS, alpha=telemetry_zero_phase_alpha, suffix="_filt"
+    )
+
     cap = None
     first_ts = None
     if mode.lower() == "all":
@@ -404,10 +458,8 @@ def render_video(
         cap = cv2.VideoCapture(input_video_path)
         if not cap.isOpened():
             raise RuntimeError(f"Could not open input video: {input_video_path}")
-        # establish first timestamp for time-zero alignment
         first_ts = per_frame["timestamp"].dropna().iloc[0] if not per_frame["timestamp"].dropna().empty else 0.0
 
-    # Writer
     _ensure_dir(output_video)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out_size = size_2d if mode.lower()=="2d" else (size_3d if mode.lower()=="3d" else size_all)
@@ -423,7 +475,7 @@ def render_video(
 
         pts_world = fr[["x","y","z"]].values.astype(float)
 
-        # Remove isolated points (nearest neighbor <= 0.8 m)
+        # remove isolated points
         if pts_world.shape[0] >= 2:
             diffs = pts_world[:,None,:] - pts_world[None,:,:]
             D = np.linalg.norm(diffs, axis=2)
@@ -435,7 +487,7 @@ def render_video(
             pts = pts_world
             fr = fr.copy()
 
-        # Optional smoothing
+        # optional smoothing of points
         if smooth_points and pts.size > 0:
             pts_smooth, _ = smooth_points_by_matching_local(
                 pts, prev_points_smoothed, alpha=point_alpha, max_dist=match_radius
@@ -443,7 +495,7 @@ def render_video(
             pts = pts_smooth
         prev_points_smoothed = pts.copy() if pts.size > 0 else None
 
-        # Build wireframe segments dict (fixed colors)
+        # wireframe
         segments = {}
         fr["marker_str"] = fr["marker_id"].astype(str)
         for k in range(8):
@@ -453,12 +505,9 @@ def render_video(
             else:
                 segments[k] = None
         le_grp = fr[fr["marker_str"].str.upper() == "LE"]
-        if le_grp.shape[0] >= 2:
-            segments["LE"] = le_shortest_path_3d_local(le_grp[["x","y","z"]].values)
-        else:
-            segments["LE"] = None
+        segments["LE"] = le_shortest_path_3d_local(le_grp[["x","y","z"]].values) if le_grp.shape[0] >= 2 else None
 
-        # Metrics row
+        # metrics row
         mrow = per_frame.loc[frame_idx] if frame_idx in per_frame.index else None
         metrics = mrow.to_dict() if isinstance(mrow, pd.Series) else {}
 
@@ -469,18 +518,31 @@ def render_video(
                                             x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
                                             annotate=None, output_size=out_size)
             else:
-                # 3 horizontal 2D panels (front, side, top)
                 cw = out_size[0]//3
                 ch = out_size[1]
+                # bottom: sideslip
+                ss = metrics.get("airspeed_sideslip_angle_filt", metrics.get("airspeed_sideslip_angle"))
+                bottom_txt = f"Sideslip: {ss:.1f}°" if pd.notna(ss) else ""
+                img_bottom = _render_points_panel(pts, segments, "bottom", x_lim, y_lim, z_lim,
+                                                  show_wireframe=show_wireframe,
+                                                  annotate={"text": bottom_txt} if bottom_txt else None,
+                                                  output_size=(cw, ch))
+                # front (z,x): AOA
+                aoa = metrics.get("airspeed_angle_of_attack_filt", metrics.get("airspeed_angle_of_attack"))
+                front_txt = f"AOA: {aoa:.1f}°" if pd.notna(aoa) else ""
                 img_front = _render_points_panel(pts, segments, "front", x_lim, y_lim, z_lim,
-                                                 show_wireframe=show_wireframe, annotate=None, output_size=(cw, ch))
+                                                 show_wireframe=show_wireframe,
+                                                 annotate={"text": front_txt} if front_txt else None,
+                                                 output_size=(cw, ch))
+                # side (x,z): Span (UWB) with ≥3 decimals
+                uwb = metrics.get("uwb_distance_m_filt", metrics.get("uwb_distance_m"))
+                side_txt = f"Span (UWB): {uwb:.3f} m" if pd.notna(uwb) else ""
                 img_side  = _render_points_panel(pts, segments, "side",  x_lim, y_lim, z_lim,
-                                                 show_wireframe=show_wireframe, annotate=None, output_size=(cw, ch))
-                img_top   = _render_points_panel(pts, segments, "top",   x_lim, y_lim, z_lim,
-                                                 show_wireframe=show_wireframe, annotate=None, output_size=(cw, ch))
-                pane = np.hstack([img_front, img_side, img_top])
+                                                 show_wireframe=show_wireframe,
+                                                 annotate={"text": side_txt} if side_txt else None,
+                                                 output_size=(cw, ch))
+                pane = np.hstack([img_bottom, img_front, img_side])
 
-            # Add metrics line under plot
             txt = _format_metrics_line(metrics)
             _draw_cv_text_box(pane, txt, org=(10, pane.shape[0]-10), font_scale=0.8, thickness=2, inv=False)
             writer.write(pane)
@@ -488,53 +550,75 @@ def render_video(
             continue
 
         # ======= "ALL" mode =======
-        cw, ch = (size_all[0]//4, size_all[1]//2)
-        # annotations
-        sideslip_text = ""
-        aoa_text = ""
-        if metrics:
-            ss = metrics.get("airspeed_sideslip_angle")
-            if pd.notna(ss): sideslip_text = f"Sideslip: {ss:.1f}°"
-            aoa = metrics.get("airspeed_angle_of_attack")
-            if pd.notna(aoa): aoa_text = f"AOA: {aoa:.1f}°"
+        cw, ch = (size_all[0] // 4, size_all[1] // 2)
 
-        img_3d = _render_points_panel(pts, segments, "3d",
-                                      x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
-                                      annotate=None, output_size=(cw, ch))
-        img_top = _render_points_panel(pts, segments, "top",
-                                       x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
-                                       annotate={"text": sideslip_text} if sideslip_text else None,
-                                       output_size=(cw, ch))
-        img_front = _render_points_panel(pts, segments, "front",
-                                         x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
-                                         annotate=None, output_size=(cw, ch))
-        img_side  = _render_points_panel(pts, segments, "side",
-                                         x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
-                                         annotate={"text": aoa_text} if aoa_text else None,
-                                         output_size=(cw, ch))
+        # annotations (Span with 3 decimals)
+        uwb = metrics.get("uwb_distance_m_filt", metrics.get("uwb_distance_m"))
+        span_txt = f"Span (UWB): {uwb:.3f} m" if pd.notna(uwb) else ""
+        aoa = metrics.get("airspeed_angle_of_attack_filt", metrics.get("airspeed_angle_of_attack"))
+        aoa_txt = f"AOA: {aoa:.1f}°" if pd.notna(aoa) else ""
+        ss = metrics.get("airspeed_sideslip_angle_filt", metrics.get("airspeed_sideslip_angle"))
+        sideslip_txt = f"Sideslip: {ss:.1f}°" if pd.notna(ss) else ""
 
-        # Video time from timestamps
+        # Row 1 (left→right): 3D | Bottom(x,y, flip x) | Side(y,z) | Front(x,z, flip x)
+        img_3d = _render_points_panel(
+            pts, segments, "3d",
+            x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
+            annotate={"title": None},
+            output_size=(cw, ch)
+        )
+
+        img_bottom = _render_points_panel(
+            pts, segments, "bottom",
+            x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
+            annotate={"title": "Bottom view", "invert_x": True, "text": sideslip_txt},
+            output_size=(cw, ch)
+        )
+
+        # SIDE view now uses (y,z) with title "Side view" and shows SPAN here
+        img_side = _render_points_panel(
+            pts, segments, "side_yz",
+            x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
+            annotate={"title": "Side view", "text": span_txt},
+            output_size=(cw, ch)
+        )
+
+        # FRONT view (x,z) with x flip & AOA
+        img_front = _render_points_panel(
+            pts, segments, "front_xz",
+            x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
+            annotate={"title": "Front view", "invert_x": True, "text": aoa_txt},
+            output_size=(cw, ch)
+        )
+
+        # Video timing & frame (make it sized for two cells: cw*2 × ch)
         utc_overlay = metrics.get("utc", "")
         t_curr = metrics.get("timestamp", np.nan)
         if pd.isna(t_curr) or first_ts is None:
-            t_video = input_video_start_s + frame_counter*(1.0/fps)
+            t_video = input_video_start_s + frame_counter * (1.0 / fps)
         else:
             t_video = input_video_start_s + float(t_curr - first_ts)
-        video_img = _get_video_frame(cap, t_video, target_size=(cw*2, ch), utc_text=utc_overlay)
+        video_img = _get_video_frame(cap, t_video, target_size=(cw * 2, ch),
+                                     utc_text=utc_overlay, rotate_180=True)
 
-        # Hemisphere panel
-        lat  = metrics.get("kite_0_latitude", np.nan)
-        lon  = metrics.get("kite_0_longitude", np.nan)
+        # Hemisphere and metrics
+        lat = metrics.get("kite_0_latitude", np.nan)
+        lon = metrics.get("kite_0_longitude", np.nan)
         rlen = metrics.get("ground_tether_length", np.nan)
         hemi_img = _render_hemisphere_panel(lat, lon, rlen, output_size=(cw, ch))
-
-        # Metrics block
         metrics_block = _make_metrics_block(metrics, size=(cw, ch))
 
-        composite = _compose_all_frame(img_3d, img_top, img_front, img_side,
-                                       video_img, hemi_img, metrics_block, out_size=size_all)
+        composite = _compose_all_frame_top4(
+            img_3d, img_bottom, img_front, img_side,
+            video_img, hemi_img, metrics_block, out_size=size_all
+        )
+
         writer.write(composite)
+
         frame_counter += 1
+        if frame_counter % 30 == 0:
+            seconds_written = frame_counter / 30
+            print(f"Written {seconds_written} seconds to video")
 
     writer.release()
     if cap is not None:
@@ -545,35 +629,29 @@ def render_video(
 # ============================ Script main ============================
 if __name__ == "__main__":
     # === USER INPUTS ===
-    # Complete/synced dataset (must include points + metrics)
     DATASET_CSV      = r"output/09_10_downloop_218_complete_dataset.csv"
 
-    # Output
-    OUTPUT_VIDEO     = r"output/09_10_downloop_218_all_no_wf.mp4"
+    OUTPUT_VIDEO     = r"output/09_10_downloop_218_all.mp4"
     MODE             = "all"     # "2d" | "3d" | "all"
     FPS              = 30
 
-    # Smoothing (no ArUco)
     SMOOTH_POINTS    = True
     POINT_ALPHA      = 0.95
     MATCH_RADIUS     = 0.35
 
-    # Wireframe toggle + fixed colors
-    SHOW_WIREFRAME   = False
+    SHOW_WIREFRAME   = True
+    TELEMETRY_ALPHA  = 0.95
 
-    # Axes limits
     X_LIM = (-5, 5)
     Y_LIM = (-3, 3)
     Z_LIM = (3, 8)
 
-    # Video (ALL mode)
     INPUT_VIDEO_PATH = r"Photogrammetry/input/left_videos/09_10_merged.MP4"
-    INPUT_VIDEO_START_S = 218  # where to start the input video (sec)
+    INPUT_VIDEO_START_S = 218
 
-    # Sizes
-    SIZE_2D = (2400, 800)   # 3 panels in one row
+    SIZE_2D = (2400, 800)
     SIZE_3D = (1200, 1200)
-    SIZE_ALL= (1920, 1080)  # 2×4 grid
+    SIZE_ALL= (1920, 1080)
 
     render_video(
         dataset_csv=DATASET_CSV,
@@ -584,6 +662,7 @@ if __name__ == "__main__":
         point_alpha=POINT_ALPHA,
         match_radius=MATCH_RADIUS,
         show_wireframe=SHOW_WIREFRAME,
+        telemetry_zero_phase_alpha=TELEMETRY_ALPHA,
         x_lim=X_LIM, y_lim=Y_LIM, z_lim=Z_LIM,
         input_video_path=INPUT_VIDEO_PATH,
         input_video_start_s=INPUT_VIDEO_START_S,
