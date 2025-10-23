@@ -21,7 +21,7 @@ def stereo_calibrate_from_checkerboards(
     left_glob="left_camera_wide_84cm/*.jpg",
     right_glob="right_camera_wide_84cm/*.jpg",
     checkerboard=(9, 6),
-    square_size_m=3.8767/100.0,
+    square_size_m=3.9/100.0,
     intrinsics_cam1="../single-camera calibration/calibration_checkerboard_wide_camera_1.pkl",
     intrinsics_cam2="../single-camera calibration/calibration_checkerboard_wide_camera_2.pkl",
     exclude_frames=None,

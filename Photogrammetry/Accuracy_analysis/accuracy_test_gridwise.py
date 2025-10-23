@@ -76,6 +76,23 @@ def to_cv2_pts(points: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
     """
     return [(float(p[0]), float(p[1])) for p in points]
 
+def print_correspondences(tag: str, left_pts, right_pts, limit: Optional[int] = None) -> None:
+    """Pretty-print left/right pixel coords (and dx, dy) for matched points."""
+    n = min(len(left_pts), len(right_pts))
+    if n == 0:
+        print(f"[{tag}] No correspondences.")
+        return
+    print(f"[{tag}] {n} correspondences")
+    upto = n if limit is None else min(n, limit)
+    for i in range(upto):
+        lx, ly = left_pts[i]
+        rx, ry = right_pts[i]
+        dx = lx - rx
+        dy = ly - ry
+        print(f"[{tag} #{i:03d}] L=({lx:.2f}, {ly:.2f})  R=({rx:.2f}, {ry:.2f})  dx={dx:+.3f}  dy={dy:+.3f}")
+    if limit is not None and n > limit:
+        print(f"[{tag}] ... +{n - limit} more")
+
 
 def filter_corresponding_pairs(
     left_pts: List[Tuple[float, float]],
@@ -394,7 +411,7 @@ def run_stereo_photogrammetry(
     # Ensure correspondence and triangulate
     blue_L, blue_R = filter_corresponding_pairs(blue_L, blue_R)
     cross_L, cross_R = filter_corresponding_pairs(cross_L, cross_R)
-
+    print_correspondences("CROSS", cross_L, cross_R)
     epipolar_stats(cross_L, cross_R, name="[EPI] crosses")
     reprojection_error(cross_L, cross_R, P1, P2)
     cross_3d = triangulate_matched(cross_L, cross_R, P1, P2) if len(cross_L) > 0 else np.empty((0, 3))

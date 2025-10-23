@@ -1,25 +1,104 @@
+# span_probe_fisheye.py
 """
-Manual static stereo test with zoomable clicking + training patch export.
-CSV-only output (no plotting). Each group starts fresh (no auto-complete cascade).
+Manual two-point span measurement on a rectified fisheye stereo pair.
+
+- Click two points on LEFT in order (A, B), press Enter.
+- Click the same two points on RIGHT in the same order, press Enter.
+- Prints per-point epipolar y-error (|yL - yR|), disparities, focal/baseline,
+  and the 3D Euclidean span |A - B| in meters.
+
+Requirements:
+- Fisheye stereo calibration pickle with keys:
+  ["camera_matrix_1","dist_coeffs_1","camera_matrix_2","dist_coeffs_2","R","T"]
+- OpenCV 4.5.x (Python bindings vary; rectifier below handles overloads)
 """
 
 import os
-import json
 import pickle
-from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 import cv2
 import numpy as np
-import pandas as pd
 
-from Photogrammetry.stereo_photogrammetry_utils import _stereo_rectify_maps, triangulate_points
-from Photogrammetry.marker_detection.marker_detection_utils import subpixel_cross_center
+# --- Try to use your project triangulator; fall back if missing ---
+try:
+    from Photogrammetry.stereo_photogrammetry_utils import triangulate_points as _triangulate_points_project
+    def triangulate_points(pts1, pts2, P1, P2):
+        return _triangulate_points_project(pts1, pts2, P1, P2)
+except Exception:
+    def triangulate_points(pts1, pts2, P1, P2):
+        if len(pts1) != len(pts2):
+            raise ValueError(f"pts1 and pts2 must have same length; got {len(pts1)} vs {len(pts2)}")
+        L = np.array([p[:2] for p in pts1], dtype=np.float32).T
+        R = np.array([p[:2] for p in pts2], dtype=np.float32).T
+        X4 = cv2.triangulatePoints(P1, P2, L, R)
+        X3 = (X4[:3, :] / X4[3, :]).T
+        if any(len(p) == 3 for p in pts1):
+            labels = [p[2] if len(p) == 3 else None for p in pts1]
+            return [(X3[i], labels[i]) for i in range(len(pts1))]
+        return [X3[i] for i in range(len(pts1))]
+
+# Optional subpixel refiner from your project (if present)
+try:
+    from Photogrammetry.marker_detection.marker_detection_utils import subpixel_cross_center
+except Exception:
+    subpixel_cross_center = None
 
 
-# ------------------------------ Helper I/O ------------------------------------
+# ---------------- FISHEYE stereo rectification (works across 4.5.x) ----------------
 
-def _load_calibration(calib_pkl_path: str):
+def _fisheye_rectify_via_pinhole_maps(
+    K1, D1, K2, D2, R, T, size, balance=0.0, fov_scale=1.0
+):
+    """
+    Robust fisheye stereo rectification:
+      1) Convert fisheye intrinsics -> 'pinhole-like' newK1/newK2.
+      2) Run cv2.stereoRectify (pinhole) to get R1,R2,P1,P2,Q.
+      3) Build maps with cv2.fisheye.initUndistortRectifyMap using original fisheye K,D and R1,P1 / R2,P2.
+    Returns: (R1,R2,P1,P2,Q), (map1x,map1y,map2x,map2y)
+    """
+    import numpy as np, cv2
+
+    # sanitize
+    K1 = np.asarray(K1, dtype=np.float64).reshape(3,3)
+    K2 = np.asarray(K2, dtype=np.float64).reshape(3,3)
+    D1 = np.asarray(D1, dtype=np.float64).reshape(4,1)
+    D2 = np.asarray(D2, dtype=np.float64).reshape(4,1)
+    R  = np.asarray(R,  dtype=np.float64).reshape(3,3)
+    T  = np.asarray(T,  dtype=np.float64).reshape(3,1)
+    size = (int(size[0]), int(size[1]))  # (w,h)
+
+    # 1) fisheye -> new "pinhole-like" intrinsics
+    newK1 = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+        K1, D1, size, np.eye(3), balance=float(balance), fov_scale=float(fov_scale)
+    )
+    newK2 = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+        K2, D2, size, np.eye(3), balance=float(balance), fov_scale=float(fov_scale)
+    )
+
+    # 2) pinhole stereoRectify (dist set to None/zeros)
+    R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(
+        newK1, None, newK2, None, size, R, T,
+        flags=cv2.CALIB_ZERO_DISPARITY, alpha=0, newImageSize=size
+    )
+
+    # 3) fisheye maps using original K,D and rect transforms; pass a 3x3 P (intrinsics)
+    K1rect = P1[:,:3].astype(np.float64)
+    K2rect = P2[:,:3].astype(np.float64)
+
+    map1x, map1y = cv2.fisheye.initUndistortRectifyMap(
+        K1, D1, R1, K1rect, size, cv2.CV_32FC1
+    )
+    map2x, map2y = cv2.fisheye.initUndistortRectifyMap(
+        K2, D2, R2, K2rect, size, cv2.CV_32FC1
+    )
+    return (R1, R2, P1, P2, Q), (map1x, map1y, map2x, map2y)
+
+
+
+# ---------------------------- I/O helpers ----------------------------
+
+def _load_calibration(calib_pkl_path: str) -> Dict:
     with open(calib_pkl_path, "rb") as f:
         calib = pickle.load(f)
     required = ["camera_matrix_1","dist_coeffs_1","camera_matrix_2","dist_coeffs_2","R","T"]
@@ -35,57 +114,24 @@ def _imread_color(path: str) -> np.ndarray:
     return img
 
 
-# -------------------------- Training patch saving -----------------------------
-
-def _save_patch(img, center_xy, size, out_dir, label, img_id, cam_tag, extra_suffix=""):
-    Path(out_dir, label).mkdir(parents=True, exist_ok=True)
-    cx, cy = float(center_xy[0]), float(center_xy[1])
-    patch = cv2.getRectSubPix(img, (size, size), (cx, cy))
-    fname = f"{img_id}_{cam_tag}_{label}{extra_suffix}_{int(round(cx))}x{int(round(cy))}.png"
-    fpath = str(Path(out_dir, label, fname))
-    cv2.imwrite(fpath, patch)
-    return fpath
-
-def _dump_training_from_clicks(Lr, Rr, clicks_dict, out_dir="training_patches", patch=20, img_id="frame"):
-    meta = []
-    for k, (ptsL, ptsR) in clicks_dict.items():
-        label = "STRUT" if k.startswith("strut") else ("LE" if k == "LE" else "CAN")
-        suffix = f"_{k}" if k.startswith("strut") else ""
-        for p in ptsL:
-            path = _save_patch(Lr, p, patch, out_dir, label, img_id, "L", extra_suffix=suffix)
-            meta.append({"file": path, "label": label, "group": k, "camera": "L", "cx": float(p[0]), "cy": float(p[1]), "patch": patch, "image_id": img_id})
-        for p in ptsR:
-            path = _save_patch(Rr, p, patch, out_dir, label, img_id, "R", extra_suffix=suffix)
-            meta.append({"file": path, "label": label, "group": k, "camera": "R", "cx": float(p[0]), "cy": float(p[1]), "patch": patch, "image_id": img_id})
-
-    meta_path = Path(out_dir, f"{img_id}_meta.json")
-    with open(meta_path, "w") as f:
-        json.dump(meta, f, indent=2)
-    print(f"[✓] Saved {len(meta)} patches to {out_dir}")
-    return str(meta_path)
-
-
-# ---------------------------- Zoomable click UI -------------------------------
+# ---------------------------- Zoom UI ----------------------------
 
 class ZoomClickSession:
     """
-    Zoomable/pannable click UI with correct coordinate mapping.
-    - Uses cv2.getWindowImageRect() to map window <-> image pixels.
-    - Stores points in ORIGINAL rectified image pixels.
-    - collect(..., reset=True) clears points at the start of every group.
-    Keys: left-click add, wheel zoom, right-drag pan, 'u' undo, 'r' refine, Enter accept, Esc cancel.
+    Zoom/pan click UI on rectified frames.
+    Keys: left-click add, wheel zoom, right-drag pan, 'u' undo, Enter accept, Esc cancel.
+    Optional subpixel refinement if subpixel_cross_center is available.
     """
     def __init__(
         self,
         window_name: str,
         image_bgr: np.ndarray,
         *,
-        display_scale: float = 0.5,
+        display_scale: float = 0.6,
         refine_subpix: bool = False,
         refine_patch: int = 25,
         refine_max_shift_px: float = 4.0,
     ):
-        assert display_scale > 0, "display_scale must be > 0"
         self.win = window_name
         self.base = image_bgr
         self.gray = cv2.cvtColor(self.base, cv2.COLOR_BGR2GRAY)
@@ -101,7 +147,7 @@ class ZoomClickSession:
 
         self.points: List[Tuple[float, float]] = []
 
-        self.refine = bool(refine_subpix)
+        self.refine = bool(refine_subpix and (subpixel_cross_center is not None))
         self.refine_patch = int(refine_patch)
         self.refine_max_shift_px = float(refine_max_shift_px)
 
@@ -164,7 +210,7 @@ class ZoomClickSession:
         if event == cv2.EVENT_LBUTTONDOWN:
             ix, iy = self._disp_to_image(x, y)
             px, py = ix, iy
-            if self.refine:
+            if self.refine and subpixel_cross_center is not None:
                 sp = subpixel_cross_center(self.gray, (int(round(ix)), int(round(iy))), patch=self.refine_patch)
                 if sp is not None:
                     rx, ry = float(sp[0]), float(sp[1])
@@ -197,7 +243,7 @@ class ZoomClickSession:
                 cv2.putText(disp, str(i), (dx+8, dy-8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2, cv2.LINE_AA)
                 cv2.putText(disp, str(i), (dx+8, dy-8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1, cv2.LINE_AA)
 
-        status = f"zoom={self.zoom:.2f}  pts={len(self.points)}  refine={'ON' if self.refine else 'OFF'}"
+        status = f"zoom={self.zoom:.2f}  pts={len(self.points)}"
         cv2.putText(disp, status, (8, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 2, cv2.LINE_AA)
         cv2.putText(disp, status, (8, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1, cv2.LINE_AA)
 
@@ -214,13 +260,10 @@ class ZoomClickSession:
         while True:
             title = f"{self.win} — {group_label} | clicked {len(self.points)}"
             if n_expected is not None: title += f"/{n_expected}"
-            title += f"  [refine={'ON' if self.refine else 'OFF'}]"
             cv2.setWindowTitle(self.win, title)
             key = cv2.waitKey(20) & 0xFF
             if key in (ord('u'), ord('U')):
                 if self.points: self.points.pop(); self._redraw()
-            elif key in (ord('r'), ord('R')):
-                self.refine = not self.refine; self._redraw()
             elif key in (13, 10):
                 break
             elif key == 27:
@@ -234,27 +277,23 @@ class ZoomClickSession:
         except cv2.error: pass
 
 
-# ------------------------------ Main routine ----------------------------------
+# --------------------------- main span function ---------------------------
 
-def static_manual_triangulation_test(
+def measure_span_two_points_fisheye(
     calib_file: str,
     left_image_path: str,
     right_image_path: str,
     *,
-    n_le: int,
-    n_per_strut: int = 3,
-    n_per_strut_list: Optional[List[int]] = None,
-    n_can: int = 9,
-    rectify_alpha: float = 0.0,
+    rectify_balance: float = 0.0,
+    rectify_fov_scale: float = 1.0,
+    zero_disparity: bool = True,
+    display_scale: float = 0.6,
     refine_subpix: bool = False,
-    display_scale: float = 0.5,
-    patch_size: int = 20,
-    training_out_dir: str = "training_patches",
-    output_csv_basename: str = "static_manual_3d"
-) -> str:
-
-    os.makedirs("static_test_output", exist_ok=True)
-
+) -> float:
+    """
+    Returns the 3D span (meters) between two clicked points on a
+    fisheye-rectified stereo pair, and prints diagnostics.
+    """
     calib = _load_calibration(calib_file)
     K1, D1 = calib["camera_matrix_1"], calib["dist_coeffs_1"]
     K2, D2 = calib["camera_matrix_2"], calib["dist_coeffs_2"]
@@ -267,103 +306,63 @@ def static_manual_triangulation_test(
     h, w = L.shape[:2]
     size = (w, h)
 
-    # Rectify
-    (_, _, P1, P2, _), maps = _stereo_rectify_maps(K1, D1, K2, D2, R, T, size, rectify_alpha)
+    (_, _, P1, P2, _), maps = _fisheye_rectify_via_pinhole_maps(
+        K1, D1, K2, D2, R, T, size,
+        balance=rectify_balance, fov_scale=rectify_fov_scale
+    )
+
     map1x, map1y, map2x, map2y = maps
     Lr = cv2.remap(L,    map1x, map1y, cv2.INTER_LINEAR)
     Rr = cv2.remap(Rimg, map2x, map2y, cv2.INTER_LINEAR)
 
-    # Click order: all LEFT, then all RIGHT
-    left_ui  = ZoomClickSession("Rectified LEFT",  Lr, display_scale=display_scale, refine_subpix=refine_subpix)
-    right_ui = ZoomClickSession("Rectified RIGHT", Rr, display_scale=display_scale, refine_subpix=refine_subpix)
+    # Effective focal & baselines (sanity)
+    f_px = float(P1[0, 0])
+    baseline_rect_m = float(-P2[0, 3] / max(P2[0, 0], 1e-9))  # meters
+    baseline_calib_m = float(np.linalg.norm(T))
+    print(f"\n[Fisheye Rectify] focal ≈ {f_px:.1f} px | baseline_rect ≈ {baseline_rect_m:.6f} m | "
+          f"baseline_from_T ≈ {baseline_calib_m:.6f} m")
 
-    print(f"[LE-LEFT] Click {n_le} points, press ENTER.")
-    le_L = left_ui.collect(n_expected=n_le, group_label="LE (LEFT)", reset=True)
+    # Click points
+    left_ui  = ZoomClickSession("Rectified LEFT (fisheye)",  Lr, display_scale=display_scale, refine_subpix=refine_subpix)
+    right_ui = ZoomClickSession("Rectified RIGHT (fisheye)", Rr, display_scale=display_scale, refine_subpix=refine_subpix)
 
-    counts = n_per_strut_list if (n_per_strut_list and len(n_per_strut_list)==8) else [n_per_strut]*8
-    struts_L: List[List[Tuple[float,float]]] = []
-    for si in range(8):
-        c = counts[si]
-        print(f"[strut{si}-LEFT] Click {c} points, press ENTER.")
-        sL = left_ui.collect(n_expected=c, group_label=f"strut{si} (LEFT)", reset=True)
-        struts_L.append(sL)
-
-    print(f"[CAN-LEFT] Click {n_can} points, press ENTER.")
-    can_L = left_ui.collect(n_expected=n_can, group_label="CAN (LEFT)", reset=True)
-
-    print(f"[LE-RIGHT] Click {n_le} points, press ENTER.")
-    le_R = right_ui.collect(n_expected=n_le, group_label="LE (RIGHT)", reset=True)
-
-    struts_R: List[List[Tuple[float,float]]] = []
-    for si in range(8):
-        c = counts[si]
-        print(f"[strut{si}-RIGHT] Click {c} points, press ENTER.")
-        sR = right_ui.collect(n_expected=c, group_label=f"strut{si} (RIGHT)", reset=True)
-        struts_R.append(sR)
-
-    print(f"[CAN-RIGHT] Click {n_can} points, press ENTER.")
-    can_R = right_ui.collect(n_expected=n_can, group_label="CAN (RIGHT)", reset=True)
+    print("[LEFT] Click TWO points (A, then B), press ENTER.")
+    Lpts = left_ui.collect(n_expected=2, group_label="Two points (LEFT)", reset=True)
+    print("[RIGHT] Click the SAME TWO points in the SAME ORDER (A, then B), press ENTER.")
+    Rpts = right_ui.collect(n_expected=2, group_label="Two points (RIGHT)", reset=True)
 
     left_ui.close(); right_ui.close()
 
-    # Sanity
-    if len(le_L) != len(le_R):
-        raise RuntimeError(f"LE count mismatch: left {len(le_L)} vs right {len(le_R)}.")
-    for si in range(8):
-        if len(struts_L[si]) != len(struts_R[si]):
-            raise RuntimeError(f"Strut {si} mismatch: left {len(struts_L[si])} vs right {len(struts_R[si])}.")
-    if len(can_L) != len(can_R):
-        raise RuntimeError(f"CAN mismatch: left {len(can_L)} vs right {len(can_R)}.")
+    if len(Lpts) != 2 or len(Rpts) != 2:
+        raise RuntimeError("Need exactly 2 points on LEFT and 2 points on RIGHT.")
 
-    # Triangulate
-    def _tri(lpts, rpts, label: str):
-        l_lbl = [(x, y, label) for (x, y) in lpts]
-        tri = triangulate_points(l_lbl, rpts, P1, P2)
-        xyz = np.array([t[0] if isinstance(t, tuple) else t for t in tri], dtype=float)
-        return xyz
+    # Epipolar y-errors & disparities
+    for i in range(2):
+        lx, ly = Lpts[i]
+        rx, ry = Rpts[i]
+        y_err = abs(ly - ry)
+        disp  = (lx - rx)
+        print(f"[pair {i}]  y-epipolar |yL-yR| = {y_err:.3f} px   disparity (xL-xR) = {disp:.3f} px")
 
-    points_3d = {"LE": _tri(le_L, le_R, "LE")}
-    for si in range(8):
-        points_3d[f"strut{si}"] = _tri(struts_L[si], struts_R[si], f"strut{si}")
-    points_3d["CAN"] = _tri(can_L, can_R, "CAN")
-
-    # Save CSV (supports nested basename like "output/P1_S")
-    rows = []
-    for g, P in points_3d.items():
-        for k, p in enumerate(P):
-            rows.append({"group": g, "idx_in_group": int(k), "x": float(p[0]), "y": float(p[1]), "z": float(p[2])})
-    df = pd.DataFrame(rows, columns=["group", "idx_in_group", "x", "y", "z"])
-    csv_path = os.path.join("static_test_output", f"{output_csv_basename}.csv")
-    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-    df.to_csv(csv_path, index=False)
-
-    # Save training patches
-    clicks = {"LE": (le_L, le_R)}
-    for si in range(8):
-        clicks[f"strut{si}"] = (struts_L[si], struts_R[si])
-    clicks["CAN"] = (can_L, can_R)
-    img_id = Path(output_csv_basename).name
-    _ = _dump_training_from_clicks(Lr, Rr, clicks, out_dir=training_out_dir, patch=20, img_id=img_id)
-
-    print(f"\n[✓] Triangulated {sum(len(v) for v in points_3d.values())} points.")
-    print(f"[→] Saved CSV: {csv_path}")
-    return csv_path
+    # Triangulate 3D points and compute span
+    L_labeled = [(Lpts[0][0], Lpts[0][1], "A"), (Lpts[1][0], Lpts[1][1], "B")]
+    tri = triangulate_points(L_labeled, Rpts, P1, P2)
+    P3D = np.array([p[0] if isinstance(p, tuple) else p for p in tri], dtype=float)  # (2,3)
+    span_m = float(np.linalg.norm(P3D[1] - P3D[0]))
+    print(f"\n[SPAN]  Euclidean distance |A-B| = {span_m:.6f} m")
+    return span_m
 
 
-# ------------------------------ Script entry ----------------------------------
-
+# ------------------------------- CLI example ----------------------------------
 if __name__ == "__main__":
-    CSV = static_manual_triangulation_test(
-        calib_file="../Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_ireland.pkl",
+    span = measure_span_two_points_fisheye(
+        calib_file="../Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_ireland_fisheye.pkl",
         left_image_path="left_input_static/L_P1_PL1.jpg",
         right_image_path="right_input_static/R_P1_PL1.jpg",
-        n_le=22,
-        n_per_strut=6,
-        n_per_strut_list=[5,5,6,6,6,6,5,5],
-        n_can=9,
-        rectify_alpha=0.0,
+        rectify_balance=0.0,
+        rectify_fov_scale=1.0,
+        zero_disparity=True,
+        display_scale=0.6,
         refine_subpix=False,
-        display_scale=0.5,
-        patch_size=20,
-        output_csv_basename="P1_PL1"
     )
+    print(f"\nDone. Measured span = {span:.6f} m")

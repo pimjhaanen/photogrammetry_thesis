@@ -4,9 +4,14 @@ Static 3D plotting for LE + struts with a simple legend:
 - Dot in legend = 'Inflatable structure' (LE + strut points)
 - Cross in legend = 'Canopy' (CAN points)
 
-LE path is computed by anchoring endpoints to the best pair among the K lowest-Z points.
-Struts are least-squares lines (uses your util if available; PCA fallback otherwise).
-Displays both UWB span (if provided) and Photogrammetry span (distance between LE endpoints).
+Reference frame (built in world, then EVERYTHING is transformed & plotted in this frame):
+- ẑ: robust normal of the plane spanned by struts 3 & 4 (SVD on all strut3/4 points)
+- ŷ: LE tip-to-tip vector projected into that plane (follows span)
+- x̂: ŷ × ẑ  (right-handed)
+- Origin O: midpoint between strut3 & strut4 centroids
+
+All points (and the LE path) are transformed into this frame and plotted.
+Optionally write transformed coords to CSV via save_transformed_csv.
 """
 
 from __future__ import annotations
@@ -16,7 +21,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-# Try to use your project util; otherwise fallback
+# Try to use your project util for line fit; otherwise fallback
 _fit_line_impl = None
 try:
     import Photogrammetry.kite_shape_reconstruction_utils as ks
@@ -199,6 +204,89 @@ def fit_line_3d(points: np.ndarray) -> Optional[np.ndarray]:
     ts = np.linspace(tmin, tmax, 100)
     return p0 + np.outer(ts, d)
 
+def _line_center_and_dir(points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Return (center, unit direction) via PCA; robust to how fit_line_3d renders."""
+    P = np.asarray(points, float)
+    c = P.mean(axis=0)
+    _, _, Vt = np.linalg.svd(P - c, full_matrices=False)
+    d = Vt[0]
+    d = d / (np.linalg.norm(d) + 1e-12)
+    return c, d
+
+
+# --------------------------- reference frame ---------------------------
+
+def _best_fit_plane_normal(P: np.ndarray) -> np.ndarray:
+    """Unit normal of best-fit plane through points (SVD)."""
+    Q = np.asarray(P, float)
+    c = Q.mean(axis=0)
+    _, _, Vt = np.linalg.svd(Q - c, full_matrices=False)
+    n = Vt[-1]                      # least-variance direction = plane normal
+    return n / (np.linalg.norm(n) + 1e-12)
+
+def _compute_ref_frame(LE_path_world: Optional[np.ndarray],
+                       P3_world: Optional[np.ndarray],
+                       P4_world: Optional[np.ndarray]) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    """
+    Build frame from strut3/4 and LE path (WORLD coords):
+        ẑ = best-fit plane normal of all strut3/4 points
+        ŷ = LE tip-to-tip vector projected to that plane (fallback: c4-c3 projected)
+        x̂ = ŷ × ẑ (right-handed)
+        O  = 0.5*(centroid(strut3) + centroid(strut4))
+    """
+    if P3_world is None or P4_world is None or P3_world.shape[0] < 2 or P4_world.shape[0] < 2:
+        return None, None
+
+    # robust plane normal from all points on the two struts
+    all_pts = np.vstack([P3_world, P4_world])
+    z_hat = _best_fit_plane_normal(all_pts)
+
+    # centroids + mid-origin
+    c3 = P3_world.mean(axis=0); c4 = P4_world.mean(axis=0)
+    origin = 0.5 * (c3 + c4)
+
+    # y from LE tip-to-tip, projected to the plane
+    y_raw = None
+    if LE_path_world is not None and LE_path_world.shape[0] >= 2:
+        span_vec = LE_path_world[-1] - LE_path_world[0]
+        y_raw = span_vec - np.dot(span_vec, z_hat) * z_hat
+
+    # fallback if LE projection degenerate
+    if y_raw is None or np.linalg.norm(y_raw) < 1e-9:
+        span_mid = c4 - c3
+        y_raw = span_mid - np.dot(span_mid, z_hat) * z_hat
+
+    y_hat = y_raw / (np.linalg.norm(y_raw) + 1e-12)
+
+    # x completes right-handed (x × y = z) => x = y × z
+    x_hat = np.cross(y_hat, z_hat)
+    x_hat = x_hat / (np.linalg.norm(x_hat) + 1e-12)
+
+    # re-orthonormalize (numerical hygiene)
+    z_hat = np.cross(x_hat, y_hat); z_hat /= (np.linalg.norm(z_hat) + 1e-12)
+    y_hat = np.cross(z_hat, x_hat); y_hat /= (np.linalg.norm(y_hat) + 1e-12)
+
+    R_axes = np.column_stack([x_hat, y_hat, z_hat])  # columns are unit axes
+    return R_axes, origin
+
+def _transform_points(points_by_group_3d: Dict[str, np.ndarray],
+                      origin: np.ndarray, R_axes: np.ndarray) -> Dict[str, np.ndarray]:
+    """World → local: (P - O) @ R where R columns are [x̂ ŷ ẑ]."""
+    out = {}
+    for k, P in points_by_group_3d.items():
+        if P is None or not np.size(P):
+            continue
+        out[k] = (P - origin) @ R_axes
+    return out
+
+def _transformed_to_df(points_local: Dict[str, np.ndarray]) -> pd.DataFrame:
+    rows = []
+    for g, P in points_local.items():
+        for i, p in enumerate(P):
+            rows.append({"group": g, "idx_in_group": i,
+                         "x_local": float(p[0]), "y_local": float(p[1]), "z_local": float(p[2])})
+    return pd.DataFrame(rows, columns=["group", "idx_in_group", "x_local", "y_local", "z_local"])
+
 
 # --------------------------- plotting utils ---------------------------
 
@@ -228,6 +316,7 @@ def plot_static_shape_from_csv(
     use_exact_if_small: bool = False,
     exact_fixed_limit: int = 24,
     jump_factor: float = 2.5,
+    save_transformed_csv: Optional[str] = None,
     figsize: Tuple[int, int] = (7, 6),
     elev: float = 20,
     azim: float = -60,
@@ -248,6 +337,7 @@ def plot_static_shape_from_csv(
         use_exact_if_small=use_exact_if_small,
         exact_fixed_limit=exact_fixed_limit,
         jump_factor=jump_factor,
+        save_transformed_csv=save_transformed_csv,
         figsize=figsize,
         elev=elev,
         azim=azim,
@@ -256,7 +346,7 @@ def plot_static_shape_from_csv(
 
 
 def plot_static_shape(
-    points_by_group_3d: Dict[str, np.ndarray],
+    points_by_group_3d_world: Dict[str, np.ndarray],
     *,
     span_m: Optional[float] = None,            # UWB span (optional)
     save_path: Optional[str] = None,
@@ -266,6 +356,7 @@ def plot_static_shape(
     use_exact_if_small: bool = False,
     exact_fixed_limit: int = 24,
     jump_factor: float = 2.5,
+    save_transformed_csv: Optional[str] = None,
     figsize: Tuple[int, int] = (7, 6),
     elev: float = 20,
     azim: float = -60,
@@ -273,31 +364,55 @@ def plot_static_shape(
 ):
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(111, projection="3d")
-
-    phot_span_m = None  # will compute from LE endpoints
-
-    # --- LE: anchored to best pair among lowest-Z candidates ---
-    LE = points_by_group_3d.get("LE")
-    if LE is not None and LE.size:
-        ax.scatter(LE[:, 0], LE[:, 1], LE[:, 2], s=18)  # not in legend
-        le_path = _best_le_path_among_lowZ(
-            LE,
+    # ---------- 1) Build LE path in WORLD (for robust endpoint selection) ----------
+    LE_world = points_by_group_3d_world.get("LE")
+    le_path_world = None
+    if LE_world is not None and LE_world.size:
+        le_path_world = _best_le_path_among_lowZ(
+            LE_world,
             endpoints_k=endpoints_k,
             use_exact_if_small=use_exact_if_small,
             exact_fixed_limit=exact_fixed_limit,
             jump_factor=jump_factor,
         )
-        ax.plot(le_path[:, 0], le_path[:, 1], le_path[:, 2], linewidth=1.6)  # not in legend
 
-        # ---- Photogrammetry span = distance between endpoints (degree 1 nodes) ----
-        if le_path is not None and le_path.shape[0] >= 2:
-            a = le_path[0]
-            b = le_path[-1]
-            phot_span_m = float(np.linalg.norm(b - a))
+    # ---------- 2) Compute reference frame in WORLD, then transform EVERYTHING ----------
+    P3_world = points_by_group_3d_world.get("strut3")
+    P4_world = points_by_group_3d_world.get("strut4")
+    R_axes, origin = _compute_ref_frame(le_path_world, P3_world, P4_world)
+    if R_axes is None or origin is None:
+        raise RuntimeError("Not enough points on strut3/strut4 to define reference frame.")
 
-    # --- Struts: least-squares line fits ---
+    # Transform groups
+    points_by_group_3d = _transform_points(points_by_group_3d_world, origin, R_axes)
+
+    # Transform LE path
+    le_path = None
+    if le_path_world is not None:
+        le_path = (le_path_world - origin) @ R_axes
+
+    # Photogrammetry span (local frame; invariant to rigid transform)
+    phot_span_m = None
+    if le_path is not None and le_path.shape[0] >= 2:
+        phot_span_m = float(np.linalg.norm(le_path[-1] - le_path[0]))
+
+    # Optional: save transformed coordinates
+    if save_transformed_csv:
+        df_local = _transformed_to_df(points_by_group_3d)
+        pd.DataFrame(df_local).to_csv(save_transformed_csv, index=False)
+
+    # ---------- 3) Plot in LOCAL FRAME ----------
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection="3d")
+
+    # LE in local
+    LE = points_by_group_3d.get("LE")
+    if LE is not None and LE.size:
+        ax.scatter(LE[:, 0], LE[:, 1], LE[:, 2], s=18)  # not in legend
+        if le_path is not None:
+            ax.plot(le_path[:, 0], le_path[:, 1], le_path[:, 2], linewidth=1.6)  # not in legend
+
+    # Struts (local)
     for i in range(8):
         key = f"strut{i}"
         P = points_by_group_3d.get(key)
@@ -308,33 +423,46 @@ def plot_static_shape(
                 if line is not None:
                     ax.plot(line[:, 0], line[:, 1], line[:, 2], linewidth=1.25)  # not in legend
 
-    # CAN (crosses)
+    # CAN (local)
     CAN = points_by_group_3d.get("CAN")
     if CAN is not None and CAN.size:
         ax.scatter(CAN[:, 0], CAN[:, 1], CAN[:, 2], s=42, marker="x")  # not in legend
 
-    # Axes labels / title
-    ax.set_xlabel("X [m]"); ax.set_ylabel("Y [m]"); ax.set_zlabel("Z [m]")
-    if title:
-        ax.set_title(title)
+    # Draw canonical axes at origin (local frame)
+    # choose axis length
+    if phot_span_m is not None:
+        L = 0.15 * phot_span_m
+    elif span_m is not None:
+        L = 0.15 * span_m
+    else:
+        allP = np.vstack([v for v in points_by_group_3d.values() if v is not None and v.size])
+        rng = np.linalg.norm(allP.max(axis=0) - allP.min(axis=0))
+        L = 0.1 * rng
+    ax.quiver(0, 0, 0, L, 0, 0, color='r', arrow_length_ratio=0.15)
+    ax.quiver(0, 0, 0, 0, L, 0, color='g', arrow_length_ratio=0.15)
+    ax.quiver(0, 0, 0, 0, 0, L, color='b', arrow_length_ratio=0.15)
+    ax.text(L*1.1, 0, 0, "X", color='r', fontsize=10)
+    ax.text(0, L*1.1, 0, "Y", color='g', fontsize=10)
+    ax.text(0, 0, L*1.1, "Z", color='b', fontsize=10)
 
-    # Span text (top-right)
+    # Labels / title (local frame)
+    ax.set_xlabel("x_local [m]"); ax.set_ylabel("y_local [m]"); ax.set_zlabel("z_local [m]")
+    if title:
+        ax.set_title(title + " (local frame)")
+
+    # Spans text (top-right)
     ypos = 0.98
     if span_m is not None:
-        ax.text2D(
-            0.98, ypos, f"UWB span: {span_m:.3f} m",
-            transform=ax.transAxes, ha="right", va="top", fontsize=11,
-            bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.7, linewidth=0.0),
-        )
-        ypos -= 0.05  # step down for the next line
+        ax.text2D(0.98, ypos, f"UWB span: {span_m:.3f} m",
+                  transform=ax.transAxes, ha="right", va="top", fontsize=11,
+                  bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.7, linewidth=0.0))
+        ypos -= 0.05
     if phot_span_m is not None:
-        ax.text2D(
-            0.98, ypos, f"Photogrammetry span: {phot_span_m:.3f} m",
-            transform=ax.transAxes, ha="right", va="top", fontsize=11,
-            bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.7, linewidth=0.0),
-        )
+        ax.text2D(0.98, ypos, f"Photogrammetry span: {phot_span_m:.3f} m",
+                  transform=ax.transAxes, ha="right", va="top", fontsize=11,
+                  bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.7, linewidth=0.0))
 
-    # ----- Minimal legend with two entries -----
+    # Minimal legend (points vs crosses)
     legend_handles = [
         Line2D([0], [0], marker='o', linestyle='None', markersize=7, label='Inflatable structure'),
         Line2D([0], [0], marker='x', linestyle='None', markersize=8, label='Canopy'),
@@ -358,17 +486,26 @@ def plot_static_shape(
             plt.show()
     else:
         plt.close(fig)
-    # Return spans in case you want to log them
-    return fig, ax, {"phot_span_m": phot_span_m, "uwb_span_m": span_m}
+
+    # Return extras, including transform + transformed points
+    extras = {
+        "phot_span_m": phot_span_m,
+        "uwb_span_m": span_m,
+        "ref_R": R_axes,
+        "ref_origin": origin,
+        "points_local": points_by_group_3d,
+    }
+    return fig, ax, extras
 
 
 # ------------------------------- CLI example -------------------------------
 if __name__ == "__main__":
     plot_static_shape_from_csv(
         "static_test_output/P1_S.csv",
-        span_m=4.867,            # optional UWB span to display
+        span_m=5.042,
         endpoints_k=10,
         use_exact_if_small=False,
         exact_fixed_limit=24,
-        sciview=True,
+        save_transformed_csv= None,
+        sciview=False,
     )

@@ -366,8 +366,7 @@ def _make_metrics_block(m, size=(480, 540)):
     va  = m.get('kite_measured_va_filt', m.get('kite_measured_va'))
     dep = m.get('kite_actual_depower_filt', m.get('kite_actual_depower'))
     ste = m.get('kite_actual_steering_filt', m.get('kite_actual_steering'))
-    tfN = m.get('ground_tether_force_filt', m.get('ground_tether_force'))
-    tfkg = (tfN / G0) if pd.notna(tfN) else np.nan
+    tfkg = m.get('ground_tether_force_filt', m.get('ground_tether_force'))
     ro  = m.get('ground_tether_reelout_speed_filt', m.get('ground_tether_reelout_speed'))
 
     lines = [
@@ -579,7 +578,7 @@ def render_video(
         img_side = _render_points_panel(
             pts, segments, "side_yz",
             x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
-            annotate={"title": "Side view", "text": span_txt},
+            annotate={"title": "Side view", "text": aoa_txt},
             output_size=(cw, ch)
         )
 
@@ -587,7 +586,7 @@ def render_video(
         img_front = _render_points_panel(
             pts, segments, "front_xz",
             x_lim, y_lim, z_lim, show_wireframe=show_wireframe,
-            annotate={"title": "Front view", "invert_x": True, "text": aoa_txt},
+            annotate={"title": "Front view", "invert_x": True, "text": span_txt},
             output_size=(cw, ch)
         )
 
@@ -637,9 +636,9 @@ if __name__ == "__main__":
 
     SMOOTH_POINTS    = True
     POINT_ALPHA      = 0.95
-    MATCH_RADIUS     = 0.35
+    MATCH_RADIUS     = 0.2
 
-    SHOW_WIREFRAME   = True
+    SHOW_WIREFRAME   = False
     TELEMETRY_ALPHA  = 0.95
 
     X_LIM = (-5, 5)

@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Optional
-
+import matplotlib
 
 # ----------------------------- Parameters -----------------------------
 fps_audio = 48000  # Unused directly; retained for clarity. Audio is extracted at 44.1 kHz below.
@@ -396,8 +396,8 @@ if __name__ == "__main__":
     # Example call (edit paths):
     # The output CSV will include a Time_s column with t=0 at the flash (if detected).
     csv_path = match_videos(
-        video1_path="../static_experiments/left_input_static/GX010332_merged.MP4",     # reference camera (flash visible here)
-        video2_path="../static_experiments/right_input_static/GX010359_merged.MP4",     # secondary camera
+        video1_path="../static_experiments/left_input_static/GX010331_merged.MP4",     # reference camera (flash visible here)
+        video2_path="../static_experiments/right_input_static/GX010358_merged.MP4",     # secondary camera
         start_seconds=0.0,
         match_duration=30.0,
         downsample_factor=50,
