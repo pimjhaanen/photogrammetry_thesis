@@ -286,9 +286,7 @@ def match_videos(video1_path: str,
     base2 = os.path.splitext(os.path.basename(video2_path))[0]
     output_file = os.path.join(output_dir, f"{base1}_{base2}_matched_frames.csv")
 
-    if os.path.exists(output_file):
-        print(f"Matched frame file already exists: {output_file}")
-        return output_file
+
 
     # Step 1: Get (possibly merged) file paths (info only; we use the first file in each).
     video1_files = find_continuation_files(video1_path)
@@ -303,7 +301,10 @@ def match_videos(video1_path: str,
     match_samples = int(match_duration * eff_fps)
     audio1 = audio1[:match_samples]
     audio2 = audio2[:match_samples]
-
+    if os.path.exists(output_file):
+        print(f"Matched frame file already exists: {output_file}")
+        print(eff_fps)
+        return output_file
     correlation = np.correlate(audio1 - np.mean(audio1), audio2 - np.mean(audio2), mode='full')
     lag_samples = int(np.argmax(correlation) - (len(audio2) - 1))
     lag_seconds = lag_samples / eff_fps
@@ -343,7 +344,7 @@ def match_videos(video1_path: str,
     # Step 4: Frame timestamps
     timestamps1, fps1 = extract_video_frame_timestamps(video1_files[0])
     timestamps2, fps2 = extract_video_frame_timestamps(video2_files[0])
-
+    print(f"fps1: {fps1} and fps2: {fps2}")
     if use_flash_alignment:
         # Establish t=0 at flash start in camera 1
         cap_tmp = cv2.VideoCapture(flash_video_path)

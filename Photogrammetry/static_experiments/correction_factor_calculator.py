@@ -32,6 +32,59 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from matplotlib.colors import Normalize
+from matplotlib import cm
+import os
+
+_VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".m4v", ".wmv"}
+
+def _is_video_path(path: str) -> bool:
+    ext = os.path.splitext(path)[1].lower()
+    return ext in _VIDEO_EXTS
+
+def _frame_from_video(video_path: str, frame_idx: int = None, time_sec: float = None) -> np.ndarray:
+    """
+    Grab a single BGR frame from a video. You can specify either frame_idx OR time_sec.
+    If both are given, frame_idx takes precedence.
+    """
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise IOError(f"Could not open video: {video_path}")
+
+    try:
+        if frame_idx is not None:
+            if frame_idx < 0:
+                raise ValueError("frame_idx must be >= 0")
+            cap.set(cv2.CAP_PROP_POS_FRAMES, float(frame_idx))
+        elif time_sec is not None:
+            if time_sec < 0:
+                raise ValueError("time_sec must be >= 0")
+            cap.set(cv2.CAP_PROP_POS_MSEC, float(time_sec) * 1000.0)
+
+        ok, frame = cap.read()
+        if not ok or frame is None:
+            where = f"frame_idx={frame_idx}" if frame_idx is not None else f"time_sec={time_sec}"
+            raise IOError(f"Failed to read {where} from {video_path}")
+        return frame
+    finally:
+        cap.release()
+
+def _load_image_or_video_frame(path: str, frame_idx: int = None, time_sec: float = None) -> np.ndarray:
+    """
+    If `path` is an image -> read it.
+    If `path` is a video -> extract specified frame (by index or time).
+    """
+    if _is_video_path(path):
+        return _frame_from_video(path, frame_idx=frame_idx, time_sec=time_sec)
+    else:
+        return _imread_color(path)
+
+def _apply_brightness_contrast(img: np.ndarray, *, contrast: float = 1.0, brightness: float = 0.0) -> np.ndarray:
+    """
+    Adjust brightness/contrast on a BGR image.
+      - contrast: alpha gain (1.0 = no change, >1.0 more contrast, <1.0 less)
+      - brightness: beta offset in intensity units (-255..255; 0 = no change)
+    """
+    return cv2.convertScaleAbs(img, alpha=float(contrast), beta=float(brightness))
 
 # --------------------------- Math helpers ---------------------------
 
@@ -419,46 +472,179 @@ def _pad(lo, hi, frac=0.05):
     return lo - frac*d, hi + frac*d
 
 # --------- 1) & 2) COARSE 3D PLOTS (side-by-side) ----------
-def plot_coarse_3d_pair(coarse_results, *, uwb_span_m=None, alpha=0.9, s=6):
+def plot_coarse_3d_pair(
+    coarse_results,
+    *,
+    uwb_span_m=None,
+    face_alpha=1.0,      # 1.0 = fully solid
+    cmap_name="viridis",
+    ups=12                # upsampling factor per axis for smooth gradients
+):
     """
-    Left: epipolar mean|dy| (px)  —  Right: |Δspan|(m) if UWB is given, else span(m).
-    Clean 3D "point cloud" look (tiny pixel markers, no edges). No best-point markers.
+    Left: epipolar mean|dy| (px)
+    Right: |Δspan| (m) if UWB is given, else span (m)
+
+    Renders a solid block by coloring the SIX outer faces of the yaw×pitch×roll cube.
+    Faces are bilinearly upsampled (no banding, smooth gradients). No interior layers/markers.
+    Axes: X=θ(pitch), Y=φ(roll), Z=ψ(yaw).
     """
-    pitch, roll, yaw, epi, span, span_err = _extract_arrays(coarse_results)
+    # ---- assemble coarse grid ----
+    pitches = np.array(sorted({float(r["dpitch"]) for r in coarse_results}), dtype=float)
+    rolls   = np.array(sorted({float(r["droll"])  for r in coarse_results}), dtype=float)
+    yaws    = np.array(sorted({float(r["dyaw"])   for r in coarse_results}), dtype=float)
+    npg, nrg, nyg = len(pitches), len(rolls), len(yaws)
 
-    # Choose right metric
-    if uwb_span_m is not None and np.isfinite(span_err).any():
-        right_vals = span_err
-        right_label = "|Δspan| (m)"
-        right_title = f"|span − UWB|  (UWB={uwb_span_m:.3f} m)"
-    else:
-        right_vals = span
-        right_label = "span (m)"
-        right_title = "Estimated span (m)"
+    pi = {p:i for i,p in enumerate(pitches)}
+    ri = {r:i for i,r in enumerate(rolls)}
+    yi = {y:i for i,y in enumerate(yaws)}
 
-    # Shared axes limits
-    xlim = _pad(float(np.nanmin(pitch)), float(np.nanmax(pitch)))
-    ylim = _pad(float(np.nanmin(roll)),  float(np.nanmax(roll)))
-    zlim = _pad(float(np.nanmin(yaw)),   float(np.nanmax(yaw)))
+    use_spanerr = (uwb_span_m is not None) and any(r.get("span_err") is not None for r in coarse_results)
+
+    V_epi   = np.full((nyg, nrg, npg), np.nan, float)  # [yaw, roll, pitch]
+    V_right = np.full((nyg, nrg, npg), np.nan, float)
+
+    for rec in coarse_results:
+        i = yi[float(rec["dyaw"])]
+        j = ri[float(rec["droll"])]
+        k = pi[float(rec["dpitch"])]
+        V_epi[i, j, k] = float(rec["mean_abs_dy"])
+        if use_spanerr:
+            v = rec.get("span_err", None)
+            V_right[i, j, k] = float(v) if v is not None else np.nan
+        else:
+            V_right[i, j, k] = float(rec["span_m"])
+
+    def _pad(lo, hi, frac=0.05):
+        d = (hi - lo) if hi > lo else 1.0
+        return lo - frac*d, hi + frac*d
+
+    # ---- safe 1D interp that tolerates NaNs ----
+    def _interp1d_nan(x, y, x_new):
+        y = np.asarray(y, float)
+        m = np.isfinite(y)
+        if m.sum() == 0:
+            return np.full_like(x_new, np.nan, dtype=float)
+        if m.sum() == 1:
+            return np.full_like(x_new, y[m][0], dtype=float)
+        return np.interp(x_new, x[m], y[m])
+
+    # ---- bilinear upsample (no SciPy) ----
+    def _upsample_face(x, y, V2d, upx=ups, upy=ups):
+        # x: len Nx (e.g., pitches), y: len Ny (e.g., rolls), V2d: (Ny, Nx)
+        x = np.asarray(x, float); y = np.asarray(y, float); V2d = np.asarray(V2d, float)
+        Nx, Ny = len(x), len(y)
+        x_f = np.linspace(x[0], x[-1], (Nx-1)*upx + 1)
+        y_f = np.linspace(y[0], y[-1], (Ny-1)*upy + 1)
+
+        # interp along x for each y row
+        Vx = np.empty((Ny, x_f.size), float)
+        for j in range(Ny):
+            Vx[j, :] = _interp1d_nan(x, V2d[j, :], x_f)
+
+        # interp along y for each x column
+        Vf = np.empty((y_f.size, x_f.size), float)
+        for i in range(x_f.size):
+            Vf[:, i] = _interp1d_nan(y, Vx[:, i], y_f)
+
+        return x_f, y_f, Vf
+
+    def _draw_block_faces(ax, V, label, title):
+        cmap = cm.get_cmap(cmap_name)
+        finite = np.isfinite(V)
+        if not np.any(finite):
+            ax.set_title(f"{title}\n(no data)")
+            return
+        vmin, vmax = float(np.nanmin(V)), float(np.nanmax(V))
+        norm = plt.Normalize(vmin=vmin, vmax=vmax)
+
+        # Axes limits and labels
+        ax.set_xlim(_pad(pitches[0], pitches[-1]))
+        ax.set_ylim(_pad(rolls[0],   rolls[-1]))
+        ax.set_zlim(_pad(yaws[0],    yaws[-1]))
+        ax.set_xlabel("θ (pitch) [deg]")
+        ax.set_ylabel("φ (roll) [deg]")
+        ax.set_zlabel("ψ (yaw) [deg]")
+        ax.set_title(title)
+
+        # Helper to apply colormap with alpha and NaN transparency.
+        def _fc_from(V2d):
+            C = cmap(norm(V2d))
+            mask = ~np.isfinite(V2d)
+            if np.any(mask):
+                C[mask, 3] = 0.0
+            C[..., 3] *= face_alpha
+            return C
+
+        # --- YAW faces (Z constant) ---
+        # Z = yaws[0]
+        xf, yf, Vf = _upsample_face(pitches, rolls, V[0, :, :])
+        X, Y = np.meshgrid(xf, yf)                         # (Nyf, Nxf)
+        Z = np.full_like(X, yaws[0], dtype=float)
+        C = _fc_from(Vf[:-1, :-1])                         # match (Nyf-1, Nxf-1, 4)
+        ax.plot_surface(X, Y, Z, facecolors=C, rstride=1, cstride=1,
+                        linewidth=0, antialiased=True, shade=False)
+
+        # Z = yaws[-1]
+        xf, yf, Vf = _upsample_face(pitches, rolls, V[-1, :, :])
+        X, Y = np.meshgrid(xf, yf)
+        Z = np.full_like(X, yaws[-1], dtype=float)
+        C = _fc_from(Vf[:-1, :-1])
+        ax.plot_surface(X, Y, Z, facecolors=C, rstride=1, cstride=1,
+                        linewidth=0, antialiased=True, shade=False)
+
+        # --- PITCH faces (X constant) ---
+        # rows = yaw, cols = roll  → use meshgrid(rolls_f, yaws_f)
+        # X = pitches[0]
+        rolls_f, yaws_f, Vf = _upsample_face(rolls, yaws, V[:, :, 0])
+        Y, Z = np.meshgrid(rolls_f, yaws_f)  # shapes (len(yaws_f), len(rolls_f))
+        X = np.full_like(Y, pitches[0], dtype=float)
+        C = _fc_from(Vf[:-1, :-1])  # (Nyaw-1, Nroll-1, 4)
+        ax.plot_surface(X, Y, Z, facecolors=C, rstride=1, cstride=1,
+                        linewidth=0, antialiased=True, shade=False)
+
+        # X = pitches[-1]
+        rolls_f, yaws_f, Vf = _upsample_face(rolls, yaws, V[:, :, -1])
+        Y, Z = np.meshgrid(rolls_f, yaws_f)
+        X = np.full_like(Y, pitches[-1], dtype=float)
+        C = _fc_from(Vf[:-1, :-1])
+        ax.plot_surface(X, Y, Z, facecolors=C, rstride=1, cstride=1,
+                        linewidth=0, antialiased=True, shade=False)
+
+        # --- ROLL faces (Y constant) ---
+        # Y = rolls[0]
+        xf, zf, Vf = _upsample_face(pitches, yaws, V[:, 0, :])  # (y=yaws, x=pitches)
+        X, Z = np.meshgrid(xf, zf)
+        Y = np.full_like(X, rolls[0], dtype=float)
+        C = _fc_from(Vf[:-1, :-1])
+        ax.plot_surface(X, Y, Z, facecolors=C, rstride=1, cstride=1,
+                        linewidth=0, antialiased=True, shade=False)
+
+        # Y = rolls[-1]
+        xf, zf, Vf = _upsample_face(pitches, yaws, V[:, -1, :])
+        X, Z = np.meshgrid(xf, zf)
+        Y = np.full_like(X, rolls[-1], dtype=float)
+        C = _fc_from(Vf[:-1, :-1])
+        ax.plot_surface(X, Y, Z, facecolors=C, rstride=1, cstride=1,
+                        linewidth=0, antialiased=True, shade=False)
+
+        # Shared colorbar
+        sm = cm.ScalarMappable(norm=norm, cmap=cmap)
+        sm.set_array([])
+        cb = plt.colorbar(sm, ax=ax, shrink=0.82, pad=0.1)
+        cb.set_label(label)
+
+    # Titles/labels for right metric
+    right_label = "|Δspan| (m)" if use_spanerr else "span (m)"
+    right_title = f"|span − UWB|  (UWB={uwb_span_m:.3f} m)" if use_spanerr else "Estimated span (m)"
 
     fig = plt.figure(figsize=(12, 5))
-    fig.suptitle("COARSE grid — 3D fields (θ=pitch, φ=roll, ψ=yaw)", fontsize=12)
+    fig.suptitle("Mean epipolar and span (compared to UWB) error for slight changes in yaw, roll and pitch", fontsize=12)
 
-    # Left: epipolar
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-    sc1 = ax1.scatter(pitch, roll, yaw, c=epi, s=s, alpha=alpha, marker=',', linewidths=0)
-    cb1 = fig.colorbar(sc1, ax=ax1, shrink=0.82, pad=0.1); cb1.set_label("mean |dy| (px)")
-    ax1.set_xlabel("θ (pitch) [deg]"); ax1.set_ylabel("φ (roll) [deg]"); ax1.set_zlabel("ψ (yaw) [deg]")
-    ax1.set_title("Epipolar mean |dy| (px)")
-    ax1.set_xlim(xlim); ax1.set_ylim(ylim); ax1.set_zlim(zlim)
+    _draw_block_faces(ax1, V_epi, "mean |dy| (px)", "Epipolar mean |dy| (px)")
 
-    # Right: |Δspan| or span
     ax2 = fig.add_subplot(1, 2, 2, projection='3d')
-    sc2 = ax2.scatter(pitch, roll, yaw, c=right_vals, s=s, alpha=alpha, marker=',', linewidths=0)
-    cb2 = fig.colorbar(sc2, ax=ax2, shrink=0.82, pad=0.1); cb2.set_label(right_label)
-    ax2.set_xlabel("θ (pitch) [deg]"); ax2.set_ylabel("φ (roll) [deg]"); ax2.set_zlabel("ψ (yaw) [deg]")
-    ax2.set_title(right_title)
-    ax2.set_xlim(xlim); ax2.set_ylim(ylim); ax2.set_zlim(zlim)
+    _draw_block_faces(ax2, V_right, right_label, right_title)
 
     plt.tight_layout()
     plt.show()
@@ -470,52 +656,140 @@ def plot_coarse_slice_smoothed(
     yaw_target=None,
     uwb_span_m=None,
     levels=64,
-    final_best=None  # dict from Stage-3 (fine) with dpitch/droll/dyaw; only this point is shown
+    final_best=None,
+    mode="interp",              # "interp" or "recompute"
+    # Only needed if mode="recompute":
+    K1=None, D1=None, K2=None, D2=None, R=None, T=None, size=None,
+    L_pts_raw=None, R_pts_raw=None, rectify_alpha=0.0,
+
+    # NEW: multires refinement near a point (or points)
+    refine=None,                # dict or list of dicts:
+                                #   {"center": (p0, r0), "halfwin": (dP, dR), "step": (sp, sr)}
+    show_samples=False          # draw the sample locations as tiny dots
 ):
     """
-    Two smoothed (tricontourf) fields on pitch×roll at a single yaw slice:
-      Left: epipolar mean|dy| (px)
+    Two smoothed fields on pitch×roll at the *exact* yaw_target:
+      Left:  epipolar mean|dy| (px)
       Right: |Δspan| (m) if UWB given, else span (m)
-    No sample dots are drawn. Only the final Stage-3 best point is marked (if provided),
-    using its true (fine) dpitch/droll (not snapped to coarse).
+
+    - mode="interp": linearly interpolate along yaw between coarse layers for each (pitch,roll).
+    - mode="recompute": recompute metrics at yaw_target for every (pitch,roll) using calib + clicks.
+    Only the final stage-3 best point is marked (at its true dpitch/droll).
     """
-    # Pick yaw: default to best |Δspan| (if UWB), else best epipolar — within COARSE set.
+    if yaw_target is None and final_best is not None:
+        yaw_target = float(final_best["dyaw"])
     if yaw_target is None:
-        if uwb_span_m is not None and _best_by_span(coarse_results) is not None:
-            yaw_pick = _best_by_span(coarse_results)["dyaw"]
+        raise ValueError("Provide yaw_target (final yaw) or pass final_best with a 'dyaw' key.")
+
+    yaw_target = float(yaw_target)
+
+    # Unique pitch/roll from the coarse grid
+    pitches = sorted({float(r["dpitch"]) for r in coarse_results})
+    rolls   = sorted({float(r["droll"])  for r in coarse_results})
+
+    # Gather per-(pitch,roll) stacks across yaw for interpolation mode
+    pr_buckets = {}
+    for r in coarse_results:
+        key = (float(r["dpitch"]), float(r["droll"]))
+        pr_buckets.setdefault(key, []).append(r)
+    for key in pr_buckets:
+        pr_buckets[key].sort(key=lambda e: float(e["dyaw"]))
+
+    def _interp_safe(x, xp, fp):
+        xp = np.asarray(xp, float)
+        fp = np.asarray(fp, float)
+        m = np.isfinite(fp)
+        if m.sum() == 0:
+            return np.nan
+        # clamp outside; linear within
+        return float(np.interp(x, xp[m], fp[m], left=fp[m][0], right=fp[m][-1]))
+
+    def _eval_at(p, r):
+        if mode == "recompute":
+            if any(v is None for v in (K1, D1, K2, D2, R, T, size, L_pts_raw, R_pts_raw)):
+                raise ValueError("mode='recompute' requires K1,D1,K2,D2,R,T,size,L_pts_raw,R_pts_raw.")
+            R_adj = adjust_R_yaw_pitch_roll_leftframe(R, yaw_deg=yaw_target, pitch_deg=p, roll_deg=r)
+            R1, R2, P1, P2, _ = stereo_rectify_params(K1, D1, K2, D2, size, R_adj, T, alpha=rectify_alpha)
+            Lr = undistort_rectify_points(L_pts_raw, K1, D1, R1, P1[:3, :3])
+            Rr = undistort_rectify_points(R_pts_raw, K2, D2, R2, P2[:3, :3])
+            epi = mean_abs_dy(Lr, Rr)
+            X = triangulate_cv(Lr, Rr, P1, P2)
+            span_m = np.nan
+            if X.shape[0] >= 2:
+                span_m = float(np.linalg.norm(X[1] - X[0]))
+            right = (abs(span_m - uwb_span_m) if (uwb_span_m is not None and np.isfinite(span_m)) else span_m)
+            return epi, right
         else:
-            yaw_pick = _best_by_epipolar(coarse_results)["dyaw"]
-    else:
-        yaw_pick = float(yaw_target)
+            # Interpolate along yaw from coarse entries for this (p,r)
+            entries = pr_buckets.get((p, r), [])
+            if not entries:
+                return np.nan, np.nan
+            ys   = [float(e["dyaw"]) for e in entries]
+            epi  = [float(e["mean_abs_dy"]) for e in entries]
+            if uwb_span_m is not None:
+                rv = []
+                for e in entries:
+                    se = e.get("span_err", np.nan)
+                    if not np.isfinite(se):
+                        sm = e.get("span_m", np.nan)
+                        se = abs(sm - uwb_span_m) if np.isfinite(sm) else np.nan
+                    rv.append(se)
+            else:
+                rv = [float(e.get("span_m", np.nan)) for e in entries]
+            return _interp_safe(yaw_target, ys, epi), _interp_safe(yaw_target, ys, rv)
 
-    # Use nearest coarse yaw to populate the slice field (data availability)
-    yaws = np.array(sorted(set([r["dyaw"] for r in coarse_results])), dtype=float)
-    yaw_chosen = float(yaws[np.argmin(np.abs(yaws - yaw_pick))])
+    # --- Build the base coarse pairs (full coarse cross product) ---
+    coarse_pitches = sorted({float(r["dpitch"]) for r in coarse_results})
+    coarse_rolls   = sorted({float(r["droll"])  for r in coarse_results})
+    PR_pairs = {(p, r) for p in coarse_pitches for r in coarse_rolls}
 
-    slice_res = [r for r in coarse_results if abs(r["dyaw"] - yaw_chosen) < 1e-12]
-    if not slice_res:
-        print("[plot_coarse_slice_smoothed] No coarse results at that yaw.")
-        return
+    # --- Optional: add a refined box (or boxes) around fine areas ---
+    def _add_box(center, halfwin, step):
+        p0, r0   = map(float, center)
+        dP, dR   = map(float, halfwin)
+        sp, sr   = map(float, step)
+        pgrid = np.arange(p0 - dP, p0 + dP + 1e-12, sp)
+        rgrid = np.arange(r0 - dR, r0 + dR + 1e-12, sr)
+        for p in pgrid:
+            for r in rgrid:
+                PR_pairs.add((float(p), float(r)))
 
-    pitch, roll, _, epi, span, span_err = _extract_arrays(slice_res)
+    if refine is not None:
+        if isinstance(refine, dict):
+            _add_box(refine["center"], refine["halfwin"], refine["step"])
+        else:
+            for box in refine:
+                _add_box(box["center"], box["halfwin"], box["step"])
 
-    # Right metric
-    if uwb_span_m is not None and np.isfinite(span_err).any():
-        right_vals = span_err
-        right_label = "|Δspan| (m)"
-        right_title = f"|span − UWB| at ψ={yaw_chosen:.3f}° (UWB={uwb_span_m:.3f} m)"
-    else:
-        right_vals = span
-        right_label = "span (m)"
-        right_title = f"span (m) at ψ={yaw_chosen:.3f}°"
+    # --- Evaluate metrics for all requested pairs at the exact yaw_target ---
+    # (uses your existing _eval_at which supports "interp" or "recompute")
+    if yaw_target is None and final_best is not None:
+        yaw_target = float(final_best["dyaw"])
+    if yaw_target is None:
+        raise ValueError("Provide yaw_target or pass final_best with a 'dyaw' key.")
+    yaw_target = float(yaw_target)
 
-    # Valid masks
-    m_epi = np.isfinite(epi)
-    m_right = np.isfinite(right_vals)
+    # If recomputing, do a quick guard:
+    if mode == "recompute":
+        needed = (K1, D1, K2, D2, R, T, size, L_pts_raw, R_pts_raw)
+        if any(v is None for v in needed):
+            raise ValueError("mode='recompute' requires K1,D1,K2,D2,R,T,size,L_pts_raw,R_pts_raw.")
 
-    # Limits padded to also include the *true* fine best marker (if given)
-    xmin, xmax = float(np.nanmin(pitch)), float(np.nanmax(pitch))
-    ymin, ymax = float(np.nanmin(roll)),  float(np.nanmax(roll))
+    X, Y, Z_epi, Z_right = [], [], [], []
+    for (p, r) in sorted(PR_pairs):
+        e, rv = _eval_at(p, r)   # <— your existing helper inside the function
+        X.append(p); Y.append(r); Z_epi.append(e); Z_right.append(rv)
+
+    X = np.array(X); Y = np.array(Y)
+    Z_epi   = np.array(Z_epi,   float)
+    Z_right = np.array(Z_right, float)
+
+    m1 = np.isfinite(Z_epi)
+    m2 = np.isfinite(Z_right)
+
+    # Keep coarse bounds on the axes:
+    xmin, xmax = float(min(coarse_pitches)), float(max(coarse_pitches))
+    ymin, ymax = float(min(coarse_rolls)),   float(max(coarse_rolls))
     if final_best is not None:
         xmin = min(xmin, float(final_best["dpitch"]))
         xmax = max(xmax, float(final_best["dpitch"]))
@@ -524,42 +798,51 @@ def plot_coarse_slice_smoothed(
     xlim = _pad(xmin, xmax); ylim = _pad(ymin, ymax)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8))
-    fig.suptitle(f"COARSE slice at ψ={yaw_chosen:.3f}° (smoothed)", fontsize=12)
+    fig.suptitle(f"Smoothed slice at ψ={yaw_target:.3f}°", fontsize=12)
 
-    # Left: epipolar (smooth gradient)
-    cn1 = axes[0].tricontourf(pitch[m_epi], roll[m_epi], epi[m_epi], levels=levels)
-    cb1 = fig.colorbar(cn1, ax=axes[0], shrink=0.9, pad=0.02); cb1.set_label("mean |dy| (px)")
+    cn1 = axes[0].tricontourf(X[m1], Y[m1], Z_epi[m1], levels=levels)
+    fig.colorbar(cn1, ax=axes[0], shrink=0.9, pad=0.02).set_label("mean |dy| (px)")
     axes[0].set_xlabel("θ (pitch) [deg]"); axes[0].set_ylabel("φ (roll) [deg]")
-    axes[0].set_title("Epipolar mean |dy| (px)")
-    axes[0].set_xlim(xlim); axes[0].set_ylim(ylim)
+    axes[0].set_xlim(xlim); axes[0].set_ylim(ylim); axes[0].set_title("Epipolar mean |dy| (px)")
 
-    # Right: |Δspan| / span (smooth gradient)
-    cn2 = axes[1].tricontourf(pitch[m_right], roll[m_right], right_vals[m_right], levels=levels)
-    cb2 = fig.colorbar(cn2, ax=axes[1], shrink=0.9, pad=0.02); cb2.set_label(right_label)
+    right_label = "|Δspan| (m)" if uwb_span_m is not None else "span (m)"
+    cn2 = axes[1].tricontourf(X[m2], Y[m2], Z_right[m2], levels=levels)
+    fig.colorbar(cn2, ax=axes[1], shrink=0.9, pad=0.02).set_label(right_label)
     axes[1].set_xlabel("θ (pitch) [deg]"); axes[1].set_ylabel("φ (roll) [deg]")
-    axes[1].set_title(right_title)
-    axes[1].set_xlim(xlim); axes[1].set_ylim(ylim)
+    axes[1].set_xlim(xlim); axes[1].set_ylim(ylim); axes[1].set_title(right_label)
 
-    # Only mark the final (Stage-3) best point, at its true dpitch/droll
+    if show_samples:
+        for ax in axes:
+            ax.plot(X, Y, ".", ms=1.0, alpha=0.4)
+
     if final_best is not None:
         px, rx = float(final_best["dpitch"]), float(final_best["droll"])
         for ax in axes:
-            ax.plot([px], [rx], marker='x', markersize=9, mew=2, color='k')  # single crisp marker
+            ax.plot([px], [rx], marker='x', markersize=9, mew=2, color='k')
 
     plt.tight_layout()
     plt.show()
-
-
 
 def coarse_to_fine_search_ypr(
     calib_file: str,
     left_path: str,
     right_path: str,
     *,
+    left_frame_idx: Optional[int] = None,
+    right_frame_idx: Optional[int] = None,
+    left_time_sec: Optional[float] = None,
+    right_time_sec: Optional[float] = None,
+
+    # NEW: per-side brightness/contrast
+    left_contrast: float = 1.0,
+    left_brightness: float = 0.0,
+    right_contrast: float = 1.0,
+    right_brightness: float = 0.0,
+
     n_clicks: int = 6,
     rectify_alpha: float = 0.0,
     uwb_span_m: Optional[float] = None,
-    span_tol_m: float = 0.05,          # ±5 cm
+    span_tol_m: float = 0.05,
     display_scale: float = 0.6,
     # Stage 1 (coarse)
     yaw_coarse=( -2.0,  +2.0,  0.5),
@@ -570,14 +853,42 @@ def coarse_to_fine_search_ypr(
     # Stage 3 (fine) window around stage-2 best
     yaw_win3=0.05, pitch_win3=0.05, roll_win3=0.05,  step3=0.005
 ):
-    # --- Load calib + images ---
+    # --- Load calib + frames (image or video) ---
     calib = _load_calibration(calib_file)
     K1, D1 = calib["camera_matrix_1"], calib["dist_coeffs_1"]
     K2, D2 = calib["camera_matrix_2"], calib["dist_coeffs_2"]
-    R,  T  = calib["R"], calib["T"]
+    R, T = calib["R"], calib["T"]
 
-    Lraw = _imread_color(left_path)
-    Rraw = _imread_color(right_path)
+    Lraw = _load_image_or_video_frame(left_path, frame_idx=left_frame_idx, time_sec=left_time_sec)
+    Rraw = _load_image_or_video_frame(right_path, frame_idx=right_frame_idx, time_sec=right_time_sec)
+    # Apply optional brightness/contrast tweaks
+    if (left_contrast != 1.0) or (left_brightness != 0.0):
+        Lraw = _apply_brightness_contrast(Lraw, contrast=left_contrast, brightness=left_brightness)
+    if (right_contrast != 1.0) or (right_brightness != 0.0):
+        Rraw = _apply_brightness_contrast(Rraw, contrast=right_contrast, brightness=right_brightness)
+
+    # Basic sanity
+    if Lraw is None or Rraw is None:
+        raise IOError("Failed to load left/right inputs (image or video frame).")
+    if Lraw.shape[:2] != Rraw.shape[:2]:
+        raise ValueError(f"Left/right frame sizes must match. Got L={Lraw.shape[:2]} vs R={Rraw.shape[:2]}")
+    h, w = Lraw.shape[:2]
+    size = (w, h)
+
+    # Optional: helpful prints
+    def _src_desc(p, fi, ts):
+        if _is_video_path(p):
+            if fi is not None:
+                return f"{os.path.basename(p)} @ frame {fi}"
+            if ts is not None:
+                return f"{os.path.basename(p)} @ t={ts:.3f}s"
+            return f"{os.path.basename(p)} @ frame 0"
+        else:
+            return os.path.basename(p)
+
+    print(f"[INPUT] LEFT : {_src_desc(left_path, left_frame_idx, left_time_sec)}")
+    print(f"[INPUT] RIGHT: {_src_desc(right_path, right_frame_idx, right_time_sec)}")
+
     if Lraw.shape[:2] != Rraw.shape[:2]:
         raise ValueError("Left/right image sizes must match.")
     h, w = Lraw.shape[:2]
@@ -654,10 +965,21 @@ def coarse_to_fine_search_ypr(
         print(f"  mean|dy| = {best_combined_3['mean_abs_dy']:.6f} px | span = {best_combined_3['span_m']:.6f} m"
               f" | |Δspan|={best_combined_3.get('span_err', float('nan')):.6f} m")
 
+    ctx = {
+        "K1": K1, "D1": D1,
+        "K2": K2, "D2": D2,
+        "R": R, "T": T,
+        "size": size,  # (w,h)
+        "L_pts_raw": L_pts_raw,
+        "R_pts_raw": R_pts_raw,
+        "rectify_alpha": rectify_alpha,
+    }
+
     return {
         "stage1": {"results": res1, "best_epi": best_epi_1, "best_span": best_span_1, "best_combined": best_combined_1},
         "stage2": {"results": res2, "best_epi": best_epi_2, "best_span": best_span_2, "best_combined": best_combined_2},
-        "stage3": {"results": res3, "best_epi": best_epi_3, "best_span": best_span_3, "best_combined": best_combined_3}
+        "stage3": {"results": res3, "best_epi": best_epi_3, "best_span": best_span_3, "best_combined": best_combined_3},
+        "ctx": ctx,  # ← add this
     }
 
 
@@ -666,30 +988,33 @@ def coarse_to_fine_search_ypr(
 if __name__ == "__main__":
     # --- Inputs you’ll change ---
     calib_file = "../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
-    left_path  = "left_input_static/L_P1_TL1.jpg"
-    right_path = "right_input_static/R_P1_TL1.jpg"
-
-    N_CLICKS = 6
-    UWB_SPAN_M = 7.843     # set None to ignore span constraints
-    SPAN_TOL_M = 0.05      # ±5 cm
+    left_path  = "../input/left_videos/09_10_merged.MP4"
+    right_path = "../input/right_videos/09_10_merged.MP4"
+    frame = 7362
+    N_CLICKS = 10
+    UWB_SPAN_M = 7.26  # set None to ignore span constraints
+    SPAN_TOL_M = 0.06      # ±5 cm0.0
 
     out = coarse_to_fine_search_ypr(
         calib_file=calib_file,
         left_path=left_path,
         right_path=right_path,
+        left_frame_idx=frame,
+        right_frame_idx=frame - 15,
         n_clicks=N_CLICKS,
-        rectify_alpha=0.0,
         uwb_span_m=UWB_SPAN_M,
         span_tol_m=SPAN_TOL_M,
         display_scale=0.6,
-        # Stage 1 coarse ranges (min, max, step = 0.5°)
-        yaw_coarse=(0, 3.0, 0.25),
-        pitch_coarse=(-1.50, 1.50, 0.25),
-        roll_coarse=(-1.5, 1.5, 0.25),
-        # Stage 2 window (±0.5°) with 0.05° steps
+
+        # NEW: tweak if your frames are a bit dark/low-contrast
+        left_contrast=4, left_brightness=20.0,
+        right_contrast=4, right_brightness=20.0,
+
+        yaw_coarse=(-1.5, 1.5, 0.2),
+        pitch_coarse=(-1, 0.5, 0.2),
+        roll_coarse=(-1.5, 0.5, 0.2),
         yaw_win2=0.2, pitch_win2=0.2, roll_win2=0.2, step2=0.02,
-        # Stage 3 window (±0.05°) with 0.005° steps
-        yaw_win3=0.02, pitch_win3=0.02, roll_win3=0.02, step3=0.002
+        yaw_win3=0.05, pitch_win3=0.05, roll_win3=0.05, step3=0.002
     )
 
     # Visualize final (stage 3)
@@ -700,16 +1025,25 @@ if __name__ == "__main__":
 
     # Coarse plots (no dots/markers besides colors)
     coarse_results = out["stage1"]["results"]
-    plot_coarse_3d_pair(coarse_results, uwb_span_m=UWB_SPAN_M, alpha=0.9, s=6)
+    plot_coarse_3d_pair(coarse_results, uwb_span_m=UWB_SPAN_M, face_alpha=1.0)
 
     # Use the yaw slice from the coarse set, but only mark the *true* final best (from Stage 3)
-    final_best = out["stage3"]["best_combined"]  # or whichever you consider "eventual best"
+    final_best = out["stage3"]["best_combined"]
+
     plot_coarse_slice_smoothed(
-        coarse_results,
-        yaw_target=final_best["dyaw"],  # slice near the fine yaw, but using COARSE data
+        out["stage1"]["results"],  # coarse dataset defines the bounds
+        yaw_target=final_best["dyaw"],
         uwb_span_m=UWB_SPAN_M,
-        levels=64,
-        final_best=final_best
+        levels=80,
+        final_best=final_best,
+        mode="recompute",  # ensures values match your summary at this yaw
+        refine={  # dense local box around the optimum
+            "center": (final_best["dpitch"], final_best["droll"]),
+            "halfwin": (0.25, 0.25),  # ±0.25° in each direction
+            "step": (0.01, 0.01),  # 0.01° resolution locally
+        },
+        show_samples=False,
+        **out["ctx"]  # K1,D1,K2,D2,R,T,size,L_pts_raw,R_pts_raw,rectify_alpha
     )
 
     # 2) 2D slice at the best-by-combined yaw (or best-by-span/epipolar fallback)
@@ -743,3 +1077,6 @@ if __name__ == "__main__":
               f"yaw={bc['dyaw']:+.3f}, pitch={bc['dpitch']:+.3f}, roll={bc['droll']:+.3f}",
               f"| mean|dy|={bc['mean_abs_dy']:.4f} px | span={bc['span_m']:.4f} m",
               f"| |Δspan|={bc.get('span_err', float('nan')):.4f} m")
+        print(f"For copy paste: {bc['dyaw']:+.3f} {bc['droll']:+.3f} {bc['dpitch']:+.3f} {bc['mean_abs_dy']:.4f} {bc.get('span_err', float('nan')):.4f}")
+
+

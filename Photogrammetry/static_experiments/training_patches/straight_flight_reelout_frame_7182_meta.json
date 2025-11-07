@@ -1,0 +1,1222 @@
+[
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_647x1030.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 647.2,
+    "cy": 1029.9650349650349,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_587x1272.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 586.9,
+    "cy": 1271.9650349650349,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_641x1532.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 641.2,
+    "cy": 1532.006993006993,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_810x1731.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 809.55,
+    "cy": 1730.6993006993007,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_960x1790.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 960.1,
+    "cy": 1790.3286713286714,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_1210x1830.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1209.55,
+    "cy": 1829.7832167832169,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_1522x1877.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1522.05,
+    "cy": 1877.4125874125875,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_2040x1915.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2039.9,
+    "cy": 1915.06993006993,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_2260x1919.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2260.05,
+    "cy": 1918.86013986014,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_2617x1920.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2616.55,
+    "cy": 1919.6363636363637,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_2787x1917.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2787.3,
+    "cy": 1917.3916083916083,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_2908x1913.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2908.35,
+    "cy": 1913.027972027972,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_3142x1903.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3142.15,
+    "cy": 1902.86013986014,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_3358x1885.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3358.05,
+    "cy": 1884.8671328671328,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_3662x1849.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3661.85,
+    "cy": 1849.1118881118882,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_3867x1823.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3867.0,
+    "cy": 1823.4195804195804,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_4418x1707.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4418.5,
+    "cy": 1706.979020979021,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_4560x1640.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4560.5,
+    "cy": 1639.7692307692307,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_4716x1448.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4715.5,
+    "cy": 1448.2517482517483,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_4774x1215.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4774.3,
+    "cy": 1214.7342657342658,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_L_LE_4736x999.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4735.5,
+    "cy": 999.0769230769231,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_94x1033.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 93.9,
+    "cy": 1032.5085884988798,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_43x1273.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 42.9,
+    "cy": 1273.1979088872292,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_117x1532.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 117.25,
+    "cy": 1532.283793876027,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_321x1731.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 320.95,
+    "cy": 1731.0799103808813,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_500x1790.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 499.5,
+    "cy": 1790.4667662434654,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_785x1829.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 785.25,
+    "cy": 1829.058999253174,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_1126x1876.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1125.55,
+    "cy": 1875.9634055265124,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_1676x1913.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1676.25,
+    "cy": 1913.404779686333,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_1906x1917.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1905.9,
+    "cy": 1917.2218073188947,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_2267x1918.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2266.9,
+    "cy": 1918.0492905153098,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_2438x1916.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2438.5,
+    "cy": 1916.436146377894,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_2558x1912.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2557.65,
+    "cy": 1912.3398058252428,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_2793x1902.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2793.45,
+    "cy": 1902.4249439880507,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_3003x1885.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3003.1,
+    "cy": 1884.7475728155339,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_3299x1850.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3298.65,
+    "cy": 1849.8566094100074,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_3490x1824.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3489.9,
+    "cy": 1824.0814040328603,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_3991x1707.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3991.15,
+    "cy": 1707.3069454817028,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_4112x1640.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4111.95,
+    "cy": 1639.7580283793875,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_4241x1448.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4241.4,
+    "cy": 1448.1015683345781,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_4286x1216.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4286.2,
+    "cy": 1215.790141896938,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\straight_flight_reelout_frame_7182_R_LE_4245x999.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4244.8,
+    "cy": 999.3502613890963,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut0_998x1049.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 997.65,
+    "cy": 1049.013986013986,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut0_976x1185.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 975.8,
+    "cy": 1184.986013986014,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut0_954x1323.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 954.35,
+    "cy": 1323.3356643356644,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut0_938x1429.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 938.0,
+    "cy": 1429.167832167832,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut0_915x1589.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 914.55,
+    "cy": 1589.3286713286714,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut0_534x1053.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 534.15,
+    "cy": 1053.3069454817028,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut0_514x1186.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 513.6,
+    "cy": 1186.2106049290514,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut0_493x1325.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 492.55,
+    "cy": 1324.9402539208365,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut0_477x1433.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 476.7,
+    "cy": 1433.1986557132188,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut0_452x1590.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 451.7,
+    "cy": 1590.1665421956684,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut1_1549x1056.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1548.7,
+    "cy": 1055.7552447552448,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut1_1532x1209.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1531.5,
+    "cy": 1209.1608391608393,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut1_1516x1373.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1516.1,
+    "cy": 1373.3916083916083,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut1_1498x1536.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1498.25,
+    "cy": 1536.167832167832,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut1_1153x1056.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1153.45,
+    "cy": 1056.0896191187453,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut1_1138x1211.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1137.5,
+    "cy": 1210.6609410007468,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut1_1124x1373.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1123.75,
+    "cy": 1372.781926811053,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut1_1105x1536.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1105.1,
+    "cy": 1535.6206123973113,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut2_2044x1101.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2044.2,
+    "cy": 1101.3286713286714,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut2_2035x1205.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2035.0,
+    "cy": 1204.8251748251748,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut2_2027x1338.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2027.1,
+    "cy": 1337.7132867132866,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut2_2015x1496.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2015.05,
+    "cy": 1496.1468531468531,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut2_2005x1638.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2005.2,
+    "cy": 1637.5804195804196,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut2_2001x1790.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2000.95,
+    "cy": 1790.4545454545455,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut2_1683x1103.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1682.85,
+    "cy": 1103.2725914861837,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut2_1676x1205.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1675.6,
+    "cy": 1204.8222554144884,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut2_1666x1339.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1666.45,
+    "cy": 1339.1994025392084,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut2_1658x1497.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1657.9,
+    "cy": 1496.8551157580284,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut2_1648x1637.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1647.7,
+    "cy": 1637.0492905153098,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut2_1642x1788.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1642.25,
+    "cy": 1788.3592233009708,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut3_2486x1114.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2485.8,
+    "cy": 1113.909090909091,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut3_2479x1223.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2479.4,
+    "cy": 1223.3636363636363,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut3_2476x1359.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2475.55,
+    "cy": 1358.5314685314686,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut3_2471x1544.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2470.8,
+    "cy": 1544.0349650349651,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut3_2468x1656.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2468.35,
+    "cy": 1655.5034965034965,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut3_2469x1807.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2468.6,
+    "cy": 1806.8391608391607,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut3_2137x1114.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2137.05,
+    "cy": 1114.4764749813294,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut3_2133x1223.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2132.6,
+    "cy": 1223.0791635548917,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut3_2130x1359.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2130.375,
+    "cy": 1359.0463032113516,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut3_2127x1544.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2127.05,
+    "cy": 1543.6923076923076,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut3_2126x1655.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2125.7,
+    "cy": 1655.0044809559372,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut3_2126x1805.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2126.25,
+    "cy": 1805.4040328603435,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut4_2917x1116.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2917.4,
+    "cy": 1116.4895104895104,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut4_2917x1225.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2917.35,
+    "cy": 1224.832167832168,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut4_2916x1356.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2916.5,
+    "cy": 1355.8461538461538,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut4_2918x1537.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2917.6,
+    "cy": 1536.944055944056,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut4_2920x1650.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2920.05,
+    "cy": 1649.881118881119,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut4_2921x1800.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2920.95,
+    "cy": 1799.6713286713286,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut4_2573x1116.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2573.1,
+    "cy": 1116.3584764749812,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut4_2574x1224.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2574.15,
+    "cy": 1224.2845407020163,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut4_2575x1355.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2574.9,
+    "cy": 1354.9955190440628,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut4_2577x1536.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2577.45,
+    "cy": 1536.4779686333084,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut4_2580x1650.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2579.9,
+    "cy": 1649.9088872292755,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut4_2582x1800.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2581.7,
+    "cy": 1799.6288274831963,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut5_3346x1207.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3346.45,
+    "cy": 1206.6293706293707,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut5_3356x1334.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3355.95,
+    "cy": 1334.3286713286714,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut5_3365x1488.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3365.25,
+    "cy": 1488.4055944055945,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut5_3374x1621.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3373.65,
+    "cy": 1620.93006993007,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut5_3384x1768.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3384.1,
+    "cy": 1767.7972027972028,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut5_2997x1207.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 2997.0,
+    "cy": 1206.5190440627334,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut5_3007x1334.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3007.3,
+    "cy": 1333.736370425691,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut5_3018x1489.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3018.05,
+    "cy": 1488.8760268857357,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut5_3026x1620.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3026.5,
+    "cy": 1620.3711725168037,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut5_3037x1768.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3037.05,
+    "cy": 1767.5959671396565,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut6_3824x1063.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3823.95,
+    "cy": 1063.1328671328672,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut6_3840x1210.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3840.05,
+    "cy": 1209.958041958042,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut6_3856x1359.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3856.1,
+    "cy": 1358.5944055944055,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut6_3450x1064.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3450.0,
+    "cy": 1063.8088125466766,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut6_3468x1210.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3468.0,
+    "cy": 1210.0253920836444,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut6_3484x1359.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3484.0,
+    "cy": 1358.6938013442868,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut7_4371x1045.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4370.9,
+    "cy": 1045.3076923076924,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut7_4390x1171.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4390.4,
+    "cy": 1170.6223776223776,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut7_4410x1295.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4410.1,
+    "cy": 1294.7552447552448,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut7_4426x1406.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4426.35,
+    "cy": 1405.986013986014,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_L_STRUT_strut7_4448x1545.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4448.1,
+    "cy": 1544.944055944056,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut7_3947x1047.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3946.6,
+    "cy": 1047.2404779686333,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut7_3967x1172.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3966.75,
+    "cy": 1171.8864824495893,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut7_3985x1296.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3985.35,
+    "cy": 1295.8013442867812,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut7_4002x1407.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4001.5,
+    "cy": 1406.5646004480957,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\straight_flight_reelout_frame_7182_R_STRUT_strut7_4022x1545.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4022.1,
+    "cy": 1545.3495145631068,
+    "patch": 20,
+    "image_id": "straight_flight_reelout_frame_7182"
+  }
+]

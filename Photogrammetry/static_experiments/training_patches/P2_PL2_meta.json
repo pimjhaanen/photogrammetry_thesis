@@ -1,0 +1,1422 @@
+[
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1387x1277.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1387.35,
+    "cy": 1277.4587289992696,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1245x1458.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1244.6,
+    "cy": 1457.6566837107378,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1133x1686.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1133.1875,
+    "cy": 1685.7801314828341,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1100x1914.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1100.45,
+    "cy": 1913.5975164353542,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1149x2017.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1149.15,
+    "cy": 2017.3900657414172,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1313x2134.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1313.25,
+    "cy": 2134.020452885318,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_1753x2322.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1753.0,
+    "cy": 2321.652300949598,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_2058x2401.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2057.9,
+    "cy": 2400.772826880935,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_2278x2426.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2277.85,
+    "cy": 2425.9671292914536,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_2526x2450.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2525.8,
+    "cy": 2449.856829802776,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_2936x2439.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2935.625,
+    "cy": 2439.0810810810813,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_3188x2404.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3188.5,
+    "cy": 2403.928414901388,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_3420x2368.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3420.375,
+    "cy": 2368.4506939371804,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_3745x2286.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3745.25,
+    "cy": 2286.017531044558,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_3959x2224.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3958.6875,
+    "cy": 2223.8487947406866,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_4254x2102.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4253.55,
+    "cy": 2102.18042366691,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_4473x1993.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4472.6,
+    "cy": 1992.5478451424397,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_4559x1889.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4558.7,
+    "cy": 1888.918188458729,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_4547x1662.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4547.2,
+    "cy": 1662.0788897005114,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_4434x1433.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4433.953125,
+    "cy": 1433.1139517896274,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_L_LE_4279x1248.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4278.8,
+    "cy": 1248.2929145361577,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_1139x1283.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1139.15,
+    "cy": 1283.2936449963477,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_987x1463.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 987.2,
+    "cy": 1462.9320672023375,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_878x1689.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 878.0,
+    "cy": 1688.6077428780131,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_862x1915.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 861.55,
+    "cy": 1915.3491599707816,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_929x2018.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 928.55,
+    "cy": 2017.662527392257,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_1119x2133.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1119.15,
+    "cy": 2132.653031409788,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_1592x2319.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1591.55,
+    "cy": 2319.487947406866,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_1904x2399.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1903.8,
+    "cy": 2398.90796201607,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_2133x2424.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2132.9,
+    "cy": 2423.647187728269,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_2382x2448.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2382.05,
+    "cy": 2448.069393718042,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_2792x2438.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2791.5,
+    "cy": 2437.963476990504,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_3041x2403.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3041.15,
+    "cy": 2403.493060628196,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_3262x2369.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3262.15,
+    "cy": 2368.7041636230824,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_3575x2286.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3574.75,
+    "cy": 2285.9138056975894,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_3771x2224.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3771.05,
+    "cy": 2223.5938641344046,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_4043x2101.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4042.9,
+    "cy": 2101.491599707816,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_4231x1993.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4230.55,
+    "cy": 1992.6501095690285,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_4295x1888.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4295.4,
+    "cy": 1887.5478451424397,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_4268x1664.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4268.13125,
+    "cy": 1663.9795471146822,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_4154x1435.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4154.5,
+    "cy": 1435.2483564645727,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\LE\\P2_PL2_R_LE_4009x1251.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4009.3,
+    "cy": 1251.2045288531774,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut0_1501x1391.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1500.55,
+    "cy": 1390.763330898466,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut0_1429x1493.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1429.45,
+    "cy": 1493.3418553688823,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut0_1357x1601.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1357.3,
+    "cy": 1600.663988312637,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut0_1298x1686.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1297.55,
+    "cy": 1686.1402483564646,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut0_1311x1397.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 1310.9,
+    "cy": 1397.172388604821,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut0_1233x1497.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 1232.85,
+    "cy": 1496.8122717311905,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut0_1156x1601.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 1155.9,
+    "cy": 1600.918918918919,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut0_1093x1687.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 1092.6,
+    "cy": 1687.0781592403214,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut1_1850x1488.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1850.375,
+    "cy": 1487.99853907962,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut1_1789x1621.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1788.95,
+    "cy": 1620.8758217677137,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut1_1658x1920.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1658.35,
+    "cy": 1920.281227173119,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut1_1603x2051.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1602.75,
+    "cy": 2050.651570489408,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut1_1698x1491.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1698.15,
+    "cy": 1491.1855368882395,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut1_1634x1623.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1633.5,
+    "cy": 1623.3338203067933,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut1_1497x1920.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1496.55,
+    "cy": 1920.0766983199414,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut1_1438x2050.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1438.2,
+    "cy": 2050.18042366691,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut2_2176x1558.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2176.45,
+    "cy": 1557.9240321402483,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut2_2154x1657.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2153.85,
+    "cy": 1656.9218407596786,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut2_2127x1789.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2127.3,
+    "cy": 1788.8151935719504,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut2_2094x1950.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2094.1,
+    "cy": 1949.8677867056244,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut2_2064x2095.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2064.2,
+    "cy": 2094.9700511322135,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut2_2034x2257.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2034.15,
+    "cy": 2256.8071585098614,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut2_2041x1560.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 2041.4,
+    "cy": 1560.0840029218407,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut2_2018x1660.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 2018.35,
+    "cy": 1659.664718772827,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut2_1990x1791.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1990.15,
+    "cy": 1790.500365230095,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut2_1954x1951.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1954.5,
+    "cy": 1950.6515704894084,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut2_1924x2095.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1923.75,
+    "cy": 2094.754565376187,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut2_1890x2256.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1890.3,
+    "cy": 2255.963476990504,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut3_2521x1581.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2520.7,
+    "cy": 1580.6610664718773,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut3_2511x1697.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2511.15,
+    "cy": 1696.710007304602,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut3_2504x1840.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2504.2,
+    "cy": 1839.6588750913074,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut3_2495x2032.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2494.55,
+    "cy": 2032.3425858290723,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut3_2491x2146.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2490.85,
+    "cy": 2146.3396639883126,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut3_2490x2303.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2489.75,
+    "cy": 2302.7567567567567,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut3_2372x1583.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2371.9,
+    "cy": 1582.5588020452885,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut3_2365x1698.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2365.25,
+    "cy": 1698.4974433893353,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut3_2360x1841.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2360.45,
+    "cy": 1840.7611395178963,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut3_2354x2032.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2354.05,
+    "cy": 2032.4419284149014,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut3_2352x2147.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2352.1,
+    "cy": 2146.6596055514974,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut3_2353x2301.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2353.4,
+    "cy": 2301.443389335281,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut4_2907x1576.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2907.2,
+    "cy": 1576.0891161431703,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut4_2916x1691.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2915.875,
+    "cy": 1690.5412710007304,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut4_2924x1829.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2924.35,
+    "cy": 1829.2293644996348,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut4_2935x2019.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2934.625,
+    "cy": 2019.3542731921111,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut4_2942x2135.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2942.25,
+    "cy": 2134.7867056245436,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut4_2951x2289.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2950.9375,
+    "cy": 2289.0810810810813,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut4_2755x1579.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2755.4,
+    "cy": 1578.5653761869978,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut4_2767x1693.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2766.7,
+    "cy": 1692.5617238860482,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut4_2778x1831.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2778.2,
+    "cy": 1830.6055514974435,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut4_2792x2019.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2792.2,
+    "cy": 2019.4959824689554,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut4_2803x2135.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2802.9,
+    "cy": 2134.9196493791087,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut4_2814x2289.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2814.0,
+    "cy": 2289.0299488677865,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut5_3229x1531.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3228.6,
+    "cy": 1530.5076698319942,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut5_3258x1634.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3257.85,
+    "cy": 1633.8217677136597,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut5_3294x1764.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3294.3,
+    "cy": 1764.128560993426,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut5_3340x1926.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3339.95,
+    "cy": 1925.873630387144,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut5_3379x2065.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3378.8,
+    "cy": 2065.2315558802047,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut5_3425x2224.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3424.6,
+    "cy": 2223.715850986121,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut5_3087x1532.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3086.55,
+    "cy": 1532.292184075968,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut5_3115x1635.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3115.1,
+    "cy": 1634.9254930606282,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut5_3150x1766.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3150.45,
+    "cy": 1765.717311906501,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut5_3194x1927.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3194.2,
+    "cy": 1927.1921110299488,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut5_3231x2066.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3231.3,
+    "cy": 2065.5062089116145,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut5_3275x2224.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3274.55,
+    "cy": 2223.981738495252,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut6_3637x1450.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3637.35,
+    "cy": 1450.1957633308984,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut6_3705x1589.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3704.7,
+    "cy": 1589.2951059167276,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut6_3773x1735.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3773.05,
+    "cy": 1734.501095690285,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut6_3845x1887.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3844.9,
+    "cy": 1886.919649379109,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut6_3906x2011.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3905.65,
+    "cy": 2011.3966398831265,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut6_3476x1453.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3475.65,
+    "cy": 1452.9766252739225,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut6_3540x1591.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3539.6,
+    "cy": 1591.4433893352812,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut6_3604x1736.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3604.25,
+    "cy": 1736.073046018992,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut6_3673x1886.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3673.4,
+    "cy": 1885.764061358656,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut6_3729x2012.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3728.95,
+    "cy": 2012.0314097881665,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut7_4085x1347.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4085.35,
+    "cy": 1347.3513513513512,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut7_4164x1459.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4164.1,
+    "cy": 1458.7757487216948,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut7_4246x1569.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4245.85,
+    "cy": 1569.190650109569,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut7_4321x1674.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4320.75,
+    "cy": 1674.082542001461,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_L_STRUT_strut7_4416x1809.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4415.6,
+    "cy": 1808.6033601168735,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut7_3878x1350.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3878.3,
+    "cy": 1349.510591672754,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut7_3951x1459.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3951.1,
+    "cy": 1458.554419284149,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut7_4026x1570.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4026.35,
+    "cy": 1569.8151935719504,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut7_4094x1673.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4093.65,
+    "cy": 1673.498904309715,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\STRUT\\P2_PL2_R_STRUT_strut7_4181x1808.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4181.35,
+    "cy": 1808.0840029218407,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_1620x1445.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 1619.95,
+    "cy": 1444.919649379109,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_1969x1553.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 1968.55,
+    "cy": 1552.7479912344777,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_2353x1587.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 2352.55,
+    "cy": 1586.963476990504,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_2698x1559.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 2698.375,
+    "cy": 1558.6756756756756,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_3035x1557.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 3035.05,
+    "cy": 1557.1767713659606,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_3437x1507.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 3436.55,
+    "cy": 1507.018261504748,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_3884x1414.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 3883.6,
+    "cy": 1414.1256391526663,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_L_CAN_4185x1308.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "L",
+    "cx": 4185.4,
+    "cy": 1307.600438276114,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_1464x1449.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 1463.8,
+    "cy": 1449.2870708546384,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_1845x1555.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 1844.55,
+    "cy": 1554.7056245434624,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_2231x1589.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 2230.85,
+    "cy": 1589.1789627465303,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_2567x1561.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 2566.75,
+    "cy": 1560.5756026296567,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_2908x1560.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 2907.5,
+    "cy": 1559.6486486486488,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_3305x1508.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 3304.7,
+    "cy": 1508.2242512783052,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_3716x1415.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 3716.25,
+    "cy": 1415.2315558802045,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  },
+  {
+    "file": "training_patches\\CAN\\P2_PL2_R_CAN_3953x1310.png",
+    "label": "CAN",
+    "group": "CAN",
+    "camera": "R",
+    "cx": 3952.65,
+    "cy": 1309.7626004382762,
+    "patch": 20,
+    "image_id": "P2_PL2"
+  }
+]

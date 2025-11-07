@@ -273,9 +273,9 @@ def main():
     # === USER CONFIGURATION (edit these paths only) ===
     INPUT_FILE = r"input/2025-10-09_16-58-33_ProtoLogger.csv"
     CALIBRATION_FILE = r"Pitot/Calibration/pitot_calibration.json"
-    OUTPUT_FILE = r"output/KCU_output_09_10.csv"
+    OUTPUT_FILE = r"output/KCU_output_09_10_no_lpf.csv"
     UTC_SHIFT_HOURS = -2                               # Ireland time → UTC
-    PITOT_LPF_ALPHA = 0.95                             # EMA smoothing factor
+    PITOT_LPF_ALPHA = 0                            # EMA smoothing factor
     PITOT_ZERO_PHASE = True                            # Use forward-backward (no lag)
 
     # 1) Read input CSV

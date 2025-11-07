@@ -1,0 +1,1282 @@
+[
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_742x979.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 742.05,
+    "cy": 979.4615384615385,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_693x1218.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 692.65,
+    "cy": 1218.4825174825176,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_750x1480.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 749.85,
+    "cy": 1480.3426573426573,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_914x1694.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 914.05,
+    "cy": 1694.3076923076924,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_1060x1767.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1059.55,
+    "cy": 1767.020979020979,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_1300x1820.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1299.8,
+    "cy": 1820.048951048951,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_1604x1873.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1603.8,
+    "cy": 1872.8041958041958,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_1803x1890.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1802.75,
+    "cy": 1889.993006993007,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_2112x1910.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2111.75,
+    "cy": 1909.811188811189,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_2329x1912.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2328.75,
+    "cy": 1912.3216783216783,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_2682x1904.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2682.05,
+    "cy": 1904.2797202797203,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_2850x1898.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2850.5,
+    "cy": 1898.1468531468531,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_2971x1891.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2970.7,
+    "cy": 1890.5524475524476,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_3201x1877.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3200.95,
+    "cy": 1877.097902097902,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_3416x1858.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3416.0,
+    "cy": 1857.7552447552448,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_3720x1820.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3719.85,
+    "cy": 1819.993006993007,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_4228x1740.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4228.5,
+    "cy": 1739.6923076923076,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_4493x1700.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4493.05,
+    "cy": 1700.048951048951,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_4645x1647.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4645.15,
+    "cy": 1647.3356643356644,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_4814x1477.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4813.8,
+    "cy": 1477.3146853146852,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_4876x1258.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4875.85,
+    "cy": 1257.6503496503497,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_L_LE_4827x1050.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4826.7,
+    "cy": 1049.811188811189,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_222x980.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 221.85,
+    "cy": 980.083916083916,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_180x1220.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 179.6,
+    "cy": 1220.4895104895104,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_254x1483.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 253.55,
+    "cy": 1482.6223776223776,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_448x1696.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 448.4,
+    "cy": 1695.979020979021,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_619x1770.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 618.6,
+    "cy": 1769.7412587412587,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_894x1821.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 894.1,
+    "cy": 1821.1538461538462,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_1224x1872.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1224.05,
+    "cy": 1872.4615384615386,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_1441x1889.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1440.75,
+    "cy": 1889.3426573426573,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_1763x1908.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1763.0,
+    "cy": 1908.4685314685314,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_1989x1911.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1988.95,
+    "cy": 1911.0839160839162,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_2347x1903.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2347.15,
+    "cy": 1903.2657342657342,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_2517x1898.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2516.95,
+    "cy": 1898.062937062937,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_2635x1890.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2635.35,
+    "cy": 1890.3356643356644,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_2868x1877.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2867.85,
+    "cy": 1877.055944055944,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_3076x1858.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3075.95,
+    "cy": 1858.2797202797203,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_3371x1821.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3370.55,
+    "cy": 1820.6853146853148,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_3842x1742.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3842.1,
+    "cy": 1742.2587412587413,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_4074x1705.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4074.05,
+    "cy": 1704.6363636363637,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_4202x1652.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4202.5,
+    "cy": 1652.4895104895104,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_4340x1483.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4340.4,
+    "cy": 1483.4615384615386,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_4383x1264.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4382.95,
+    "cy": 1264.4965034965035,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\LE\\left_turn_reelout_frame_7182_R_LE_4328x1056.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4328.1,
+    "cy": 1056.167832167832,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut0_1086x1050.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1086.45,
+    "cy": 1049.5104895104896,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut0_1067x1180.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1066.8,
+    "cy": 1179.5664335664335,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut0_1046x1312.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1045.9,
+    "cy": 1311.7202797202797,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut0_1032x1417.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1032.45,
+    "cy": 1416.8251748251748,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut0_648x1050.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 648.15,
+    "cy": 1049.5174825174824,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut0_630x1181.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 629.8,
+    "cy": 1180.6573426573427,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut0_609x1313.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 608.7,
+    "cy": 1313.3076923076924,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut0_593x1419.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 593.0,
+    "cy": 1418.986013986014,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut1_1611x1072.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1611.3,
+    "cy": 1072.2937062937062,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut1_1596x1221.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1596.3,
+    "cy": 1220.5454545454545,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut1_1584x1381.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1584.2,
+    "cy": 1380.6783216783217,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut1_1571x1540.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1571.3,
+    "cy": 1539.6363636363637,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut1_1237x1072.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1236.9,
+    "cy": 1071.7832167832169,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut1_1223x1220.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1222.85,
+    "cy": 1220.1118881118882,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut1_1212x1381.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1211.7,
+    "cy": 1381.1048951048951,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut1_1198x1540.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1197.65,
+    "cy": 1539.7342657342658,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut2_2085x1115.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2084.95,
+    "cy": 1114.6853146853148,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut2_2079x1216.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2079.25,
+    "cy": 1215.5734265734266,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut2_2076x1346.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2075.8,
+    "cy": 1346.090909090909,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut2_2070x1502.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2070.0,
+    "cy": 1502.3916083916083,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut2_2065x1642.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2065.45,
+    "cy": 1642.3286713286714,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut2_2065x1793.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2065.2,
+    "cy": 1793.4195804195804,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut2_1742x1115.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1742.0,
+    "cy": 1115.027972027972,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut2_1738x1215.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1737.9,
+    "cy": 1214.811188811189,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut2_1735x1345.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1735.25,
+    "cy": 1345.4055944055945,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut2_1731x1501.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1730.65,
+    "cy": 1500.902097902098,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut2_1725x1641.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1725.45,
+    "cy": 1640.8881118881118,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut2_1725x1792.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1724.9,
+    "cy": 1791.993006993007,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut3_2509x1119.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2508.9,
+    "cy": 1118.8531468531469,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut3_2509x1225.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2509.1,
+    "cy": 1224.5944055944055,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut3_2512x1358.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2511.7,
+    "cy": 1357.5664335664335,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut3_2515x1540.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2515.4,
+    "cy": 1539.8251748251748,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut3_2519x1650.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2519.05,
+    "cy": 1650.1958041958042,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut3_2527x1799.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2527.25,
+    "cy": 1799.4195804195804,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut3_2181x1117.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2180.55,
+    "cy": 1117.2937062937062,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut3_2181x1223.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2181.3,
+    "cy": 1222.832167832168,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut3_2185x1356.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2185.05,
+    "cy": 1356.2027972027972,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut3_2189x1538.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2189.25,
+    "cy": 1538.4755244755245,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut3_2193x1648.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2192.8,
+    "cy": 1648.048951048951,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut3_2202x1798.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2201.9,
+    "cy": 1797.7552447552448,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut4_2944x1111.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2943.55,
+    "cy": 1111.2657342657342,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut4_2948x1220.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2947.75,
+    "cy": 1219.6923076923076,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut4_2953x1350.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2953.1,
+    "cy": 1350.3706293706293,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut4_2962x1529.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2961.6,
+    "cy": 1528.832167832168,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut4_2969x1640.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2969.0,
+    "cy": 1639.8741258741259,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut4_2977x1781.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2976.95,
+    "cy": 1781.076923076923,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut4_2610x1109.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2609.7,
+    "cy": 1108.6853146853148,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut4_2616x1217.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2616.45,
+    "cy": 1217.4265734265734,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut4_2624x1348.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2624.2,
+    "cy": 1347.979020979021,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut4_2635x1528.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2635.35,
+    "cy": 1527.5594405594406,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut4_2644x1638.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2644.15,
+    "cy": 1637.951048951049,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut4_2653x1780.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2652.9,
+    "cy": 1780.048951048951,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut5_3376x1085.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3375.6,
+    "cy": 1085.4545454545455,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut5_3384x1188.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3384.0,
+    "cy": 1187.8391608391607,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut5_3396x1315.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3396.35,
+    "cy": 1314.6573426573427,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut5_3410x1468.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3410.45,
+    "cy": 1467.909090909091,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut5_3423x1597.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3422.55,
+    "cy": 1597.4545454545455,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut5_3438x1740.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3437.95,
+    "cy": 1739.7202797202797,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut5_3035x1084.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3034.85,
+    "cy": 1083.986013986014,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut5_3046x1186.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3046.0,
+    "cy": 1186.13986013986,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut5_3060x1313.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3060.25,
+    "cy": 1312.979020979021,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut5_3076x1467.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3076.45,
+    "cy": 1467.055944055944,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut5_3090x1597.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3089.95,
+    "cy": 1597.2727272727273,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut5_3105x1740.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3105.25,
+    "cy": 1739.7132867132866,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut6_3873x1036.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3873.25,
+    "cy": 1036.2027972027972,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut6_3893x1184.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3892.65,
+    "cy": 1184.3776223776224,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut6_3910x1333.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3909.7,
+    "cy": 1333.188811188811,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut6_3928x1482.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3928.35,
+    "cy": 1482.188811188811,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut6_3943x1603.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3943.1,
+    "cy": 1603.4405594405594,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut6_3508x1036.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3507.9,
+    "cy": 1036.1118881118882,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut6_3529x1185.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3529.0,
+    "cy": 1185.2307692307693,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut6_3548x1334.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3548.1,
+    "cy": 1334.0839160839162,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut6_3568x1484.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3567.65,
+    "cy": 1483.993006993007,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut6_3583x1605.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3583.0,
+    "cy": 1604.986013986014,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut7_4452x1033.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4452.25,
+    "cy": 1032.8671328671328,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut7_4470x1162.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4470.5,
+    "cy": 1161.5594405594406,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut7_4490x1287.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4489.7,
+    "cy": 1287.097902097902,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut7_4505x1398.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4504.85,
+    "cy": 1397.7972027972028,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_L_STRUT_strut7_4524x1536.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4524.1,
+    "cy": 1536.118881118881,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut7_4029x1038.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4028.85,
+    "cy": 1037.8741258741259,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut7_4049x1166.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4048.85,
+    "cy": 1165.986013986014,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut7_4068x1291.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4068.05,
+    "cy": 1291.4055944055945,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut7_4084x1403.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4083.9,
+    "cy": 1403.2517482517483,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  },
+  {
+    "file": "training_patches\\STRUT\\left_turn_reelout_frame_7182_R_STRUT_strut7_4105x1542.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4104.95,
+    "cy": 1541.7622377622379,
+    "patch": 20,
+    "image_id": "left_turn_reelout_frame_7182"
+  }
+]

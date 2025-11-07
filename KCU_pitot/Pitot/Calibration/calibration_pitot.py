@@ -19,7 +19,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
 
-
 def analyze_pitot_dataset(
     data_dir: str,
     take_first_seconds: float = 5.0,
@@ -122,19 +121,25 @@ def analyze_pitot_dataset(
     for ws, data in plot_data.items():
         data["calibrated_ws"] = [ws_slope * v + ws_intercept for v in data["measured_ws"]]
 
-    # --- Plot 1: wind-speed sensitivity to AoA (per true ws) ---
+    # --- Plot 1: wind-speed vs AoA, per true ws (RAW vs CALIBRATED), legend OUTSIDE ---
     plt.figure(figsize=(10, 7))
-    colors = plt.cm.viridis(np.linspace(0, 1, len(plot_data)))
-    for color, (windspeed, data) in zip(colors, sorted(plot_data.items())):
-        angles, ws_cal = zip(*sorted(zip(data["angle"], data["calibrated_ws"])))
-        plt.plot(angles, ws_cal, "o-", color=color, label=f"{windspeed} m/s")
-        plt.hlines(windspeed, min(angles), max(angles), colors=color, linestyles="dotted")
+    for windspeed, data in sorted(plot_data.items()):
+        pairs = sorted(zip(data["angle"], data["measured_ws"], data["calibrated_ws"]))
+        angs = [p[0] for p in pairs]
+        ws_meas = [p[1] for p in pairs]
+        ws_cal  = [p[2] for p in pairs]
+
+        # Raw first; calibrated reuses same color (dashed)
+        line_raw, = plt.plot(angs, ws_meas, "o-", label=f"{windspeed} m/s raw")
+        color = line_raw.get_color()
+        plt.plot(angs, ws_cal, "--", label=f"{windspeed} m/s calibrated", color=color)
+
     plt.xlabel(r"Inflow Angle $\phi$ (°)")
-    plt.ylabel("Measured Wind Speed (m/s)")
-    plt.title("Wind Speed Accuracy and Sensitivity")
+    plt.ylabel("Wind Speed (m/s)")
+    plt.title("Wind Speed: raw vs calibrated across inflow angles")
     plt.grid(True)
-    plt.legend(title="Actual Speed", bbox_to_anchor=(1.01, 1), loc="upper left")
-    plt.tight_layout(rect=[0, 0, 1, 1])
+    plt.legend(title="Series", bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0., fontsize=9)
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
 
     # Build a per-windspeed table (optional, for inspection)
@@ -144,7 +149,59 @@ def analyze_pitot_dataset(
             wind_ws_rows.append({"True WS (m/s)": ws, "Angle (°)": ang, "Measured (m/s)": meas, "Calibrated (m/s)": cal})
     wind_ws_df = pd.DataFrame(wind_ws_rows).sort_values(["True WS (m/s)", "Angle (°)"])
 
-    # --- Per-angle wind-speed error (using *uncalibrated* measured_ws, as in your script) ---
+    # --- Per-angle wind-speed error summary (using CALIBRATED values) ---
+    # Also assemble a flat list of residuals for a simple accuracy plot.
+    errors_ws = []  # calibrated - actual
+    for ws, data in sorted(plot_data.items()):
+        for ang, cal in zip(data["angle"], data["calibrated_ws"]):
+            errors_ws.append(cal - ws)
+    errors_ws = np.asarray(errors_ws, dtype=float)
+
+    if errors_ws.size:
+        mean_ws  = float(np.mean(errors_ws))
+        std_ws   = float(np.std(errors_ws, ddof=1)) if errors_ws.size > 1 else 0.0
+        # 95% CI for mean
+        try:
+            from scipy import stats
+            t_val = stats.t.ppf(0.975, df=errors_ws.size-1) if errors_ws.size > 1 else float('nan')
+        except Exception:
+            t_val = 1.96
+        sem = std_ws / np.sqrt(errors_ws.size) if errors_ws.size > 0 else float('inf')
+        ciL, ciH = mean_ws - t_val*sem, mean_ws + t_val*sem
+        qL, qH = np.percentile(errors_ws, [2.5, 97.5])
+
+        print("\nWind-speed accuracy (calibrated vs actual, all angles & ws≤max):")
+        print(f"N points             : {errors_ws.size}")
+        print(f"Mean error (bias)    : {mean_ws:.3f} m/s")
+        print(f"95% CI of mean       : [{ciL:.3f}, {ciH:.3f}] m/s")
+        print(f"Std dev of errors    : {std_ws:.3f} m/s")
+        print(f"Central 95% of errors: [{qL:.3f}, {qH:.3f}] m/s  (empirical)")
+
+        # Simple histogram with normal fit + shading, legend OUTSIDE
+        fig, ax = plt.subplots(figsize=(9, 5))
+        ax.hist(errors_ws, bins=30, density=True, alpha=0.6, edgecolor='k', label="Errors (hist)")
+        sigma = std_ws if std_ws > 0 else 1e-9
+        xs = np.linspace(mean_ws - 4*sigma, mean_ws + 4*sigma, 400)
+        pdf = (1.0/(sigma*np.sqrt(2*np.pi))) * np.exp(-0.5*((xs - mean_ws)/sigma)**2)
+        ax.plot(xs, pdf, linewidth=2, label="Normal fit")
+
+        # Shaded central 95% (light orange)
+        mask_cent = (xs >= qL) & (xs <= qH)
+        ax.fill_between(xs[mask_cent], 0, pdf[mask_cent], alpha=0.20, color='orange',
+                        label="Central 95% (empirical)")
+        # 95% CI of mean (blue band)
+        ax.axvspan(ciL, ciH, alpha=0.15, color='tab:blue', label="95% CI of mean (bias)")
+        ax.axvline(mean_ws, linestyle='-', linewidth=2, label=f"Mean = {mean_ws:.2f} m/s")
+
+        ax.set_title("Wind-speed error distribution (calibrated − actual)")
+        ax.set_xlabel("Error [m/s]")
+        ax.set_ylabel("Density")
+        ax.grid(True)
+        ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0., fontsize=9)
+        plt.tight_layout(rect=[0, 0, 0.8, 1])
+        plt.show()
+
+    # --- Per-angle table: average absolute & relative wind-speed errors (CALIBRATED) ---
     angles_unique = sorted({ang for d in plot_data.values() for ang in d["angle"]})
     angle_results = []
     for angle in angles_unique:
@@ -152,28 +209,27 @@ def analyze_pitot_dataset(
         for actual_ws, data in plot_data.items():
             if angle in data["angle"]:
                 idx = data["angle"].index(angle)
-                meas_ws = data["measured_ws"][idx]
-                abs_errors.append(abs(meas_ws - actual_ws))
+                cal_ws = data["calibrated_ws"][idx]
+                abs_errors.append(abs(cal_ws - actual_ws))
                 actual_ws_vals.append(actual_ws)
-        if not abs_errors:
-            continue
-        avg_abs_error = float(np.mean(abs_errors))
-        avg_actual_ws = float(np.mean(actual_ws_vals))
-        avg_rel_error = (avg_abs_error / avg_actual_ws) * 100 if avg_actual_ws != 0 else 0.0
-        angle_results.append(
-            {"Angle (°)": angle, "Avg Abs Error (m/s)": avg_abs_error, "Avg Rel Error (%)": avg_rel_error}
-        )
+        if abs_errors:
+            avg_abs_error = float(np.mean(abs_errors))
+            avg_actual_ws = float(np.mean(actual_ws_vals))
+            avg_rel_error = (avg_abs_error / avg_actual_ws) * 100 if avg_actual_ws != 0 else 0.0
+            angle_results.append(
+                {"Angle (°)": angle, "Avg Abs Error (m/s)": avg_abs_error, "Avg Rel Error (%)": avg_rel_error}
+            )
     angle_err_df = pd.DataFrame(angle_results).sort_values("Angle (°)")
-    overall_avg_abs_error = float(angle_err_df["Avg Abs Error (m/s)"].mean())
-    overall_avg_rel_error = float(angle_err_df["Avg Rel Error (%)"].mean())
+    if not angle_err_df.empty:
+        overall_avg_abs_error = float(angle_err_df["Avg Abs Error (m/s)"].mean())
+        overall_avg_rel_error = float(angle_err_df["Avg Rel Error (%)"].mean())
+        print("\nWind-speed error summary per inflow angle (calibrated):")
+        print(angle_err_df.round(3).to_string(index=False))
+        print("\nOverall average errors across all angles:")
+        print(f"Average Absolute Error: {overall_avg_abs_error:.3f} m/s")
+        print(f"Average Relative Error: {overall_avg_rel_error:.3f} %")
 
-    print("\nCorrected error summary per inflow angle:")
-    print(angle_err_df.round(3).to_string(index=False))
-    print("\nOverall average errors across all angles:")
-    print(f"Average Absolute Error: {overall_avg_abs_error:.3f} m/s")
-    print(f"Average Relative Error: {overall_avg_rel_error:.3f} %")
-
-    # --- AoA error per windspeed (10–30 m/s) ---
+    # --- AoA error per windspeed (10–max), simple tables only (no extra plots) ---
     aoa_error_rows = []
     for windspeed in range(10, max_windspeed_for_scan + 1):
         abs_errors, rel_errors = [], []
@@ -194,33 +250,32 @@ def analyze_pitot_dataset(
                 }
             )
     aoa_err_df = pd.DataFrame(aoa_error_rows).sort_values("Windspeed (m/s)")
-    overall_avg_aoa_abs_error = float(aoa_err_df["Avg Abs Error (°)"].mean()) if not aoa_err_df.empty else np.nan
-    overall_avg_aoa_rel_error = float(aoa_err_df["Avg Rel Error (%)"].mean()) if not aoa_err_df.empty else np.nan
-
-    print("\nCorrected AoA error summary per wind speed:")
     if not aoa_err_df.empty:
+        overall_avg_aoa_abs_error = float(aoa_err_df["Avg Abs Error (°)"].mean())
+        overall_avg_aoa_rel_error = float(aoa_err_df["Avg Rel Error (%)"].mean())
+        print("\nAoA error summary per wind speed (measured vs nominal):")
         print(aoa_err_df.round(3).to_string(index=False))
-        print("\nOverall average errors across all wind speeds:")
+        print("\nOverall average AoA errors across all wind speeds:")
         print(f"Average Absolute Error: {overall_avg_aoa_abs_error:.3f} °")
         print(f"Average Relative Error: {overall_avg_aoa_rel_error:.3f} %")
     else:
-        print("No AoA results (did not find matching files).")
+        print("\nNo AoA results (did not find matching files).")
 
-    # --- Plot 2: Measured vs Actual AoA per windspeed ---
+    # --- Plot 2 (unchanged style, legend OUTSIDE): Measured vs Actual AoA per windspeed ---
     if aoa_plot_data:
         plt.figure(figsize=(10, 7))
-        colors = plt.cm.plasma(np.linspace(0, 1, len(aoa_plot_data)))
-        for color, (angle, data) in zip(colors, sorted(aoa_plot_data.items())):
+        for angle, data in sorted(aoa_plot_data.items()):
             sorted_pairs = sorted(zip(data["windspeed"], data["measured_aoa"]))
             ws_sorted, aoa_meas_sorted = zip(*sorted_pairs)
-            plt.plot(ws_sorted, np.abs(aoa_meas_sorted), "o-", color=color, label=f"{angle}° Measured")
+            line_meas, = plt.plot(ws_sorted, np.abs(aoa_meas_sorted), "o-", label=f"{angle}° Measured")
+            color = line_meas.get_color()
             plt.hlines(angle, min(ws_sorted), max(ws_sorted), colors=color, linestyles="dotted", label=f"{angle}° Actual")
         plt.xlabel("Wind Tunnel Wind Speed (m/s)")
         plt.ylabel("Angle of Attack (°)")
         plt.title("Measured vs Actual Angle of Attack per Wind Speed")
         plt.grid(True)
-        plt.legend(title="Angle of Attack", bbox_to_anchor=(1.01, 1), loc="upper left")
-        plt.tight_layout()
+        plt.legend(title="Angle of Attack", bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0., fontsize=9)
+        plt.tight_layout(rect=[0, 0, 0.8, 1])
         plt.show()
 
     return {
@@ -228,7 +283,6 @@ def analyze_pitot_dataset(
         "angle_error": angle_err_df,
         "aoa_error": aoa_err_df,
     }
-
 
 if __name__ == "__main__":
     analyze_pitot_dataset(

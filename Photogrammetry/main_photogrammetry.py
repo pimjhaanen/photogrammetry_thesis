@@ -303,7 +303,7 @@ def run_photogrammetry(
 # ------------------------------- script main ---------------------------------
 if __name__ == "__main__":
     # === USER CONFIGURATION ===
-    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/stereo_calibration_ireland.pkl"
+    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
     LEFT_VIDEO = "input/left_videos/09_10_merged.mp4"
     RIGHT_VIDEO = "input/right_videos/09_10_merged.mp4"
     SYNC_OUTPUT_DIR = "Synchronisation/synchronised_frame_indices"

@@ -164,18 +164,93 @@ def open_pozyx_or_die() -> Tuple[PozyxSerial, DeviceRange, str]:
 # -----------------
 def apply_postprocessing(raw_csv_path: str,
     calibration_path: Optional[str] = "calibration/uwb_calibration.json",
-    apply_low_pass: bool = True, alpha: float = 0.95) -> str:
+    apply_low_pass: bool = True, alpha: float = 0.95,
+    utc_offset_s: float = 1.74) -> str:
     """
     Post-process a RAW UWB CSV:
       - calibrate y = a*x + b (from JSON if present)
       - interpolate over NaNs
       - zero-phase EMA smoothing (forward + backward) if apply_low_pass
+      - shift UTC timestamps by +utc_offset_s (default 1.74 s)
       - write processed CSV with same columns as before
-
-    Zero-phase EMA removes lag:
-        fwd[t] = α fwd[t-1] + (1-α) x[t]
-        bwd = reverse( EMA( reverse(fwd) ) )
     """
+
+    def _ema_pass(x: np.ndarray, a: float) -> np.ndarray:
+        y = np.empty_like(x, dtype=float)
+        y[:] = np.nan
+        idx = np.where(np.isfinite(x))[0]
+        if len(idx) == 0:
+            return y
+        i0 = idx[0]
+        y[i0] = x[i0]
+        for i in range(i0 + 1, len(x)):
+            xi = x[i]
+            y[i] = (a * y[i - 1] + (1.0 - a) * xi) if np.isfinite(xi) else y[i - 1]
+        return y
+
+    def _zero_phase_ema(x: np.ndarray, a: float) -> np.ndarray:
+        if x.size == 0:
+            return x
+        fwd = _ema_pass(x, a)
+        bwd = _ema_pass(fwd[::-1], a)[::-1]
+        return bwd
+
+    # --- Load calibration (a, b) ---
+    a, b = 1.0, 0.0
+    if calibration_path and os.path.isfile(calibration_path):
+        with open(calibration_path, "r") as f:
+            calib = json.load(f)
+        a = float(calib.get("a", 1.0))
+        b = float(calib.get("b", 0.0))
+        _log(f"🧪 Using calibration: y = {a:.6f} * x + {b:.6f}")
+    else:
+        _log("ℹ️ No calibration file found — using identity (a=1, b=0).")
+
+    # --- Read RAW ---
+    epochs: List[float] = []
+    distances_raw: List[float] = []
+    with open(raw_csv_path, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            t = row.get("Timestamp (s)")
+            d = row.get("Distance (m)")
+            if not t:
+                continue
+            epochs.append(float(t))
+            distances_raw.append(float(d) if d not in (None, "") else np.nan)
+
+    if not epochs:
+        raise ValueError("No samples found in raw CSV.")
+
+    # --- Time base & UTC strings (with +1.74 s shift) ---
+    start = epochs[0]
+    elapsed_s = [ts - start for ts in epochs]
+    utc_strs = [utc_iso(ts + utc_offset_s) for ts in epochs]  # ← shifted here!
+
+    # --- Calibrate & fill gaps ---
+    y = np.array([a * val + b if not np.isnan(val) else np.nan for val in distances_raw], dtype=float)
+    x_idx = np.arange(len(y))
+    mask = np.isfinite(y)
+    if mask.sum() >= 2:
+        y_interp = np.interp(x_idx, x_idx[mask], y[mask])
+    else:
+        y_interp = y.copy()
+
+    sources = ["reality" if np.isfinite(orig) else "interpolated" for orig in y]
+
+    # --- Smoothing (zero-phase EMA) ---
+    y_out = _zero_phase_ema(y_interp, alpha) if apply_low_pass and y_interp.size > 0 else y_interp
+
+    # --- Write processed CSV ---
+    out = raw_csv_path.replace("_raw.csv", ".csv")
+    with open(out, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["UTC (ISO8601)", "Timestamp (s)", "Distance (m)", "Source"])
+        for u, rel, d, s in zip(utc_strs, elapsed_s, y_out, sources):
+            w.writerow([u, f"{rel:.6f}", "" if np.isnan(d) else f"{float(d):.6f}", s])
+
+    _log(f"✅ Processed data written to: {os.path.abspath(out)} (UTC +{utc_offset_s:.2f}s)")
+    return out
 
     def _ema_pass(x: np.ndarray, a: float) -> np.ndarray:
         """One-direction EMA with NaN carry; starts at first finite sample."""
