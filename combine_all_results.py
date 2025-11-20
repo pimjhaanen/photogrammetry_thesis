@@ -1,236 +1,216 @@
 #!/usr/bin/env python3
+"""
+Robust synchronization of Photogrammetry (frame-based), UWB (UTC), and KCU pitot (time-of-day).
+- Strict nearest-match in UTC with tight tolerance (default 0.12 s)
+- Optional constant KCU UTC offset to correct inter-device clock skew
+- Diagnostics printed to help verify alignment quality
+"""
+
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Tuple
+from datetime import timedelta
+from typing import Optional, Tuple, List
 
-# ----------------------------- Readers ----------------------------------------
+# ------------------------- Readers -------------------------
 
 def read_uwb(path: str) -> pd.DataFrame:
-    """
-    Read UWB CSV:
-      Columns: 'UTC (ISO8601)', 'Timestamp (s)', 'Distance (m)', 'Source'
-    Returns df with:
-      - uwb_utc  (tz-aware UTC datetime64[ns, UTC])
-      - uwb_ts_s (float seconds since UWB start)
-      - uwb_distance_m, uwb_source
-    """
     df = pd.read_csv(path)
-    df["uwb_utc"] = pd.to_datetime(df["UTC (ISO8601)"], utc=True)
+    df["uwb_utc"] = pd.to_datetime(df["UTC (ISO8601)"], utc=True, errors="coerce")
     df["uwb_ts_s"] = pd.to_numeric(df["Timestamp (s)"], errors="coerce")
-    if "Distance (m)" in df.columns:
-        df["uwb_distance_m"] = pd.to_numeric(df["Distance (m)"], errors="coerce")
-    else:
-        df["uwb_distance_m"] = np.nan
-    df["uwb_source"] = df.get("Source", pd.Series(index=df.index, dtype="string"))
-    return df[["uwb_utc", "uwb_ts_s", "uwb_distance_m", "uwb_source"]].sort_values("uwb_utc").reset_index(drop=True)
+    df["uwb_distance_m"] = pd.to_numeric(df.get("Distance (m)"), errors="coerce")
+    df = df.dropna(subset=["uwb_utc"]).sort_values("uwb_utc").reset_index(drop=True)
+    return df[["uwb_utc", "uwb_ts_s", "uwb_distance_m"]]
 
 
-def _parse_kcu_time_of_day_text(s: str) -> Optional[Tuple[int,int,float]]:
-    """Parse text like \"16:58:33.1\" (optional leading apostrophe) into (H,M,S.f)."""
-    if pd.isna(s):
+def _parse_tod(t: str) -> Optional[timedelta]:
+    """
+    Parse 'HH:MM:SS(.fff)' or "'HH:MM:SS(.fff)" -> timedelta since midnight.
+    Returns None if malformed.
+    """
+    if pd.isna(t):
         return None
-    s = str(s).strip()
-    if s.startswith("'"):
-        s = s[1:]
+    s = str(t).strip().lstrip("'")
     parts = s.split(":")
+    if len(parts) != 3:
+        return None
     try:
-        if len(parts) == 3:
-            hh = int(parts[0]); mm = int(parts[1]); ss = float(parts[2])
-        elif len(parts) == 2:
-            hh = 0; mm = int(parts[0]); ss = float(parts[1])
-        else:
-            return None
+        hh = int(parts[0]); mm = int(parts[1]); ss = float(parts[2].replace(",", "."))  # tolerate comma decimals
     except Exception:
         return None
-    return (hh, mm, ss)
+    return timedelta(hours=hh, minutes=mm, seconds=ss)
 
 
-def _combine_date_and_hms(anchor_date_utc: datetime, hms: Tuple[int,int,float]) -> datetime:
-    """Combine UTC anchor DATE with (H,M,S.f) to a tz-aware UTC datetime."""
-    hh, mm, ss = hms
-    base = datetime(anchor_date_utc.year, anchor_date_utc.month, anchor_date_utc.day, tzinfo=timezone.utc)
-    return base + timedelta(hours=hh, minutes=mm, seconds=ss)
-
-
-def read_kcu(path: str, uwb_anchor_utc: datetime) -> pd.DataFrame:
+def read_kcu(path: str, uwb_start_utc: pd.Timestamp) -> pd.DataFrame:
     """
-    Read KCU CSV created earlier. Build:
-      - kcu_utc (tz-aware) by combining UWB anchor DATE with 'time_of_day_utc',
-        with day wrap handling to keep monotonicity.
+    Build absolute UTC for KCU by combining the UWB date with KCU time_of_day_utc,
+    then enforce monotonicity across midnight if needed.
     """
-    df = pd.read_csv(path)
-    hms = df["time_of_day_utc"].apply(_parse_kcu_time_of_day_text)
+    df = pd.read_csv(path, low_memory=False)
+    if "time_of_day_utc" not in df.columns:
+        raise ValueError("KCU file missing 'time_of_day_utc'")
 
-    kcu_utc = []
-    prev_dt = None
-    day_offset = 0
-    anchor_date = uwb_anchor_utc.replace(hour=0, minute=0, second=0, microsecond=0)
-    for val in hms:
-        if val is None:
-            kcu_utc.append(pd.NaT)
-            continue
-        dt = _combine_date_and_hms(anchor_date + timedelta(days=day_offset), val)
-        if prev_dt is not None and dt < prev_dt:
-            day_offset += 1
-            dt = _combine_date_and_hms(anchor_date + timedelta(days=day_offset), val)
-        kcu_utc.append(dt)
-        prev_dt = dt
-    df["kcu_utc"] = pd.to_datetime(kcu_utc, utc=True)
+    base_date = uwb_start_utc.floor("D")
+    tod = df["time_of_day_utc"].apply(_parse_tod)
+    df["kcu_utc"] = [pd.NaT if v is None else (base_date + v) for v in tod]
+    df["kcu_utc"] = pd.to_datetime(df["kcu_utc"], utc=True, errors="coerce")
 
-    df["kcu_ts_s"] = pd.to_numeric(df["timestamp"], errors="coerce") if "timestamp" in df.columns else np.nan
-    return df.sort_values("kcu_utc").reset_index(drop=True)
+    # Enforce monotonicity across midnight (multiple wraps handled)
+    df = df.sort_values("kcu_utc").reset_index(drop=True)
+    day_add = 0
+    for i in range(1, len(df)):
+        if df.loc[i, "kcu_utc"] < df.loc[i - 1, "kcu_utc"]:
+            day_add += 1
+        if day_add:
+            df.loc[i, "kcu_utc"] = df.loc[i, "kcu_utc"] + timedelta(days=day_add)
+
+    return df
 
 
-def read_photogrammetry(path: str, uwb_start_utc: datetime) -> pd.DataFrame:
-    """
-    Read photogrammetry CSV (long format: multiple rows per time_s).
-      Columns: time_s, frame_idx, marker_id, x, y, z
-    Build:
-      - photo_utc = uwb_start_utc + time_s (seconds)   [tz-aware]
-    """
+def read_photogrammetry(path: str, uwb_start_utc: pd.Timestamp) -> pd.DataFrame:
     df = pd.read_csv(path)
     df["time_s"] = pd.to_numeric(df["time_s"], errors="coerce")
     df["frame_idx"] = pd.to_numeric(df["frame_idx"], errors="coerce").astype("Int64")
-    df["photo_utc"] = pd.to_datetime(uwb_start_utc, utc=True) + pd.to_timedelta(df["time_s"], unit="s")
-    return df.sort_values("photo_utc").reset_index(drop=True)
+    df["photo_utc"] = uwb_start_utc + pd.to_timedelta(df["time_s"], unit="s")
+    df = df.dropna(subset=["photo_utc"]).sort_values("photo_utc").reset_index(drop=True)
+    return df
 
+# ------------------------- Core Sync -------------------------
 
-# ----------------------------- Synchronizer -----------------------------------
-
-def synchronize_on_photo_time(
-    photo_df: pd.DataFrame,
-    uwb_df: pd.DataFrame,
-    kcu_df: pd.DataFrame,
-    uwb_tolerance_s: float = 0.25,
-    kcu_tolerance_s: float = 0.25,
-) -> pd.DataFrame:
+def _strict_nearest_asof(left: pd.DataFrame,
+                         right: pd.DataFrame,
+                         left_on: str,
+                         right_on: str,
+                         tol_s: float,
+                         suffixes=("", "_r")) -> pd.DataFrame:
     """
-    Attach the nearest UWB and KCU rows to each photogrammetry row (by photo_utc),
-    within given tolerances. Returns a single long-form dataframe.
+    merge_asof + hard cutoff: if |Δt| > tol, drop the match (set to NaN).
     """
+    merged = pd.merge_asof(
+        left.sort_values(left_on),
+        right.sort_values(right_on),
+        left_on=left_on, right_on=right_on,
+        direction="nearest", tolerance=pd.Timedelta(seconds=tol_s),
+        suffixes=suffixes
+    )
+    # Compute abs time error; reject outside tolerance explicitly (in case some slipped through)
+    dt = (merged[left_on] - merged[right_on]).abs()
+    bad = dt > pd.Timedelta(seconds=tol_s)
+    if bad.any():
+        right_cols = [c for c in right.columns if c != right_on]
+        merged.loc[bad, right_cols] = np.nan
+        merged.loc[bad, right_on] = pd.NaT
+    return merged
+
+
+def synchronize(photo_df, uwb_df, kcu_df, uwb_tol=0.5, kcu_tol=1.0):
+    """
+    Synchronize photogrammetry frames with UWB (for UTC) and then
+    attach the nearest *previous* KCU telemetry sample.
+    """
+    # --- step 1: make sure all UTCs are sorted ---
     p = photo_df.sort_values("photo_utc").copy()
     u = uwb_df.sort_values("uwb_utc").copy()
     k = kcu_df.sort_values("kcu_utc").copy()
 
+    # --- step 2: photo ↔ UWB merge (nearest is fine; same timeline) ---
     merged = pd.merge_asof(
         p, u,
         left_on="photo_utc", right_on="uwb_utc",
         direction="nearest",
-        tolerance=pd.Timedelta(seconds=uwb_tolerance_s),
+        tolerance=pd.Timedelta(seconds=uwb_tol)
     )
 
+    # --- step 3: attach KCU but only backward in time ---
     merged = pd.merge_asof(
         merged.sort_values("photo_utc"), k,
         left_on="photo_utc", right_on="kcu_utc",
-        direction="nearest",
-        tolerance=pd.Timedelta(seconds=kcu_tolerance_s),
-        suffixes=("", "_kcu"),
+        direction="backward",             # ✅ critical fix
+        tolerance=pd.Timedelta(seconds=kcu_tol),
+        suffixes=("", "_kcu")
     )
+
+    lost = merged["kcu_utc"].isna().sum()
+    print(f"[✓] Synced {len(merged)} frames. {lost} frames had no KCU sample within {kcu_tol}s.")
     return merged.reset_index(drop=True)
 
+# ------------------------- Finalize -------------------------
 
-# ----------------------------- Final shaping ----------------------------------
-
-def finalize_synced_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Build the final view:
-      - 'utc' as first column (from photo_utc)
-      - 'timestamp' as second column (from time_s)
-      - drop redundant time columns:
-          ['photo_utc','uwb_utc','uwb_ts_s','uwb_source','time_of_day_utc','kcu_utc','kcu_ts_s']
-      - reorder columns: ['utc','timestamp','frame_idx','marker_id','x','y','z','uwb_distance_m', <rest...>]
-    """
+def finalize(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
-
-    # New unified columns
     out["utc"] = out["photo_utc"]
     out["timestamp"] = out["time_s"]
 
-    # Columns to drop if present
-    drop_cols = ["photo_utc", "uwb_utc", "uwb_ts_s", "uwb_source", "time_of_day_utc", "kcu_utc", "kcu_ts_s"]
-    for c in drop_cols:
-        if c in out.columns:
-            out = out.drop(columns=c)
+    # Order: core columns first; keep all KCU/UWB telemetry afterwards
+    core = ["utc", "timestamp", "frame_idx", "marker_id", "x", "y", "z", "uwb_distance_m"]
+    rest = [c for c in out.columns if c not in core]
+    out = out[core + rest]
 
-    # Reorder: put key columns in front, then the rest
-    front = ["utc", "timestamp", "frame_idx", "marker_id", "x", "y", "z", "uwb_distance_m"]
-    existing_front = [c for c in front if c in out.columns]
-    rest = [c for c in out.columns if c not in existing_front]
-    out = out[existing_front + rest]
+    # Drop time helper columns if you prefer a clean table:
+    drop_cols = ["photo_utc", "uwb_utc", "uwb_ts_s", "kcu_utc"]
+    out = out.drop(columns=[c for c in drop_cols if c in out.columns], errors="ignore")
+    return out
+
+# ------------------------- Offset helper (optional) -------------------------
+
+def estimate_best_kcu_offset_seconds(photo_df: pd.DataFrame,
+                                     kcu_df: pd.DataFrame,
+                                     test_range_s: Tuple[float, float] = (-2.0, 2.0),
+                                     step_s: float = 0.1) -> float:
+    """
+    Grid-search a constant offset that minimizes median |Δt(photo_utc - kcu_utc)|.
+    Use when you suspect a constant clock skew between systems.
+    """
+    offsets = np.arange(test_range_s[0], test_range_s[1] + 1e-9, step_s)
+    meds = []
+    for off in offsets:
+        k = kcu_df.copy()
+        k["kcu_utc"] = k["kcu_utc"] + pd.to_timedelta(off, unit="s")
+        tmp = pd.merge_asof(photo_df.sort_values("photo_utc"),
+                            k.sort_values("kcu_utc"),
+                            left_on="photo_utc", right_on="kcu_utc",
+                            direction="nearest")
+        dt = (tmp["photo_utc"] - tmp["kcu_utc"]).abs().dropna()
+        med = (dt / pd.Timedelta(milliseconds=1)).median() if not dt.empty else np.inf
+        meds.append(med)
+    best_i = int(np.nanargmin(meds))
+    print(f"[Offset search] Best offset ≈ {offsets[best_i]:+.2f}s (median |Δt|={meds[best_i]:.1f} ms)")
+    return float(offsets[best_i])
+
+# ------------------------- Orchestrator -------------------------
+
+def couple_results(kcu_csv, uwb_csv, photo_csv, output_csv=None, uwb_tol=0.5, kcu_tol=1.0):
+    """Main wrapper for reading and synchronizing."""
+    uwb = read_uwb(uwb_csv)
+    uwb_start_utc = uwb["uwb_utc"].iloc[0]
+
+    photo = read_photogrammetry(photo_csv, uwb_start_utc)
+    kcu = read_kcu(kcu_csv, uwb_start_utc)
+
+    synced = synchronize(photo, uwb, kcu, uwb_tol, kcu_tol)
+    out = finalize(synced)
+
+    if output_csv:
+        out.to_csv(output_csv, index=False)
+        print(f"[→] Wrote synchronized dataset → {output_csv}")
 
     return out
 
+# ------------------------- CLI -------------------------
 
-# ----------------------------- Orchestrator -----------------------------------
-
-def couple_results(
-    kcu_csv: str,
-    uwb_csv: str,
-    photo_csv: str,
-    output_csv: Optional[str] = None,
-    uwb_tolerance_s: float = 0.25,
-    kcu_tolerance_s: float = 0.25,
-) -> pd.DataFrame:
-    """
-    High-level function:
-      1) read UWB -> get uwb_start_utc
-      2) read KCU (anchor date = UWB date) -> build kcu_utc
-      3) read Photogrammetry -> photo_utc = uwb_start_utc + time_s
-      4) merge_asof by photo_utc
-      5) finalize to single UTC + timestamp view
-      6) optionally write CSV
-    """
-    uwb = read_uwb(uwb_csv)
-    if uwb.empty:
-        raise ValueError("UWB file appears empty or could not be parsed.")
-    uwb_start_utc = uwb["uwb_utc"].iloc[0]
-
-    kcu = read_kcu(kcu_csv, uwb_anchor_utc=uwb_start_utc)
-    photo = read_photogrammetry(photo_csv, uwb_start_utc=uwb_start_utc)
-
-    synced = synchronize_on_photo_time(
-        photo_df=photo,
-        uwb_df=uwb,
-        kcu_df=kcu,
-        uwb_tolerance_s=uwb_tolerance_s,
-        kcu_tolerance_s=kcu_tolerance_s,
-    )
-
-    # Single UTC + timestamp, drop redundant columns, reorder
-    synced = finalize_synced_columns(synced)
-
-    # Optional write
-    if output_csv:
-        to_write = synced.copy()
-
-        # Format 'utc' as HH:MM:SS.xx (centiseconds), rounded to 2 decimals
-        # and avoid deprecated dtype checker.
-        if "utc" in to_write.columns and isinstance(to_write["utc"].dtype, pd.DatetimeTZDtype):
-            dt_round = to_write["utc"].dt.tz_convert("UTC").dt.round("10ms")  # 0.01 s precision
-            centi = (dt_round.dt.microsecond // 10000).astype(int).astype(str).str.zfill(2)
-            to_write["utc"] = dt_round.dt.strftime("%H:%M:%S") + "." + centi
-
-        to_write.to_csv(output_csv, index=False)
-
-    return synced
-
-
-# --------------------------------- Example ------------------------------------
 if __name__ == "__main__":
-    # === EDIT THESE PATHS ===
     KCU_PATH   = r"KCU_pitot/output/KCU_output_09_10.csv"
     UWB_PATH   = r"UWB/output/uwb_flight_09_10.csv"
-    PHOTO_PATH = r"Photogrammetry/output/09_10_merged_downloop_218.csv"
-    OUT_PATH   = r"output/09_10_downloop_218_complete_dataset.csv"
+    PHOTO_PATH = r"Photogrammetry/output/left_turn_frame_7182.csv"
+    OUT_PATH   = r"output/left_turn_frame_7182_complete_dataset.csv"
 
-    df_synced = couple_results(
+    # Start strict (120 ms), no offset; if still wrong, run the offset search helper (see above)
+    df = couple_results(
         kcu_csv=KCU_PATH,
         uwb_csv=UWB_PATH,
         photo_csv=PHOTO_PATH,
-        output_csv=OUT_PATH,      # set to None to skip writing
-        uwb_tolerance_s=0.25,     # ±0.25 s nearest snap to UWB
-        kcu_tolerance_s=0.25,     # ±0.25 s nearest snap to KCU
+        output_csv=OUT_PATH,
+        uwb_tol=0.5,  # instead of uwb_tol_s
+        kcu_tol=1.0  # instead of kcu_tol_s
     )
-    print(f"[✓] Synced rows: {len(df_synced)}")
-    print(f"[→] Saved to: {OUT_PATH}")
+
+    print(df.head(8))

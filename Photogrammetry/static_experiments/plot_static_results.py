@@ -470,6 +470,7 @@ def plot_multi_static_shapes_from_csv(
     # Optional: direction flips for the Top view after swapping
     invert_top_x: bool = False,
     invert_top_y: bool = False,
+    x_shifts: Optional[Sequence[float]] = None,
 ):
     """
     Panels:
@@ -504,6 +505,9 @@ def plot_multi_static_shapes_from_csv(
         raise ValueError("labels, colors, and flip_x must match the number of CSVs.")
 
     # Prepare datasets (already handles transform_to_local)
+    # --------------------------------------------------
+    # Load all datasets FIRST
+    # --------------------------------------------------
     datasets = []
     for i, p in enumerate(csv_paths):
         pts_local, le_path = _prep_dataset_from_csv(
@@ -516,6 +520,29 @@ def plot_multi_static_shapes_from_csv(
             transform_to_local=transform_to_local,
         )
         datasets.append((pts_local, le_path))
+
+    # --------------------------------------------------
+    # Apply manual X-translation AFTER loading all sets
+    # --------------------------------------------------
+    if x_shifts is None:
+        x_shifts = [0.0] * len(datasets)
+
+    if len(x_shifts) != len(datasets):
+        raise ValueError("x_shifts must have same length as csv_paths.")
+
+    shifted_datasets = []
+    for (pts_local, le_path), dx in zip(datasets, x_shifts):
+
+        if abs(dx) < 1e-12:
+            shifted_datasets.append((pts_local, le_path))
+            continue
+
+        pts_shift = {g: (P + np.array([dx, 0, 0])) for g, P in pts_local.items()}
+        le_shift = None if le_path is None else (le_path + np.array([dx, 0, 0]))
+
+        shifted_datasets.append((pts_shift, le_shift))
+
+    datasets = shifted_datasets
 
     # Compute cube limits (or use fixed)
     def _collect_axis_values(dsets, axis_index: int) -> np.ndarray:
@@ -590,14 +617,15 @@ def plot_multi_static_shapes_from_csv(
     for (pts_local, le_path), color, _ in zip(datasets, colors, labels):
         plot_static_shape(
             points_by_group_3d_world=pts_local,
+            strut_target_lengths=TARGETS,
             show=False, sciview=False,
             endpoints_k=endpoints_k, jump_factor=jump_factor,
             tip_policy=tip_policy, global_up=global_up,
             force_flip_x=False, transform_to_local=False,
             title=None, ax=ax3d, color=color, label=None,
         )
+
     ax3d.set_xlim(*xlim); ax3d.set_ylim(*ylim); ax3d.set_zlim(*zlim)
-    ax3d.set_title("3D view (cube)")
     ax3d.set_xlabel("x [m]"); ax3d.set_ylabel("y [m]"); ax3d.set_zlabel("z [m]")
     ax3d.view_init(elev=elev_3d, azim=azim_3d)
     try:
@@ -686,23 +714,27 @@ def plot_multi_static_shapes_from_csv(
 # --------------------------- CLI Example ---------------------------
 
 if __name__ == "__main__":
+    TARGETS = [1.14, 1.53, 1.92, 2.02, 2.02, 1.92, 1.53, 1.14]
+
     fig, axes = plot_multi_static_shapes_from_csv(
         csv_paths=[
-            "static_test_output/straight_flight_reelout_frame_7182.csv",
-            "static_test_output/left_turn_reelout_frame_7362.csv",
+            "static_test_output/powered_state_reelin_frame_17372.csv",
+            "static_test_output/depowered_state_reelin_frame_17611.csv",
         ],
-        labels=["Straight Flight", "Turn (Left)"],
+        labels=["Powered", "Depowered"],
         colors=["C0", "C1"],
         transform_to_local=True,
         fixed_limits={'x': (-2, 2), 'y': (-5, 5), 'z': (-4, 1)},
         flip_x=[True, False],
-        # Top-view tweak example (only applies when transform_to_local=True):
-        flip_top_xy_in_local=True,  # replaces swap_top_xy_when_local
+        x_shifts=[0.0, -0.25],  # shift second cloud by +0.42 m
+        flip_top_xy_in_local=True,
         invert_top_x=False,
         invert_top_y=False,
-        figure_title="Kite shape during reel-out, wing coordinate frame",
+        figure_title="Kite shape in powered and depowered state, wing coordinate frame",
         legend_title=None,
         legend_position="between_right",
         save_path="static_kite_four_views_with_title_and_legend.png",
         dpi=300,
     )
+
+

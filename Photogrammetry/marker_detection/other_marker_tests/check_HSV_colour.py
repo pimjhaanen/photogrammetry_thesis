@@ -14,7 +14,7 @@ def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         clicked_point = (x, y)
 
-def pick_color(frame, alpha=4.0, beta=20, scale=0.5):
+def pick_color(frame, alpha=6.0, beta=25, scale=0.5):
     """
     Shows a brightness/contrast boosted, *resized* frame and reports HSV values
     from the *same* resized image (so clicks line up).

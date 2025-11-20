@@ -561,9 +561,10 @@ def plot_coarse_3d_pair(
         ax.set_xlim(_pad(pitches[0], pitches[-1]))
         ax.set_ylim(_pad(rolls[0],   rolls[-1]))
         ax.set_zlim(_pad(yaws[0],    yaws[-1]))
-        ax.set_xlabel("θ (pitch) [deg]")
-        ax.set_ylabel("φ (roll) [deg]")
-        ax.set_zlabel("ψ (yaw) [deg]")
+        ax.set_xlabel(r"$\Delta \theta_{\mathrm{corr}}\ (^\circ)$")
+        ax.set_ylabel(r"$\Delta \phi_{\mathrm{corr}}\ (^\circ)$")
+        ax.set_zlabel(r"$\Delta \psi_{\mathrm{corr}}\ (^\circ)$")
+
         ax.set_title(title)
 
         # Helper to apply colormap with alpha and NaN transparency.
@@ -634,15 +635,26 @@ def plot_coarse_3d_pair(
         cb.set_label(label)
 
     # Titles/labels for right metric
-    right_label = "|Δspan| (m)" if use_spanerr else "span (m)"
-    right_title = f"|span − UWB|  (UWB={uwb_span_m:.3f} m)" if use_spanerr else "Estimated span (m)"
+    right_label = r"$|\Delta b|$ (m)"  # colorbar label
+    right_title = fr"$|b_{{\mathrm{{photo}}}} - b_{{\mathrm{{UWB}}}}|$  (UWB={uwb_span_m:.3f} m)"  # plot title
 
     fig = plt.figure(figsize=(12, 5))
-    fig.suptitle("Mean epipolar and span (compared to UWB) error for slight changes in yaw, roll and pitch", fontsize=12)
+    fig.suptitle(
+        r"Mean epipolar and span deviation for small corrections "
+        r"($\Delta \psi_{\mathrm{corr}}, \Delta \phi_{\mathrm{corr}}, \Delta \theta_{\mathrm{corr}}$)",
+        fontsize=12
+    )
 
+    # --- Left: Mean epipolar error ---
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-    _draw_block_faces(ax1, V_epi, "mean |dy| (px)", "Epipolar mean |dy| (px)")
+    _draw_block_faces(
+        ax1,
+        V_epi,
+        r"$\overline{|\delta_y|}$ (px)",  # colorbar label
+        r"Mean epipolar error $\overline{|\delta_y|}$ (px)"  # title
+    )
 
+    # --- Right: |b_photo - b_UWB| surface ---
     ax2 = fig.add_subplot(1, 2, 2, projection='3d')
     _draw_block_faces(ax2, V_right, right_label, right_title)
 
@@ -798,18 +810,30 @@ def plot_coarse_slice_smoothed(
     xlim = _pad(xmin, xmax); ylim = _pad(ymin, ymax)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8))
-    fig.suptitle(f"Smoothed slice at ψ={yaw_target:.3f}°", fontsize=12)
+    fig.suptitle(
+        fr"Parameter slice at $\Delta \psi_{{\mathrm{{corr}}}} = {yaw_target:.3f}^\circ$",
+        fontsize=12
+    )
 
+    # --- Left plot: Mean epipolar error ---
     cn1 = axes[0].tricontourf(X[m1], Y[m1], Z_epi[m1], levels=levels)
-    fig.colorbar(cn1, ax=axes[0], shrink=0.9, pad=0.02).set_label("mean |dy| (px)")
-    axes[0].set_xlabel("θ (pitch) [deg]"); axes[0].set_ylabel("φ (roll) [deg]")
-    axes[0].set_xlim(xlim); axes[0].set_ylim(ylim); axes[0].set_title("Epipolar mean |dy| (px)")
+    cb1 = fig.colorbar(cn1, ax=axes[0], shrink=0.9, pad=0.02)
+    cb1.set_label(r"$\overline{|\delta_y|}$ (px)")
+    axes[0].set_xlabel(r"$\Delta \theta_{\mathrm{corr}}\ (^\circ)$")
+    axes[0].set_ylabel(r"$\Delta \phi_{\mathrm{corr}}\ (^\circ)$")
+    axes[0].set_xlim(xlim)
+    axes[0].set_ylim(ylim)
+    axes[0].set_title(r"Mean epipolar error $\overline{|\delta_y|}$ (px)")
 
-    right_label = "|Δspan| (m)" if uwb_span_m is not None else "span (m)"
+    # --- Right plot: |b_photo - b_UWB| ---
     cn2 = axes[1].tricontourf(X[m2], Y[m2], Z_right[m2], levels=levels)
-    fig.colorbar(cn2, ax=axes[1], shrink=0.9, pad=0.02).set_label(right_label)
-    axes[1].set_xlabel("θ (pitch) [deg]"); axes[1].set_ylabel("φ (roll) [deg]")
-    axes[1].set_xlim(xlim); axes[1].set_ylim(ylim); axes[1].set_title(right_label)
+    cb2 = fig.colorbar(cn2, ax=axes[1], shrink=0.9, pad=0.02)
+    cb2.set_label(r"$|\Delta b|$ (m)")
+    axes[1].set_xlabel(r"$\Delta \theta_{\mathrm{corr}}\ (^\circ)$")
+    axes[1].set_ylabel(r"$\Delta \phi_{\mathrm{corr}}\ (^\circ)$")
+    axes[1].set_xlim(xlim)
+    axes[1].set_ylim(ylim)
+    axes[1].set_title(fr"$|b_{{\mathrm{{photo}}}} - b_{{\mathrm{{UWB}}}}|$  (UWB={uwb_span_m:.3f} m)")
 
     if show_samples:
         for ax in axes:
@@ -993,7 +1017,7 @@ if __name__ == "__main__":
     frame = 7362
     N_CLICKS = 10
     UWB_SPAN_M = 7.26  # set None to ignore span constraints
-    SPAN_TOL_M = 0.06      # ±5 cm0.0
+    SPAN_TOL_M = 0.05      # ±5 cm0.0
 
     out = coarse_to_fine_search_ypr(
         calib_file=calib_file,

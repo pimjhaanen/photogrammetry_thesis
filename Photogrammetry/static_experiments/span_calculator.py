@@ -383,14 +383,14 @@ def measure_span_two_points(
 
 # ------------------------------- CLI ----------------------------------
 if __name__ == "__main__":
-    delta_yaw = 0.926
-    delta_roll = -0.462
-    delta_pitch = -0.11
+    delta_yaw = 0
+    delta_roll = 0
+    delta_pitch = 10
     uwb_span = 7.8677
     span = measure_span_two_points(
         calib_file="../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl",
-        left_image_path="left_input_static/L_P2_TL1.jpg",
-        right_image_path="right_input_static/R_P2_TL1.jpg",
+        left_image_path="left_input_static/L_P1_S.jpg",
+        right_image_path="right_input_static/R_P1_S.jpg",
         rectify_alpha=0,      # keep identical to gridwise run
         delta_yaw_deg=delta_yaw,
         delta_roll_deg=delta_roll,

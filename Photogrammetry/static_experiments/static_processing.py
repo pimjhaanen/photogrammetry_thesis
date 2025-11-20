@@ -625,7 +625,7 @@ def static_manual_triangulation_test(
 # ------------------------------ Script entry ----------------------------------
 
 if __name__ == "__main__":
-    left_frame = 17701
+    left_frame = 17611
     CSV = static_manual_triangulation_test(
         calib_file="../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl",
         left_image_path="../input/left_videos/09_10_merged.MP4",
@@ -636,10 +636,10 @@ if __name__ == "__main__":
         n_per_strut=6,
         n_per_strut_list=[5, 5, 6, 6, 6, 6, 5, 5],
         n_can=0,
-        yaw_adj_deg=0.004,
-        pitch_adj_deg=-0.138,
-        roll_adj_deg=-0.922,
+        yaw_adj_deg=0.194,
+        pitch_adj_deg=0.164,
+        roll_adj_deg=0.186,
         refine_subpix=False,
         display_scale=0.5,
-        output_csv_basename="depowered_state_reelin_frame_17701",
+        output_csv_basename="depowered_state_reelin_frame_17611",
     )

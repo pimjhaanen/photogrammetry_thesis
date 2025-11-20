@@ -1,139 +1,210 @@
-"""This code can be used to run the stereo-photogrammetry main pipeline on a pair of synced videos.
-It (1) loads stereo calibration, (2) synchronizes left/right videos via your sync CSV,
-(3) iterates matched frame pairs, (4) calls `process_stereo_pair(...)` to detect/track crosses
-+ ArUco and triangulate to 3D, and (5) saves 3 CSVs with cross and ArUco outputs.
+"""
+Runner for kite stereo photogrammetry with per-frame rotation corrections.
 
-You can adapt: input files/paths, time window (skip/end seconds), FPS, and all stereo/
-detection/debug tunables through `StereoConfig` (imported from your processing module)."""
+- Reads stereo calib (.pkl).
+- Finds matched (left_idx, right_idx) via match_videos (sync CSV).
+- Reads CSV with columns: frame_left, delta_yaw_deg, delta_pitch_deg, delta_roll_deg
+  (header names are flexible; common variants like 'frame', 'yaw_deg', 'delta_yaw' work).
+- Interpolates corrections for EVERY matched left frame in range [min..max] of CSV.
+- Builds R_corr from yaw(Z)–pitch(Y)–roll(X) (ZYX order), degrees -> radians.
+- Applies R_current = R_corr @ R_base if cfg.premultiply_rotation_correction=True
+  (recommended when your deltas are defined in LEFT camera/world frame).
+  Set False for post-multiplying if your deltas are in RIGHT cam frame.
+- Passes R_current to process_stereo_pair(...) each frame.
+- Optionally prints epipolar stats every N frames.
 
-import os
-import csv
-import cv2
-import pickle
+Outputs:
+- output/cross3d_<video>.csv   (time_s, frame_idx, marker_id, x,y,z)
+- output/epi_stats_<video>.csv (time_s, frame_idx, n_pairs, mean_vdisp, p95_vdisp, mean_2d_dist)
+"""
+
+import os, csv, pickle
 import numpy as np
 import pandas as pd
+import cv2
 from typing import List, Tuple, Optional
 
-# --- Your project utilities ---
+# --- project imports you already have ---
 from Photogrammetry.Synchronisation.synchronisation_utils import match_videos, find_continuation_files
-
-# Import the refactored core + config/state dataclasses
 from Photogrammetry.stereo_photogrammetry_utils import (
     process_stereo_pair, StereoConfig, TrackerState
 )
-
-# Import the cross labeling function
 from Photogrammetry.kite_shape_reconstruction_utils import separate_LE_and_struts
 
+# ------------------------------- I/O helpers --------------------------------
 
-# ------------------------------ Helper I/O -----------------------------------
-
-def _load_calibration(calib_pkl_path: str):
-    """Load stereo calibration dict from a .pkl created by your calibration step.
-
-    RELEVANT FUNCTION INPUTS:
-    - calib_pkl_path: path to the pickle with keys:
-      camera_matrix_1, dist_coeffs_1, camera_matrix_2, dist_coeffs_2, R, T
-    """
-    with open(calib_pkl_path, "rb") as f:
+def load_calib(pkl_path: str) -> dict:
+    with open(pkl_path, "rb") as f:
         calib = pickle.load(f)
-    required_keys = ["camera_matrix_1", "dist_coeffs_1", "camera_matrix_2", "dist_coeffs_2", "R", "T"]
-    missing = [k for k in required_keys if k not in calib]
-    if missing:
-        raise KeyError(f"Calibration file is missing keys: {missing}")
+    for k in ["camera_matrix_1","dist_coeffs_1","camera_matrix_2","dist_coeffs_2","R","T"]:
+        if k not in calib:
+            raise KeyError(f"Missing '{k}' in calibration file.")
     return calib
 
-
-def _read_matched_indices(sync_csv_path: str) -> List[Tuple[float, int, int]]:
-    """Read time and left/right matched frame indices from the sync CSV produced by `match_videos`.
-
-    RELEVANT FUNCTION INPUTS:
-    - sync_csv_path: path to CSV created by `match_videos`
-
-    Returns:
-    - list of tuples: (time_s_relative_to_flash, left_frame_idx, right_frame_idx)
-
-    Notes:
-    - Supports both formats:
-      * New: Time_s,Frame_Video1,Frame_Video2
-      * Legacy: Frame_Video1,Frame_Video2  (time is reconstructed as None -> you can skip time filtering)
-    """
-    out: List[Tuple[float, int, int]] = []
+def read_matched(sync_csv_path: str) -> List[Tuple[float,int,int]]:
+    out = []
     with open(sync_csv_path, "r", newline="") as f:
-        reader = csv.reader(f)
-        header = next(reader, None)
-        # Detect format
+        r = csv.reader(f)
+        header = next(r, None)
         has_time = False
         if header:
-            cols = [h.strip().lower() for h in header]
-            has_time = ("time_s" in cols)
-
+            cols = [c.strip().lower() for c in header]
+            has_time = "time_s" in cols
         if has_time:
-            # Expect: Time_s, Frame_Video1, Frame_Video2
-            for row in reader:
-                if len(row) < 3:
-                    continue
-                t = float(row[0])
-                i1 = int(row[1])
-                i2 = int(row[2])
-                out.append((t, i1, i2))
+            for row in r:
+                if len(row) >= 3:
+                    out.append((float(row[0]), int(row[1]), int(row[2])))
         else:
-            # Legacy: Frame_Video1, Frame_Video2 (no time column)
-            # We will set time to NaN here; downstream code only uses indices for windowing.
-            for row in reader:
-                if len(row) < 2:
-                    continue
-                i1 = int(row[0])
-                i2 = int(row[1])
-                out.append((float("nan"), i1, i2))
+            for row in r:
+                if len(row) >= 2:
+                    out.append((float("nan"), int(row[0]), int(row[1])))
     return out
 
+# -------------------------- rotation utils (ZYX) ----------------------------
 
-# ------------------------------ Main runner ----------------------------------
+def euler_ypr_leftframe(yaw_deg: float, pitch_deg: float, roll_deg: float) -> np.ndarray:
+    """
+    Build dR to apply in the LEFT camera/world frame with the same convention
+    as correction_factor_calculator:
+      - yaw about +Y
+      - pitch about +X
+      - roll about +Z
+    Order: yaw -> pitch -> roll   so dR = Ry(yaw) @ Rx(pitch) @ Rz(roll)
+    """
+    y, x, z = np.deg2rad([yaw_deg, pitch_deg, roll_deg])
 
-def run_photogrammetry(
+    cy, sy = np.cos(y), np.sin(y)   # yaw about +Y
+    cx, sx = np.cos(x), np.sin(x)   # pitch about +X
+    cz, sz = np.cos(z), np.sin(z)   # roll about +Z
+
+    Ry = np.array([[ cy, 0,  sy],
+                   [  0, 1,   0],
+                   [-sy, 0,  cy]], dtype=float)
+    Rx = np.array([[ 1,  0,   0],
+                   [ 0, cx, -sx],
+                   [ 0, sx,  cx]], dtype=float)
+    Rz = np.array([[ cz, -sz, 0],
+                   [ sz,  cz, 0],
+                   [  0,   0, 1]], dtype=float)
+
+    return Ry @ Rx @ Rz
+
+
+def _read_corrections_flex(path_or_df) -> pd.DataFrame:
+    """
+    Read a corrections table from CSV/Excel or pass-through a DataFrame.
+    Flexible header mapping. Produces columns:
+        ['frame_left','delta_yaw_deg','delta_pitch_deg','delta_roll_deg'] (floats)
+    """
+    if isinstance(path_or_df, pd.DataFrame):
+        df = path_or_df.copy()
+    else:
+        p = str(path_or_df)
+        if p.lower().endswith((".xlsx", ".xls")):
+            df = pd.read_excel(p)
+        else:
+            df = pd.read_csv(p)
+
+    # Build lowercase -> original name map
+    lc_to_orig = {str(c).strip().lower(): c for c in df.columns}
+
+    def pick(candidates: list) -> str:
+        for key in candidates:
+            if key in lc_to_orig:
+                return lc_to_orig[key]
+        raise ValueError(
+            "Corrections CSV is missing any of: "
+            + ", ".join(candidates)
+            + f". Available columns: {list(df.columns)}"
+        )
+
+    # Flexible candidates
+    frame_keys = ["frame_left", "left_frame", "frame", "frame_idx", "idx_left", "l_frame"]
+    yaw_keys   = ["delta_yaw_deg", "dyaw_deg", "yaw_deg", "delta_yaw", "yaw"]
+    pitch_keys = ["delta_pitch_deg", "dpitch_deg", "pitch_deg", "delta_pitch", "pitch"]
+    roll_keys  = ["delta_roll_deg", "droll_deg", "roll_deg", "delta_roll", "roll"]
+
+    # Pick actual column names present
+    c_frame = pick(frame_keys)
+    c_yaw   = pick(yaw_keys)
+    c_pitch = pick(pitch_keys)
+    c_roll  = pick(roll_keys)
+
+    # Rename to canonical names
+    df = df.rename(columns={
+        c_frame: "frame_left",
+        c_yaw:   "delta_yaw_deg",
+        c_pitch: "delta_pitch_deg",
+        c_roll:  "delta_roll_deg",
+    })
+
+    # Coerce to numeric and clean
+    for k in ["frame_left","delta_yaw_deg","delta_pitch_deg","delta_roll_deg"]:
+        df[k] = pd.to_numeric(df[k], errors="coerce")
+
+    df = df.dropna(subset=["frame_left"]).sort_values("frame_left")
+    # If duplicates on the same frame exist, keep the last
+    df = df.drop_duplicates(subset=["frame_left"], keep="last").reset_index(drop=True)
+    if df.empty:
+        raise ValueError("Corrections table became empty after cleaning.")
+    return df
+
+def build_interp_functions(df_corr: pd.DataFrame):
+    """
+    Returns callables yaw(f), pitch(f), roll(f) that linearly interpolate
+    angles (deg) for arbitrary left-frame index f. Handles single-row CSVs too.
+    Also returns the min and max frame indices present in the corrections.
+    """
+    f   = df_corr["frame_left"].to_numpy(dtype=float)
+    yaw = df_corr["delta_yaw_deg"].to_numpy(dtype=float)
+    pit = df_corr["delta_pitch_deg"].to_numpy(dtype=float)
+    rol = df_corr["delta_roll_deg"].to_numpy(dtype=float)
+
+    order = np.argsort(f)
+    f, yaw, pit, rol = f[order], yaw[order], pit[order], rol[order]
+
+    # If only one row, return constant functions
+    if len(f) == 1:
+        fyaw = lambda idx, v=float(yaw[0]): v
+        fpit = lambda idx, v=float(pit[0]): v
+        frol = lambda idx, v=float(rol[0]): v
+        return fyaw, fpit, frol, float(f[0]), float(f[0])
+
+    def _interp(ys):
+        return lambda idx, xs=f, ys=ys: float(np.interp(float(idx), xs, ys))
+
+    return _interp(yaw), _interp(pit), _interp(rol), float(f[0]), float(f[-1])
+
+# ------------------------------ main runner ---------------------------------
+
+def run_from_corrections(
     calib_file: str,
-    left_video_path: str,
-    right_video_path: str,
+    left_video: str,
+    right_video: str,
     sync_output_dir: str,
-    skip_seconds: int = 0,
-    take_seconds: int = 20,
-    fps: int = 30,
+    corrections_csv: str,
     cfg: Optional[StereoConfig] = None,
 ):
-    """RELEVANT FUNCTION INPUTS:
-    - calib_file: path to stereo calibration .pkl with keys {camera_matrix_1/2, dist_coeffs_1/2, R, T}.
-    - left_video_path / right_video_path: input video files (or the first file of a continuation sequence).
-    - sync_output_dir: directory where the sync CSV from `match_videos` is (or will be) stored.
-    - skip_seconds: how many seconds to skip from the beginning of the *matched pair sequence* before processing.
-    - take_seconds: how many seconds to process after skipping (window length).
-    - fps: nominal frames per second to convert seconds -> indices (used for the window limits).
-    - cfg: StereoConfig with all tunables (KLT, rectification, ArUco params, debug overlay, etc.).
-           If None, defaults are used.
-
-    OUTPUT:
-    - Writes three CSV files into 'main simulation/output':
-        * 3d_coordinates_<video_name>.csv        (now includes time_s)
-        * aruco_pose_<video_name>.csv
-        * aruco_coordinates_<video_name>.csv     (now includes time_s)
     """
-    os.makedirs("main simulation/output", exist_ok=True)
-    video_name = os.path.splitext(os.path.basename(left_video_path))[0]
+    Drive the pipeline using a CSV of per-frame (left) rotation corrections with interpolation.
+    The runner ignores skip/take seconds; it uses the CSV frame range instead.
+    """
+    os.makedirs("output", exist_ok=True)
+    video_base = os.path.splitext(os.path.basename(left_video))[0]
 
-    # 1) Load calibration
-    calib = _load_calibration(calib_file)
+    calib = load_calib(calib_file)
+    if cfg is None:
+        cfg = StereoConfig()
 
-    # 2) Synchronize videos and get the CSV with matched frames (and time relative to flash = 0)
+    # 1) match videos (creates/returns sync CSV)
     sync_csv = match_videos(
-        left_video_path,
-        right_video_path,
-        start_seconds=cfg.sync_start_seconds,  # was 0
-        match_duration=cfg.sync_match_duration,  # was 600
-        downsample_factor=cfg.sync_downsample_factor,  # was 50
-        plot=cfg.sync_plot_audio,  # was True/False
+        left_video, right_video,
+        start_seconds=cfg.sync_start_seconds,
+        match_duration=cfg.sync_match_duration,
+        downsample_factor=cfg.sync_downsample_factor,
+        plot=cfg.sync_plot_audio,
         output_dir=sync_output_dir,
-
-        # Flash configurations
+        # FLASH params passed through as before:
         flash_occurs_after=cfg.flash_occurs_after,
         flash_occurs_before=cfg.flash_occurs_before,
         flash_center_fraction=cfg.flash_center_fraction,
@@ -143,180 +214,130 @@ def run_photogrammetry(
         flash_brightness_floor=cfg.flash_brightness_floor,
         flash_plot=cfg.flash_plot,
     )
-
-    matched = _read_matched_indices(sync_csv)
+    matched = read_matched(sync_csv)
     if not matched:
-        raise RuntimeError(f"No matched indices found in {sync_csv}")
+        raise RuntimeError("No matched indices from sync step.")
 
-    # 3) Prepare time window in "matched index" space
-    start_index = max(0, int(skip_seconds * fps))
-    end_index = min(len(matched), int((skip_seconds + take_seconds) * fps))
+    # 2) read corrections CSV (flexible headers) and build interpolators
+    df_corr = _read_corrections_flex(corrections_csv)
+    yaw_f, pit_f, rol_f, fmin, fmax = build_interp_functions(df_corr)
+    print(f"[corr] frames {int(fmin)}..{int(fmax)}  "
+          f"(rows={len(df_corr)}). Using premultiply={cfg.premultiply_rotation_correction}")
 
-    # 4) Handle continuation files (if videos were split)
-    left_files = find_continuation_files(left_video_path)
-    right_files = find_continuation_files(right_video_path)
-    cap_left = cv2.VideoCapture(left_files[0])
-    cap_right = cv2.VideoCapture(right_files[0])
+    # 3) iterate only matched pairs whose LEFT index is within [fmin..fmax]
+    left_files = find_continuation_files(left_video)
+    right_files = find_continuation_files(right_video)
+    capL = cv2.VideoCapture(left_files[0])
+    capR = cv2.VideoCapture(right_files[0])
 
-    # 5) Prepare processing config/state
-    if cfg is None:
-        cfg = StereoConfig()  # defaults as defined in the refactored module
     state = TrackerState()
-    frame_counter = 0  # processing frame counter inside your pipeline
+    frame_counter = 0
 
-    # 6) Output accumulators
-    cross_3d_all: List[List[Tuple[np.ndarray, str]]] = []  # per-frame list of (xyz, label)
-    aruco_pose_rows = []    # 7×7 pose: one row per detected 7×7 marker per frame
-    aruco_coords_rows = []  # 4×4 & 7×7 centers in 3D: one row per marker per frame
-    frame_indices_used: List[Tuple[int, int]] = []
-    times_used: List[float] = []
+    # outputs
+    cross_rows = []
+    epi_stats_rows = []
 
-    # 7) Iterate over matched frame pairs
-    for i in range(start_index, end_index):
-        t_rel, idx_left, idx_right = matched[i]
+    base_R = np.array(calib["R"], dtype=float)
 
-        # If your matched indices can exceed the first file, you may need to switch caps here.
-        # For simplicity, we assume indices fit in the current capture.
-        cap_left.set(cv2.CAP_PROP_POS_FRAMES, idx_left)
-        cap_right.set(cv2.CAP_PROP_POS_FRAMES, idx_right)
+    # Helpful: keep an eye on thresholds if many pairs drop out
+    print(f"[cfg] max_vertical_disparity={cfg.max_vertical_disparity}, "
+          f"max_total_distance={cfg.max_total_distance}, "
+          f"min_horizontal_disparity={cfg.min_horizontal_disparity}")
 
-        okL, frame_left = cap_left.read()
-        okR, frame_right = cap_right.read()
-        if not okL or not okR:
-            print(f"[!] Skipping pair {idx_left}/{idx_right}: failed to read frame(s).")
+    for t_rel, idxL, idxR in matched:
+        if idxL < fmin or idxL > fmax:
             continue
 
-        # --- CORE: call the refactored processor ---
-        (
-            cross_3d, labels,
-            aruco_3d_4x4, aruco_ids_4x4,
-            aruco_3d_7x7, aruco_ids_7x7,
-            aruco_rvecs_7x7, aruco_tvecs_7x7,
-            frame_counter,
-            state,
-        ) = process_stereo_pair(
-            left_bgr=frame_left,
-            right_bgr=frame_right,
-            calib=calib,
+        # interpolate corrections (degrees) at this left frame
+        dyaw = yaw_f(idxL)
+        dpit = pit_f(idxL)
+        drol = rol_f(idxL)
+        R_corr = euler_ypr_leftframe(dyaw, dpit, drol)
+
+        # compose with base_R (no accumulation across frames!)
+        R_current = (R_corr @ base_R) if cfg.premultiply_rotation_correction else (base_R @ R_corr)
+
+        # read frames
+        capL.set(cv2.CAP_PROP_POS_FRAMES, int(idxL))
+        capR.set(cv2.CAP_PROP_POS_FRAMES, int(idxR))
+        okL, frameL = capL.read()
+        okR, frameR = capR.read()
+        if not okL or not okR:
+            print(f"[skip] read fail at L{idxL}/R{idxR}")
+            continue
+
+        # process this pair with per-frame R_current
+        cross_3d, labels, frame_counter, state = process_stereo_pair(
+            left_bgr=frameL,
+            right_bgr=frameR,
+            calib=dict(calib, R=R_current),  # override for this call
             state=state,
             frame_counter=frame_counter,
             cfg=cfg,
             separate_fn=separate_LE_and_struts,
+            R_current=R_current,  # (optional; utils already takes calib['R'])
         )
 
-        # If no crosses for this frame, continue (processor already guarded)
-        if cross_3d is None:
-            print(f"[INFO] Pair {idx_left}/{idx_right} produced no usable crosses; skipping.")
-            continue
+        # --- diagnostics: epipolar stats from current matches (if any) ---
+        n_pairs = state.n_pairs
+        mean_vdisp = p95_vdisp = mean_2d = np.nan
+        if state.tracked_cross_left_klt and state.tracked_cross_right_klt:
+            Lp = np.array([p[:2] for p in state.tracked_cross_left_klt], float)
+            Rp = np.array([p for p in state.tracked_cross_right_klt], float)
+            vdisp = np.abs(Lp[:, 1] - Rp[:, 1])
+            d2 = np.linalg.norm(Lp - Rp, axis=1)
+            mean_vdisp = float(np.mean(vdisp))
+            p95_vdisp = float(np.percentile(vdisp, 95))
+            mean_2d = float(np.mean(d2))
+        epi_stats_rows.append({
+            "time_s": float(t_rel),
+            "frame_idx": int(idxL),
+            "n_pairs": int(n_pairs),
+            "mean_vdisp": mean_vdisp,
+            "p95_vdisp": p95_vdisp,
+            "mean_2d_dist": mean_2d,
+            "dyaw_deg": float(dyaw),
+            "dpitch_deg": float(dpit),
+            "droll_deg": float(drol),
+        })
+        if len(epi_stats_rows) % 30 == 0:
+            print(f"[epi] L{idxL}: n={n_pairs}, mean|Δy|={mean_vdisp:.2f}, p95|Δy|={p95_vdisp:.2f}, "
+                  f"mean d2={mean_2d:.1f}, Δ=({dyaw:.2f},{dpit:.2f},{drol:.2f})°")
 
-        # Save cross marker 3D data (pair each point with its label)
-        cross_3d_all.append(list(zip(cross_3d, np.array(labels, dtype=object))))
-        frame_indices_used.append((idx_left, idx_right))
-        times_used.append(float(t_rel))
+        # save cross points if present
+        if cross_3d is not None:
+            for (xyz, lbl) in zip(cross_3d, labels):
+                cross_rows.append({
+                    "time_s": float(t_rel),
+                    "frame_idx": int(idxL),
+                    "marker_id": ("" if lbl is None else str(lbl)),
+                    "x": float(xyz[0]), "y": float(xyz[1]), "z": float(xyz[2]),
+                })
 
-        # Save 7×7 ArUco pose (rvec/tvec lists from cv2.aruco.estimatePoseSingleMarkers)
-        for j, aruco_id in enumerate(aruco_ids_7x7):
-            rvec = aruco_rvecs_7x7[j] if j < len(aruco_rvecs_7x7) else None
-            tvec = aruco_tvecs_7x7[j] if j < len(aruco_tvecs_7x7) else None
+    capL.release(); capR.release()
 
-            rv = np.ravel(rvec) if rvec is not None and np.size(rvec) >= 3 else [np.nan, np.nan, np.nan]
-            tv = np.ravel(tvec) if tvec is not None and np.size(tvec) >= 3 else [np.nan, np.nan, np.nan]
-
-            aruco_pose_rows.append({
-                "time_s": float(t_rel),
-                "frame_idx": idx_left,
-                "aruco_id": int(aruco_id),
-                "rotation_x": float(rv[0]),
-                "rotation_y": float(rv[1]),
-                "rotation_z": float(rv[2]),
-                "translation_x": float(tv[0]),
-                "translation_y": float(tv[1]),
-                "translation_z": float(tv[2]),
-            })
-
-        """
-        # Save 4×4 ArUco 3D centers
-        for j, aruco_id in enumerate(aruco_ids_4x4):
-            coord = aruco_3d_4x4[j]
-            aruco_coords_rows.append({
-                "time_s": float(t_rel),
-                "frame_idx": idx_left,
-                "type": "4x4",
-                "aruco_id": int(aruco_id),
-                "x": float(coord[0]),
-                "y": float(coord[1]),
-                "z": float(coord[2]),
-            })
-
-        # Save 7×7 ArUco 3D centers (from stereo triangulation, not tvec)
-        for j, aruco_id in enumerate(aruco_ids_7x7):
-            coord = aruco_3d_7x7[j]
-            aruco_coords_rows.append({
-                "time_s": float(t_rel),
-                "frame_idx": idx_left,
-                "type": "7x7",
-                "aruco_id": int(aruco_id),
-                "x": float(coord[0]),
-                "y": float(coord[1]),
-                "z": float(coord[2]),
-            })
-        """
-        print(f"[frame: {i - start_index:5d}/{end_index - start_index}] processed… "
-              f"pairs in use: {state.n_pairs}")
-
-    # 8) Cleanup video resources
-    cap_left.release()
-    cap_right.release()
-
-    # 9) Save results to CSV
-    # Cross 3D coordinates (+ time)
-    cross_rows = []
-    for (frame_idx, _), points, t_rel in zip(frame_indices_used, cross_3d_all, times_used):
-        for xyz, lbl in points:
-            marker_id = "" if lbl is None else str(lbl)
-            cross_rows.append({
-                "time_s": float(t_rel),
-                "frame_idx": frame_idx,
-                "marker_id": marker_id,
-                "x": float(xyz[0]),
-                "y": float(xyz[1]),
-                "z": float(xyz[2]),
-            })
-    pd.DataFrame(cross_rows).to_csv(
-        f"output/{video_name}_downloop_03_38.csv", index=False
-    )
-
-    # 7×7 pose (rvec/tvec from PnP on left image)
-    pd.DataFrame(aruco_pose_rows).to_csv(
-        f"output/aruco_pose_{video_name}.csv", index=False
-    )
-
-    # 4×4 & 7×7 triangulated 3D centers (+ time)
-    pd.DataFrame(aruco_coords_rows).to_csv(
-        f"output/aruco_coordinates_{video_name}.csv", index=False
-    )
-
-    print(f"[✓] Processed {len(cross_3d_all)} valid frame pairs.")
-    print(f"[→] Saved CSVs to: main simulation/output/ (basename: {video_name})")
-
+    # write outputs
+    pd.DataFrame(cross_rows).to_csv(f"output/cross3d_{video_base}.csv", index=False)
+    pd.DataFrame(epi_stats_rows).to_csv(f"output/epi_stats_{video_base}.csv", index=False)
+    print(f"[✓] Saved: output/cross3d_{video_base}.csv and output/epi_stats_{video_base}.csv")
 
 # ------------------------------- script main ---------------------------------
 if __name__ == "__main__":
     # === USER CONFIGURATION ===
-    CALIB_FILE = "Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
-    LEFT_VIDEO = "input/left_videos/09_10_merged.mp4"
-    RIGHT_VIDEO = "input/right_videos/09_10_merged.mp4"
-    SYNC_OUTPUT_DIR = "Synchronisation/synchronised_frame_indices"
+    CALIB_FILE     = "Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
+    LEFT_VIDEO     = "input/left_videos/09_10_merged.mp4"
+    RIGHT_VIDEO    = "input/right_videos/09_10_merged.mp4"
+    SYNC_OUT_DIR   = "Synchronisation/synchronised_frame_indices"
 
-    # Time window (in seconds) inside the matched pair sequence
-    SKIP_SECONDS = 218          # start at 601 s into the matched sequence
-    TAKE_SECONDS = 8           # process 20 s (601–621 s)
-    FPS = 30                    # nominal fps for window math
+    # Corrections: CSV/Excel with columns like:
+    #   frame_left | delta_yaw_deg | delta_pitch_deg | delta_roll_deg
+    # (header names are flexible; see _read_corrections_flex)
+    CORRECTIONS    = "input/left_turn_frame_7182.csv"
 
-    # Stereo / detection / debug tunables (override any defaults you want)
+    # Stereo / detection / debug tunables (see your Photogrammetry.stereo_photogrammetry_utils)
     cfg = StereoConfig(
         # --- matching thresholds ---
-        max_vertical_disparity=30.0,
+        max_vertical_disparity=10.0,
         max_total_distance=600.0,
         min_horizontal_disparity=200.0,
 
@@ -326,25 +347,13 @@ if __name__ == "__main__":
         lk_term_count=40,
         lk_term_eps=0.03,
 
-        # --- rectification ---
-        rectify_alpha_aruco=0.0,
+        # --- rectification for crosses ---
         rectify_alpha_cross=0.0,
 
         # --- brightness bump for crosses ---
         brighten_alpha=4.0,
         brighten_beta=20.0,
-
-        # --- ArUco config ---
-        aruco_4x4_dict="DICT_4X4_100",
-        aruco_7x7_dict="DICT_7X7_50",
-        aruco_adapt_win_min=5,
-        aruco_adapt_win_max=15,
-        aruco_adapt_win_step=10,
-        aruco_corner_refine_method=cv2.aruco.CORNER_REFINE_SUBPIX,
-        aruco_min_perimeter_rate=0.001,
-        aruco_max_perimeter_rate=4.0,
-        aruco_min_distance_to_border=1,
-        aruco_marker_length_7x7_m=0.19,
+        gradient_brightness_contrast="lr",   # None => uniform alpha/beta; "lr" => gradient
 
         # --- debug overlay ---
         show_bright_frames=False,
@@ -366,25 +375,19 @@ if __name__ == "__main__":
         sync_downsample_factor=50,
         sync_plot_audio=True,
 
-        # --- FLASH detection ---
-        flash_occurs_after=15,  # e.g., if you know you flashed ~10s in: set 8.0
-        flash_occurs_before=39,  # or a number to limit search window
+        # --- FLASH detection (if used by your matcher) ---
+        flash_occurs_after=15,
+        flash_occurs_before=39,
         flash_center_fraction=0.33,
         flash_min_jump=20.0,
         flash_slope_ratio=5.0,
         flash_baseline_window=5,
         flash_brightness_floor=0.0,
         flash_plot=True,
-        )
+
+        # --- rotation correction application ---
+        premultiply_rotation_correction=True,  # R_current = R_corr @ R (set False to do R @ R_corr)
+    )
 
     # Run
-    run_photogrammetry(
-        calib_file=CALIB_FILE,
-        left_video_path=LEFT_VIDEO,
-        right_video_path=RIGHT_VIDEO,
-        sync_output_dir=SYNC_OUTPUT_DIR,
-        skip_seconds=SKIP_SECONDS,
-        take_seconds=TAKE_SECONDS,
-        fps=FPS,
-        cfg=cfg,
-    )
+    run_from_corrections(CALIB_FILE, LEFT_VIDEO, RIGHT_VIDEO, SYNC_OUT_DIR, CORRECTIONS, cfg)

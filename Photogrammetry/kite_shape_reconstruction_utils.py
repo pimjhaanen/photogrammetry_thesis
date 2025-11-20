@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 import cv2
 
+import math
+
 # =============================== Module settings ===============================
 
 # Master low-pass toggle and sub-switches for smoothing
@@ -61,70 +63,61 @@ def separate_LE_and_struts(
     gray_img: np.ndarray,
     *,
     bgr_img: Optional[np.ndarray] = None,     # pass original BGR frame for color stats
-    horizontal_spacing: float = 150.0,
-    r_in: int = 6, r_out: int = 18,          # annulus radii
-    le_v_bias: float = 12.0,                 # lower V threshold by this many units for LE
-    le_s_max: float = 70.0,                  # if S_med <= this and V_med >= le_v_floor -> LE
-    le_v_floor: float = 100.0,               # minimum V for the saturation rule to apply
-    min_points_per_strut: int = 2,           # NEW: require at least this many points per strut column
+    horizontal_spacing: float = 130.0,
+    r_in: int = 6, r_out: int = 18,          # annulus radii for local background
+    # --- New brightness-only "slider" threshold ---
+    bg_threshold: float = 0.7,               # 0.0..1.0 (fraction) OR 0..255 (absolute)
+    # Keep for compatibility; no longer used in brightness-only mode:
+    min_points_per_strut: int = 2,           # require at least this many points per strut column
 ) -> List[Tuple[float, float, Union[int, str]]]:
     """
-    Labels crosses as 'LE' (white cloth) or strut ids '0'..'7'.
-    - Otsu on per-point background V to split bright vs dark.
-    - Bias V-threshold downward for LE (le_v_bias).
-    - Color tie-breaker: low S + bright V ⇒ LE.
-    - NEW: a strut column must contain at least `min_points_per_strut` points; singletons are reclassified as LE.
+    Labels crosses as 'LE' (bright/white cloth) or strut ids '0'..'7' (dark/black background),
+    using *only* the local background brightness (median V in HSV) around each point.
+
+    Slider:
+      - bg_threshold in [0.0..1.0] is treated as a fraction of 255 (e.g., 0.5 -> 127.5).
+      - bg_threshold in [1..255] is used as an absolute V threshold.
+      - V_med >= threshold  => 'LE'
+      - V_med <  threshold  => 'strut' candidate
+
+    Remaining logic:
+      - Strut candidates are clustered by X (horizontal_spacing) to form columns.
+      - Columns with < min_points_per_strut are reclassified as 'LE' to avoid spurious singletons.
     """
+    # Convert threshold to absolute [0..255]
+    thr = float(bg_threshold)
+    if 0.0 <= thr <= 1.0:
+        thr = thr * 255.0
+    thr = float(np.clip(thr, 0.0, 255.0))
+
     pts = [(float(x), float(y)) for (x, y) in cross_centres]
     if not pts:
         return []
 
     if bgr_img is None:
-        # if not provided, build a quick BGR from gray (S will be ~0 everywhere)
+        # If not provided, build a quick BGR from gray (S will be ~0 everywhere; we only use V)
         bgr_img = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2BGR)
 
-    # --- 1) collect per-point background stats (median V, S in an annulus) ---
+    # --- 1) Collect per-point local background brightness (median V) ---
     stats = []
     for (cx, cy) in pts:
-        V_med, S_med = _annulus_stats_fast(bgr_img, int(round(cx)), int(round(cy)), r_in, r_out)
+        # _annulus_stats_fast must return (V_med, S_med); we only use V_med here
+        V_med, _S_med = _annulus_stats_fast(bgr_img, int(round(cx)), int(round(cy)), r_in, r_out)
         if np.isfinite(V_med):
-            stats.append((cx, cy, V_med, (S_med if np.isfinite(S_med) else 0.0)))
+            stats.append((cx, cy, float(V_med)))
     if not stats:
         return []
 
-    V_vals = np.array([v for _, _, v, _ in stats], dtype=np.float32)
-
-    # --- 2) Otsu on V ---
-    V_u8 = np.clip(V_vals, 0, 255).astype(np.uint8).reshape(-1, 1)
-    v_thr, _ = cv2.threshold(V_u8, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    v_thr = float(v_thr)
-
-    # --- 3) biased threshold + hysteresis + color tie-breaker ---
-    v_thr_le = max(0.0, v_thr - le_v_bias)   # LOWER threshold for LE
-    margin   = 4.0
-    v_hi, v_lo = v_thr_le + margin, v_thr_le - margin
-
+    # --- 2) Brightness-only split: bright => LE, dark => strut candidate ---
     LE_points: List[Tuple[float, float, str]] = []
     strut_candidates: List[Tuple[float, float]] = []
-
-    for (cx, cy, V_med, S_med) in stats:
-        if V_med >= v_hi:
-            LE_points.append((cx, cy, "LE"))
-            continue
-        if V_med <= v_lo:
-            strut_candidates.append((cx, cy))
-            continue
-
-        # tie-breaker with color: low S and reasonably bright V -> LE
-        if (S_med <= le_s_max) and (V_med >= le_v_floor):
+    for (cx, cy, V_med) in stats:
+        if V_med >= thr:
             LE_points.append((cx, cy, "LE"))
         else:
-            if V_med >= v_thr_le:
-                LE_points.append((cx, cy, "LE"))
-            else:
-                strut_candidates.append((cx, cy))
+            strut_candidates.append((cx, cy))
 
-    # --- 4) cluster strut candidates by x and assign ids 0..7 ---
+    # --- 3) Cluster strut candidates by X and assign ids 0..7 ---
     strut_candidates.sort(key=lambda p: p[0])
     clusters: List[List[Tuple[float, float]]] = []
     cur: List[Tuple[float, float]] = []
@@ -137,11 +130,11 @@ def separate_LE_and_struts(
     if cur:
         clusters.append(cur)
 
-    # NEW: drop singleton (or too-small) clusters and reclassify them as LE
+    # Drop too-small columns (likely noise) and reclassify them as LE
     filtered_clusters: List[List[Tuple[float, float]]] = []
+    at_least = max(1, int(min_points_per_strut))
     for col in clusters:
-        if len(col) < max(1, int(min_points_per_strut)):
-            # reclassify every point in this tiny "column" as LE to avoid shifting ids
+        if len(col) < at_least:
             for (cx, cy) in col:
                 LE_points.append((cx, cy, "LE"))
         else:
@@ -154,6 +147,7 @@ def separate_LE_and_struts(
             labeled_struts.append((cx, cy, sid))
 
     return LE_points + labeled_struts
+
 
 
 # ============================ ArUco reference table ============================
@@ -449,14 +443,19 @@ def fit_line_3d(points: np.ndarray) -> Optional[np.ndarray]:
     return p0 + np.outer(ts, direction)
 
 
+
 def _pairwise_dist(P: np.ndarray) -> np.ndarray:
-    """Pairwise Euclidean distances for points P (N,3) -> (N,N)."""
     diffs = P[:, None, :] - P[None, :, :]
     return np.linalg.norm(diffs, axis=2)
 
+def _path_len(P: np.ndarray) -> float:
+    if P is None or P.shape[0] < 2:
+        return 0.0
+    d = P[1:] - P[:-1]
+    return float(np.linalg.norm(d, axis=1).sum())
 
-def _two_opt_improve(order: List[int], D: np.ndarray) -> List[int]:
-    """2-opt local improvement for a path given a distance matrix D."""
+def _two_opt_locked(order: List[int], D: np.ndarray, s: int, t: int) -> List[int]:
+    """2-opt improvement while keeping endpoints s and t fixed (open path)."""
     n = len(order)
     if n < 4:
         return order
@@ -467,80 +466,183 @@ def _two_opt_improve(order: List[int], D: np.ndarray) -> List[int]:
             for j in range(i + 2, n - 1):
                 a, b = order[i], order[i + 1]
                 c, d = order[j], order[j + 1]
+                # keep endpoints locked
+                if (a == s) or (d == t):
+                    pass
                 old = D[a, b] + D[c, d]
                 new = D[a, c] + D[b, d]
                 if new + 1e-12 < old:
-                    order[i + 1 : j + 1] = reversed(order[i + 1 : j + 1])
+                    order[i + 1:j + 1] = reversed(order[i + 1:j + 1])
                     improved = True
     return order
 
 
-def le_shortest_path_3d(points_3d: np.ndarray, exact_limit: int = 12) -> Optional[np.ndarray]:
-    """RELEVANT FUNCTION INPUTS:
-    - points_3d: array (N,3)
-    - exact_limit: for N <= exact_limit, solve exactly (Held–Karp DP); else greedy + 2-opt
+# --------------------------- geometry ops ---------------------------
 
-    RETURNS:
-    - points_3d re-ordered to minimize total path length (open path), or None if N < 2.
-    """
-    n = int(points_3d.shape[0]) if points_3d is not None else 0
-    if n < 2:
+def fit_line_3d(points: np.ndarray, samples: int = LINE_SAMPLES) -> Optional[np.ndarray]:
+    """Orthogonal least-squares 3D line through points. Returns sampled segment."""
+    if points is None or points.shape[0] < 2:
         return None
-    if n == 2:
-        return points_3d.copy()
+    P = np.asarray(points, float)
+    p0 = P.mean(axis=0)
+    _, _, Vt = np.linalg.svd(P - p0, full_matrices=False)
+    d = Vt[0]
+    t = (P - p0) @ d
+    tmin, tmax = float(t.min()), float(t.max())
+    if np.isclose(tmax - tmin, 0.0):
+        tmin, tmax = -0.5, 0.5
+    ts = np.linspace(tmin, tmax, samples)
+    return p0 + np.outer(ts, d)
 
-    D = _pairwise_dist(points_3d)
+def _pca_dir(points: np.ndarray) -> Optional[np.ndarray]:
+    if points is None or points.shape[0] < 2:
+        return None
+    P = np.asarray(points, float)
+    c = P.mean(axis=0)
+    _, _, Vt = np.linalg.svd(P - c, full_matrices=False)
+    d = Vt[0]
+    n = np.linalg.norm(d)
+    return d / (n + 1e-12)
 
-    if n <= exact_limit:
-        # Held–Karp dynamic programming for shortest Hamiltonian path (open)
-        ALL = 1 << n
-        dp = np.full((ALL, n), np.inf)
-        parent = np.full((ALL, n), -1, dtype=int)
-        for j in range(n):
-            dp[1 << j, j] = 0.0
-        for mask in range(ALL):
-            js = np.nonzero([(mask >> k) & 1 for k in range(n)])[0]
-            if js.size <= 1:
-                continue
-            for j in js:
-                pmask = mask ^ (1 << j)
-                iset = np.nonzero([(pmask >> k) & 1 for k in range(n)])[0]
-                if iset.size == 0:
-                    continue
-                costs = dp[pmask, iset] + D[iset, j]
-                kidx = int(np.argmin(costs))
-                val = float(costs[kidx])
-                if val < dp[mask, j]:
-                    dp[mask, j] = val
-                    parent[mask, j] = int(iset[kidx])
-        full = ALL - 1
-        end = int(np.argmin(dp[full, :]))
-        order: List[int] = []
-        mask = full
-        j = end
-        while j != -1:
-            order.append(j)
-            pj = parent[mask, j]
-            mask ^= (1 << j)
-            j = pj
-        order = order[::-1]
-    else:
-        # Heuristic: farthest pair seed + greedy nearest extension, then 2-opt
-        i, j = np.unravel_index(np.argmax(D), D.shape)
-        start = int(i)
-        used = np.zeros(n, dtype=bool)
-        used[start] = True
-        order = [start]
-        for _ in range(n - 1):
-            last = order[-1]
-            candidates = np.where(~used)[0]
-            nxt = int(candidates[np.argmin(D[last, candidates])])
-            order.append(nxt)
-            used[nxt] = True
-        order = _two_opt_improve(order, D)
+def _best_fit_plane_normal(P: np.ndarray) -> np.ndarray:
+    Q = np.asarray(P, float)
+    c = Q.mean(axis=0)
+    _, _, Vt = np.linalg.svd(Q - c, full_matrices=False)
+    n = Vt[-1]
+    return n / (np.linalg.norm(n) + 1e-12)
 
-    return points_3d[np.array(order)]
 
+# --------------------------- LE path ---------------------------
+
+def le_shortest_path_3d(points_3d: np.ndarray,
+                        endpoints_k: int = 10,
+                        jump_factor: float = 2.5) -> Optional[np.ndarray]:
+    """
+    Reconstruct LE as an open path with endpoints chosen from the K lowest-Z points.
+
+    - Endpoints: pick K points with the smallest Z (closest to camera); try all pairs.
+    - Path: greedy nearest extension with last endpoint fixed, followed by 2-opt (locked).
+    - Orientation: ensure path goes from lower-Z to higher-Z.
+
+    Args:
+        points_3d: (N,3) LE points in world/camera coordinates.
+        endpoints_k: how many low-Z candidates to consider for endpoints.
+        jump_factor: (kept for API symmetry; not used here but kept for future constraints)
+
+    Returns:
+        (M,3) ordered LE polyline, or None if <2 points.
+    """
+    if points_3d is None or points_3d.shape[0] < 2:
+        return None
+
+    P = np.asarray(points_3d, float)
+    n = P.shape[0]
+    D = _pairwise_dist(P)
+
+    k = max(2, min(endpoints_k, n))
+    cand = np.argsort(P[:, 2])[:k]  # lower Z ~ closer to camera
+    best_cost, best_path = np.inf, None
+
+    for a in range(len(cand)):
+        for b in range(a + 1, len(cand)):
+            s, t = int(cand[a]), int(cand[b])
+            used = np.zeros(n, dtype=bool)
+            used[s] = True
+            order = [s]
+            while len(order) < n - 1:
+                last = order[-1]
+                rem = np.where(~used)[0]
+                rem = rem[rem != t]
+                if rem.size == 0:
+                    break
+                nxt = int(rem[np.argmin(D[last, rem])])
+                order.append(nxt)
+                used[nxt] = True
+            order.append(t)
+            order = _two_opt_locked(order, D, s, t)
+            path = P[np.array(order)]
+            cost = _path_len(path)
+            if cost < best_cost:
+                best_cost, best_path = cost, path
+
+    if best_path is not None and best_path[0, 2] > best_path[-1, 2]:
+        best_path = best_path[::-1]
+    return best_path
+
+
+# --------------------------- reference frame from struts ---------------------------
+
+def compute_ref_frame_from_center_struts(
+    LE_path_world: Optional[np.ndarray],
+    P3_world: Optional[np.ndarray],
+    P4_world: Optional[np.ndarray],
+    *,
+    global_up: np.ndarray = np.array([0.0, 0.0, 1.0], dtype=float),
+    force_flip_x: bool = False,
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    """
+    Build a right-handed (x,y,z) frame from center struts 3 & 4.
+
+    Steps:
+      1) z_hat := normal of best-fit plane through all points of strut3 ∪ strut4.
+         Ensure z_hat aligns with global_up.
+      2) x_hat := sum of PCA directions of strut3 and strut4, projected onto that plane.
+         If LE_path is given, flip x_hat so it aligns with the LE direction in-plane.
+      3) y_hat := z_hat × x_hat. Re-orthonormalize.
+
+    Returns:
+      (R_axes, origin), where columns of R_axes are [x_hat, y_hat, z_hat],
+      and origin is the midpoint of the two strut centroids.
+    """
+    if P3_world is None or P4_world is None or P3_world.shape[0] < 2 or P4_world.shape[0] < 2:
+        return None, None
+
+    all_pts = np.vstack([P3_world, P4_world])
+    z_hat = _best_fit_plane_normal(all_pts)
+    global_up = np.asarray(global_up, float)
+    global_up /= (np.linalg.norm(global_up) + 1e-12)
+    if np.dot(z_hat, global_up) < 0.0:
+        z_hat = -z_hat
+
+    d3 = _pca_dir(P3_world)
+    d4 = _pca_dir(P4_world)
+    if d3 is None or d4 is None:
+        return None, None
+    if np.dot(d3, d4) < 0.0:
+        d4 = -d4
+
+    x_raw = d3 + d4
+    x_plane = x_raw - np.dot(x_raw, z_hat) * z_hat
+    if np.linalg.norm(x_plane) < 1e-12:
+        # fallback axis in plane
+        tmp = np.array([1.0, 0.0, 0.0], float)
+        if abs(np.dot(tmp, z_hat)) > 0.9:
+            tmp = np.array([0.0, 1.0, 0.0], float)
+        x_plane = tmp - np.dot(tmp, z_hat) * z_hat
+    x_hat = x_plane / (np.linalg.norm(x_plane) + 1e-12)
+
+    if LE_path_world is not None and LE_path_world.shape[0] >= 2:
+        le_vec = LE_path_world[-1] - LE_path_world[0]
+        le_proj = le_vec - np.dot(le_vec, z_hat) * z_hat
+        if np.linalg.norm(le_proj) > 1e-12 and np.dot(x_hat, le_proj) < 0.0:
+            x_hat = -x_hat
+
+    if force_flip_x:
+        x_hat = -x_hat
+
+    y_hat = np.cross(z_hat, x_hat)
+    y_hat /= (np.linalg.norm(y_hat) + 1e-12)
+    z_hat = np.cross(x_hat, y_hat)
+    z_hat /= (np.linalg.norm(z_hat) + 1e-12)
+    y_hat = np.cross(z_hat, x_hat)
+    y_hat /= (np.linalg.norm(y_hat) + 1e-12)
+
+    origin = 0.5 * (P3_world.mean(axis=0) + P4_world.mean(axis=0))
+    R_axes = np.column_stack([x_hat, y_hat, z_hat])
+    return R_axes, origin
+
+
+# --------------------------- smoothing ---------------------------
 
 def smooth_points_by_matching(
     curr_pts: np.ndarray,
@@ -548,43 +650,21 @@ def smooth_points_by_matching(
     alpha: float = 0.9,
     max_dist: float = 0.35,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """RELEVANT FUNCTION INPUTS:
-    - curr_pts: (M,3) current points
-    - prev_pts: (N,3) previous points (can be None or empty)
-    - alpha: EMA factor; smoothed = alpha*prev + (1-alpha)*curr (when matched)
-    - max_dist: max Euclidean distance for a valid match (same units as points)
-
-    RETURNS:
-    - (smoothed_pts, matched_mask) where matched_mask is (M,) boolean (True if blended)
-
-    Notes:
-    - Brute-force nearest-neighbor (fine for small M,N). Unmatched curr points are unchanged.
+    """
+    EMA smoothing by nearest-neighbor matching.
+    Returns (smoothed_points, matched_mask) with shape (M,), True if blended.
     """
     if curr_pts is None or curr_pts.size == 0:
         return curr_pts, np.zeros((0,), dtype=bool)
     if prev_pts is None or prev_pts.size == 0:
         return curr_pts, np.zeros((curr_pts.shape[0],), dtype=bool)
 
-    diffs = curr_pts[:, None, :] - prev_pts[None, :, :]  # (M,N,3)
-    D = np.linalg.norm(diffs, axis=2)                    # (M,N)
-    idxs = np.argmin(D, axis=1)                          # (M,)
+    diffs = curr_pts[:, None, :] - prev_pts[None, :, :]
+    D = np.linalg.norm(diffs, axis=2)
+    idxs = np.argmin(D, axis=1)
     dmin = D[np.arange(D.shape[0]), idxs]
     matched = dmin <= max_dist
 
     smoothed = curr_pts.copy()
     smoothed[matched] = alpha * prev_pts[idxs[matched]] + (1.0 - alpha) * curr_pts[matched]
     return smoothed, matched
-
-
-# ------------------------------ usage reminder -------------------------------
-# Typical usage in your pipeline:
-#   aruco_ref_table = build_aruco_reference_table(aruco_coords_df, frames_to_cover=unique_frames)
-#   R_axes, origin = get_aruco_transform(frame_idx, lowpass=True)
-#   points_in_aruco = transform_points_to_aruco(points_xyz, frame_idx, lowpass=True)
-
-
-# ------------------------------- module main ---------------------------------
-if __name__ == "__main__":
-    # Utilities module; nothing to run directly.
-    # Keep imports side-effect free; define functions only.
-    pass

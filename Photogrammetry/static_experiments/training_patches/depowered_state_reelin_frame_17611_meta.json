@@ -1,0 +1,1162 @@
+[
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_861x1016.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 861.0,
+    "cy": 1015.8881118881119,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_779x1232.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 779.2,
+    "cy": 1232.188811188811,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_793x1483.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 792.95,
+    "cy": 1483.0839160839162,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_921x1696.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 921.1,
+    "cy": 1696.020979020979,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_1049x1777.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1049.1,
+    "cy": 1777.006993006993,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_1274x1843.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1273.65,
+    "cy": 1843.0,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_1562x1907.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1561.9,
+    "cy": 1907.3216783216783,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_2050x1965.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2049.55,
+    "cy": 1965.2797202797203,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_2258x1977.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2257.85,
+    "cy": 1977.2587412587413,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_2601x1981.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2600.55,
+    "cy": 1981.2377622377621,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_2765x1979.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2764.55,
+    "cy": 1978.5524475524476,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_2882x1972.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2881.9,
+    "cy": 1972.4475524475524,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_3106x1963.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3106.5,
+    "cy": 1963.4895104895104,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_3315x1942.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3315.0,
+    "cy": 1942.2727272727273,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_3809x1872.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3808.55,
+    "cy": 1871.5524475524476,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_4097x1803.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4097.05,
+    "cy": 1803.048951048951,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_4346x1741.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4345.85,
+    "cy": 1740.5944055944055,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_4482x1669.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4481.55,
+    "cy": 1669.4195804195804,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_4615x1478.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4615.15,
+    "cy": 1477.93006993007,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_4640x1254.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4640.2,
+    "cy": 1254.1468531468531,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_L_LE_4568x1056.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4568.0,
+    "cy": 1055.951048951049,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_452x1016.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 452.35,
+    "cy": 1016.4563106796116,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_371x1232.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 370.95,
+    "cy": 1232.080657206871,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_399x1483.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 398.6,
+    "cy": 1482.5436893203882,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_552x1695.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 551.9,
+    "cy": 1695.3286034353996,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_705x1776.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 704.75,
+    "cy": 1775.909634055265,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_961x1842.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 961.4,
+    "cy": 1841.7386109036595,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_1273x1907.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1273.05,
+    "cy": 1906.6952949962658,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_1789x1965.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1789.35,
+    "cy": 1965.2419716206125,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_2007x1976.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2007.4,
+    "cy": 1976.362210604929,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_2354x1980.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2354.35,
+    "cy": 1980.3398058252428,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_2519x1979.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2519.2,
+    "cy": 1978.563853622106,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_2634x1972.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2634.0,
+    "cy": 1972.3920836445109,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_2860x1964.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2859.9,
+    "cy": 1964.4570575056011,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_3061x1943.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3061.45,
+    "cy": 1943.1015683345781,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_3530x1872.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3530.4,
+    "cy": 1871.5003734129948,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_3799x1801.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3798.85,
+    "cy": 1800.931292008962,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_4016x1737.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4016.45,
+    "cy": 1737.4578043315908,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_4131x1666.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4131.2,
+    "cy": 1666.1135175504107,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_4241x1475.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4240.95,
+    "cy": 1475.1553398058252,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_4253x1253.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4253.0,
+    "cy": 1253.1448842419716,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\LE\\depowered_state_reelin_frame_17611_R_LE_4179x1056.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4179.0,
+    "cy": 1056.1448842419716,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut0_1125x1104.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1124.85,
+    "cy": 1103.986013986014,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut0_1097x1222.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1096.7,
+    "cy": 1222.020979020979,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut0_1070x1344.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1070.15,
+    "cy": 1343.6643356643356,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut0_1050x1442.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1049.9,
+    "cy": 1442.1118881118882,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut0_794x1105.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 794.5,
+    "cy": 1104.5832710978343,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut0_764x1222.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 764.05,
+    "cy": 1222.026138909634,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut0_734x1344.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 734.45,
+    "cy": 1344.3495145631068,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut0_710x1441.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 710.45,
+    "cy": 1440.9828230022404,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut1_1603x1153.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1602.6,
+    "cy": 1153.3636363636363,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut1_1584x1290.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1584.5,
+    "cy": 1289.5034965034965,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut1_1566x1438.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1566.5,
+    "cy": 1438.4405594405594,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut1_1549x1587.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1548.55,
+    "cy": 1586.5174825174824,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut1_1334x1154.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1334.05,
+    "cy": 1153.9940253920836,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut1_1315x1292.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1314.65,
+    "cy": 1292.0485436893205,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut1_1294x1439.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1294.1750000000002,
+    "cy": 1439.0194174757282,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut1_1274x1588.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1273.6703125,
+    "cy": 1588.4622852875282,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut2_2053x1214.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2052.95,
+    "cy": 1214.3076923076924,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut2_2045x1304.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2044.9,
+    "cy": 1304.3636363636363,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut2_2036x1427.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2036.5,
+    "cy": 1427.3636363636363,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut2_2025x1573.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2025.0,
+    "cy": 1573.1328671328672,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut2_2018x1707.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2017.7,
+    "cy": 1707.2587412587413,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut2_1812x1214.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1811.65,
+    "cy": 1214.050784167289,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut2_1802x1307.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1802.35,
+    "cy": 1307.2001493651978,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut2_1793x1428.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1793.2,
+    "cy": 1428.08215085885,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut2_1781x1574.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1781.3,
+    "cy": 1574.4466019417475,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut2_1769x1709.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1769.0,
+    "cy": 1708.9185959671397,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut3_2460x1231.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2460.5,
+    "cy": 1230.5034965034965,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut3_2458x1329.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2457.5,
+    "cy": 1328.5174825174824,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut3_2455x1452.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2455.35,
+    "cy": 1452.4475524475524,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut3_2453x1626.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2453.15,
+    "cy": 1626.055944055944,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut3_2453x1732.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2452.85,
+    "cy": 1731.6923076923076,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut3_2231x1232.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2231.0,
+    "cy": 1232.0253920836444,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut3_2227x1329.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2227.0,
+    "cy": 1329.1650485436894,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut3_2225x1454.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2225.0,
+    "cy": 1454.0575056011949,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut3_2220x1627.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2219.6,
+    "cy": 1627.2748319641523,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut3_2219x1732.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2218.65,
+    "cy": 1731.5003734129948,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut4_2865x1228.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2864.55,
+    "cy": 1227.6783216783217,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut4_2867x1326.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2867.0,
+    "cy": 1325.8041958041958,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut4_2873x1450.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2873.05,
+    "cy": 1449.8741258741259,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut4_2878x1619.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2878.0,
+    "cy": 1619.4195804195804,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut4_2883x1727.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2882.65,
+    "cy": 1727.4405594405594,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut4_2635x1230.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2634.95,
+    "cy": 1229.6930545182972,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut4_2638x1329.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2638.05,
+    "cy": 1328.521284540702,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut4_2642x1450.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2641.8,
+    "cy": 1449.9185959671397,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut4_2645x1621.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2645.0,
+    "cy": 1620.9066467513069,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut4_2650x1726.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2650.0,
+    "cy": 1726.1971620612396,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut5_3267x1207.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3266.95,
+    "cy": 1206.9650349650349,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut5_3277x1300.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3277.3,
+    "cy": 1300.020979020979,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut5_3291x1420.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3291.45,
+    "cy": 1419.6643356643356,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut5_3306x1565.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3306.05,
+    "cy": 1564.958041958042,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut5_3028x1209.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3027.7,
+    "cy": 1208.519790888723,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut5_3038x1303.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3037.6,
+    "cy": 1303.1112770724421,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut5_3051x1420.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3050.9,
+    "cy": 1420.0709484690067,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut5_3064x1567.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3064.4,
+    "cy": 1566.5220313666916,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut6_3728x1150.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3727.5,
+    "cy": 1149.6923076923076,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut6_3751x1286.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3751.0,
+    "cy": 1286.076923076923,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut6_3773x1425.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3772.75,
+    "cy": 1424.8951048951049,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut6_3797x1567.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3797.45,
+    "cy": 1566.8181818181818,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut6_3815x1684.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3814.65,
+    "cy": 1684.2237762237762,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut6_3461x1152.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3460.9,
+    "cy": 1152.0149365197908,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut6_3484x1287.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3484.05,
+    "cy": 1286.5862584017923,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut6_3506x1426.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3506.4,
+    "cy": 1425.909634055265,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut6_3527x1567.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3526.6,
+    "cy": 1566.7580283793875,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut6_3544x1685.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3544.05,
+    "cy": 1684.7042569081405,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut7_4255x1108.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4254.85,
+    "cy": 1107.8181818181818,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut7_4281x1225.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4280.55,
+    "cy": 1224.7692307692307,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut7_4307x1343.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4307.2,
+    "cy": 1342.9650349650349,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut7_4331x1448.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4330.9,
+    "cy": 1448.1258741258741,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_L_STRUT_strut7_4361x1581.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4361.05,
+    "cy": 1580.8671328671328,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut7_3933x1109.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3933.1,
+    "cy": 1109.2203136669157,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut7_3958x1225.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3958.1,
+    "cy": 1224.973861090366,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut7_3983x1343.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 3983.3,
+    "cy": 1342.596713965646,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut7_4006x1447.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4005.8,
+    "cy": 1446.7916355489172,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  },
+  {
+    "file": "training_patches\\STRUT\\depowered_state_reelin_frame_17611_R_STRUT_strut7_4034x1580.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4034.15,
+    "cy": 1579.5862584017923,
+    "patch": 20,
+    "image_id": "depowered_state_reelin_frame_17611"
+  }
+]

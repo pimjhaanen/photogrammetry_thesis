@@ -353,7 +353,7 @@ def apply_lr_gradient_gain(
 
     return out_bgr
 
-def detect_crosses(frame, debug_mask=False, show_annot=False, min_area=70, min_dist=50):
+def detect_crosses(frame, debug_mask=False, show_annot=False, min_area=60, min_dist=50):
     """
     Detect red crosses and return only the kept (deduplicated) centres, an annotated image,
     and print a table where K-IDs match the labels drawn on the debug frame.

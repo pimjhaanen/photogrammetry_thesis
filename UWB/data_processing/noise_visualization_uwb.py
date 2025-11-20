@@ -1,10 +1,36 @@
 """This code can be used to visualize UWB distance fluctuations from a CSV log.
-It linearly interpolates missing samples (NaNs) and applies a simple low-pass
-exponential smoothing filter to highlight slow variations and suppress noise."""
+It linearly interpolates missing samples (NaNs) and applies a zero-phase
+exponential moving average (EMA) smoothing filter to highlight slow variations
+and suppress noise without introducing lag.
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+
+
+def _ema_pass(x: np.ndarray, alpha: float) -> np.ndarray:
+    """Single-pass exponential moving average."""
+    y = np.empty_like(x, dtype=float)
+    y[:] = np.nan
+    idx = np.where(np.isfinite(x))[0]
+    if len(idx) == 0:
+        return y
+    i0 = idx[0]
+    y[i0] = x[i0]
+    for i in range(i0 + 1, len(x)):
+        xi = x[i]
+        y[i] = (alpha * y[i - 1] + (1.0 - alpha) * xi) if np.isfinite(xi) else y[i - 1]
+    return y
+
+
+def _zero_phase_ema(x: np.ndarray, alpha: float) -> np.ndarray:
+    """Apply EMA forward and backward for zero-phase smoothing."""
+    if x.size == 0:
+        return x
+    fwd = _ema_pass(x, alpha)
+    bwd = _ema_pass(fwd[::-1], alpha)[::-1]
+    return bwd
 
 
 def plot_distance_from_csv(csv_path: str) -> None:
@@ -14,7 +40,7 @@ def plot_distance_from_csv(csv_path: str) -> None:
 
     Behavior:
     - Missing distances are filled by linear interpolation over time.
-    - A first-order low-pass (exponential moving average) with α=0.95 is applied.
+    - A zero-phase low-pass (exponential moving average) with α=0.95 is applied.
     - The plot shows detrended series (value minus its mean) for clear fluctuation comparison.
     """
     timestamps = []
@@ -36,11 +62,9 @@ def plot_distance_from_csv(csv_path: str) -> None:
         raise ValueError("Not enough valid samples to interpolate.")
     distances_interpolated = np.interp(timestamps, timestamps[valid_mask], distances[valid_mask])
 
-    # --- Low-pass filter (exponential moving average) ---
+    # --- Zero-phase low-pass filter (exponential moving average) ---
     alpha = 0.95
-    distances_filtered = distances_interpolated.copy()
-    for i in range(1, len(distances_filtered)):
-        distances_filtered[i] = alpha * distances_filtered[i - 1] + (1 - alpha) * distances_filtered[i]
+    distances_filtered = _zero_phase_ema(distances_interpolated, alpha)
 
     # --- Detrend for fluctuation visualization ---
     detrended_measured = distances_interpolated - np.mean(distances_interpolated)
@@ -48,14 +72,14 @@ def plot_distance_from_csv(csv_path: str) -> None:
 
     # --- Plot ---
     plt.figure(figsize=(8, 4))
-    plt.plot(timestamps, detrended_measured, label="Measured distance")
-    plt.plot(timestamps, detrended_filtered, label="Filtered (Low-pass) distance")
-    plt.axhline(0, linestyle="--")  # reference line
-    plt.title("UWB Fluctuations")
+    plt.plot(timestamps, detrended_measured, label="Measured distance", alpha=0.7)
+    plt.plot(timestamps, detrended_filtered, label="Filtered (Zero-phase EMA)", linewidth=2)
+    plt.axhline(0, linestyle="--", color="gray")
+    plt.title("UWB Distance Fluctuations (Zero-Phase EMA)")
     plt.xlabel("Time (s)")
     plt.ylabel(r"$d_t - \overline{d_t}$ (m)")
     plt.legend()
-    plt.grid(True)
+    plt.grid(True, linestyle=":")
     plt.tight_layout()
     plt.show()
 
