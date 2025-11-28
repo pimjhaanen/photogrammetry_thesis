@@ -1012,11 +1012,11 @@ def coarse_to_fine_search_ypr(
 if __name__ == "__main__":
     # --- Inputs you’ll change ---
     calib_file = "../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
-    left_path  = "../input/left_videos/09_10_merged.MP4"
-    right_path = "../input/right_videos/09_10_merged.MP4"
-    frame = 7362
+    left_path  = "left_input_static/L_P2_TL2.jpg"
+    right_path = "right_input_static/R_P2_TL2.jpg"
+    frame = 7811
     N_CLICKS = 10
-    UWB_SPAN_M = 7.26  # set None to ignore span constraints
+    UWB_SPAN_M = 8.224  # set None to ignore span constraints
     SPAN_TOL_M = 0.05      # ±5 cm0.0
 
     out = coarse_to_fine_search_ypr(
@@ -1031,8 +1031,8 @@ if __name__ == "__main__":
         display_scale=0.6,
 
         # NEW: tweak if your frames are a bit dark/low-contrast
-        left_contrast=4, left_brightness=20.0,
-        right_contrast=4, right_brightness=20.0,
+        left_contrast=1, left_brightness=1.0,
+        right_contrast=1, right_brightness=1.0,
 
         yaw_coarse=(-1.5, 1.5, 0.2),
         pitch_coarse=(-1, 0.5, 0.2),

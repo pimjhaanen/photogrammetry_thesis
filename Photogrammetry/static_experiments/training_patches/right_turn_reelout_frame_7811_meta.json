@@ -1,0 +1,1222 @@
+[
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_794x1006.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 793.85,
+    "cy": 1005.6363636363636,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_718x1235.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 718.2,
+    "cy": 1235.4265734265734,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_753x1487.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 753.15,
+    "cy": 1487.2027972027972,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_903x1680.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 903.15,
+    "cy": 1679.923076923077,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_1044x1738.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1043.95,
+    "cy": 1737.993006993007,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_1282x1778.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1282.2,
+    "cy": 1778.167832167832,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_1782x1852.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 1782.4,
+    "cy": 1851.6013986013986,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_2091x1886.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2090.6,
+    "cy": 1885.5384615384614,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_2308x1896.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2307.5,
+    "cy": 1896.4895104895104,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_2662x1908.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2662.1,
+    "cy": 1908.4475524475524,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_2832x1912.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2832.5,
+    "cy": 1912.097902097902,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_2954x1912.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 2953.6,
+    "cy": 1911.5454545454545,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_3187x1912.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3187.45,
+    "cy": 1912.1328671328672,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_3406x1902.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3405.55,
+    "cy": 1902.3846153846155,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_3924x1863.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 3924.05,
+    "cy": 1863.06993006993,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_4230x1812.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4229.85,
+    "cy": 1811.6783216783217,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_4496x1762.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4496.35,
+    "cy": 1762.3916083916083,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_4651x1697.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4650.6,
+    "cy": 1697.4685314685314,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_4827x1505.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4827.4,
+    "cy": 1505.4615384615386,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_4904x1269.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4903.95,
+    "cy": 1268.972027972028,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_L_LE_4876x1047.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "L",
+    "cx": 4876.0,
+    "cy": 1046.9160839160838,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_245x1001.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 244.9,
+    "cy": 1000.8976848394324,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_183x1231.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 182.65,
+    "cy": 1231.4899178491412,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_243x1482.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 242.55,
+    "cy": 1482.42643764003,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_427x1676.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 427.4,
+    "cy": 1676.4988797610156,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_595x1735.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 595.15,
+    "cy": 1734.9865571321882,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_870x1776.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 870.2,
+    "cy": 1776.4383868558625,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_1414x1850.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1414.15,
+    "cy": 1850.4473487677371,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_1735x1884.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1735.1,
+    "cy": 1884.1575802837938,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_1961x1896.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 1961.1,
+    "cy": 1895.555638536221,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_2319x1908.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2319.15,
+    "cy": 1907.8581030619866,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_2490x1911.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2490.45,
+    "cy": 1911.050784167289,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_2610x1910.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2610.0,
+    "cy": 1909.9544436146377,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_2845x1911.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 2844.95,
+    "cy": 1910.9536967886484,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_3056x1902.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3055.8,
+    "cy": 1902.0074682598954,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_3550x1862.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3549.6,
+    "cy": 1861.5765496639283,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_3835x1810.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 3835.05,
+    "cy": 1810.0283793876026,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_4069x1761.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4069.45,
+    "cy": 1761.3517550410754,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_4202x1697.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4202.15,
+    "cy": 1697.072442120986,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_4354x1507.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4353.55,
+    "cy": 1507.3935772964899,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_4416x1272.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4416.0,
+    "cy": 1272.3383121732636,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\LE\\right_turn_reelout_frame_7811_R_LE_4384x1052.png",
+    "label": "LE",
+    "group": "LE",
+    "camera": "R",
+    "cx": 4384.1,
+    "cy": 1051.6176250933534,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut0_1112x1010.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1111.5,
+    "cy": 1009.5804195804196,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut0_1083x1142.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1083.4,
+    "cy": 1142.2517482517483,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut0_1055x1277.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1055.05,
+    "cy": 1276.937062937063,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut0_1035x1383.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1035.45,
+    "cy": 1382.86013986014,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut0_1007x1539.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "L",
+    "cx": 1006.95,
+    "cy": 1538.979020979021,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut0_654x1009.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 654.4,
+    "cy": 1008.5735623599701,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut0_627x1141.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 626.95,
+    "cy": 1140.9507094846902,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut0_601x1275.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 601.15,
+    "cy": 1275.1135175504107,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut0_582x1381.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 582.0,
+    "cy": 1381.2740851381627,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut0_554x1537.png",
+    "label": "STRUT",
+    "group": "strut0",
+    "camera": "R",
+    "cx": 554.5,
+    "cy": 1536.5324869305452,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut1_1641x1020.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1641.45,
+    "cy": 1020.4475524475524,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut1_1619x1173.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1618.6,
+    "cy": 1172.5104895104896,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut1_1597x1335.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1596.95,
+    "cy": 1335.2517482517483,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut1_1574x1495.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1573.7,
+    "cy": 1494.5314685314686,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut1_1557x1629.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "L",
+    "cx": 1557.05,
+    "cy": 1628.881118881119,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut1_1252x1023.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1251.95,
+    "cy": 1023.026138909634,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut1_1231x1174.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1231.0,
+    "cy": 1174.0597460791635,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut1_1211x1337.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1211.45,
+    "cy": 1336.5765496639283,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut1_1189x1495.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1189.1,
+    "cy": 1494.9962658700522,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut1_1174x1628.png",
+    "label": "STRUT",
+    "group": "strut1",
+    "camera": "R",
+    "cx": 1174.25,
+    "cy": 1628.3293502613892,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut2_2127x1079.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2127.35,
+    "cy": 1078.8741258741259,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut2_2114x1181.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2114.2,
+    "cy": 1180.8251748251748,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut2_2101x1314.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2100.95,
+    "cy": 1313.944055944056,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut2_2083x1471.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2083.0,
+    "cy": 1470.986013986014,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut2_2067x1611.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "L",
+    "cx": 2067.25,
+    "cy": 1611.2027972027972,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut2_1770x1081.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1769.55,
+    "cy": 1080.8222554144884,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut2_1758x1183.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1758.45,
+    "cy": 1182.6519790888724,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut2_1747x1315.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1746.85,
+    "cy": 1314.6631814787154,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut2_1732x1472.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1732.1,
+    "cy": 1471.8887229275579,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut2_1718x1611.png",
+    "label": "STRUT",
+    "group": "strut2",
+    "camera": "R",
+    "cx": 1717.95,
+    "cy": 1610.8558625840178,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut3_2565x1106.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2565.25,
+    "cy": 1105.93006993007,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut3_2555x1214.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2555.0,
+    "cy": 1214.055944055944,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut3_2545x1350.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2544.9,
+    "cy": 1349.923076923077,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut3_2530x1534.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2529.95,
+    "cy": 1534.006993006993,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut3_2524x1646.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2524.341796875,
+    "cy": 1645.6666666666667,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut3_2519x1793.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "L",
+    "cx": 2519.0,
+    "cy": 1793.1748251748252,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut3_2220x1107.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2219.65,
+    "cy": 1106.681852128454,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut3_2211x1215.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2211.45,
+    "cy": 1214.8984316654219,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut3_2204x1350.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2203.7,
+    "cy": 1350.362210604929,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut3_2193x1534.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2193.15,
+    "cy": 1534.209858103062,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut3_2190x1646.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2189.6,
+    "cy": 1645.5526512322629,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut3_2183x1793.png",
+    "label": "STRUT",
+    "group": "strut3",
+    "camera": "R",
+    "cx": 2183.05,
+    "cy": 1793.1142643764003,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut4_2993x1121.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2993.45,
+    "cy": 1121.027972027972,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut4_2989x1228.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2988.95,
+    "cy": 1228.0349650349651,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut4_2978x1539.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2977.95,
+    "cy": 1538.972027972028,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut4_2976x1651.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2975.55,
+    "cy": 1651.4825174825176,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut4_2971x1801.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "L",
+    "cx": 2971.1,
+    "cy": 1800.7482517482517,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut4_2656x1121.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2655.6,
+    "cy": 1121.370425690814,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut4_2654x1228.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2653.9,
+    "cy": 1227.9843166542196,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut4_2644x1539.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2644.05,
+    "cy": 1538.8879761015683,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut4_2643x1650.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2643.3,
+    "cy": 1649.5862584017923,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut4_2638x1801.png",
+    "label": "STRUT",
+    "group": "strut4",
+    "camera": "R",
+    "cx": 2638.1,
+    "cy": 1801.209858103062,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut5_3422x1124.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3421.5,
+    "cy": 1123.5104895104896,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut5_3425x1225.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3425.1,
+    "cy": 1225.041958041958,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut5_3428x1352.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3427.85,
+    "cy": 1352.1818181818182,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut5_3433x1640.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "L",
+    "cx": 3432.95,
+    "cy": 1640.0839160839162,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut5_3077x1123.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3077.25,
+    "cy": 1123.1008215085885,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut5_3081x1223.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3080.75,
+    "cy": 1223.1015683345781,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut5_3085x1351.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3085.45,
+    "cy": 1350.6183719193427,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut5_3093x1639.png",
+    "label": "STRUT",
+    "group": "strut5",
+    "camera": "R",
+    "cx": 3092.8,
+    "cy": 1639.0052277819268,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut6_3916x1097.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3915.8,
+    "cy": 1097.2447552447552,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut6_3927x1246.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3926.9,
+    "cy": 1246.1958041958042,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut6_3936x1394.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3935.9,
+    "cy": 1393.909090909091,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut6_3945x1546.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3945.25,
+    "cy": 1546.2517482517483,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut6_3953x1669.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "L",
+    "cx": 3952.85,
+    "cy": 1669.3146853146852,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut6_3546x1097.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3546.0,
+    "cy": 1096.8969380134429,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut6_3557x1244.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3557.25,
+    "cy": 1243.8424197162062,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut6_3567x1392.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3566.7,
+    "cy": 1392.380134428678,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut6_3577x1546.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3576.95,
+    "cy": 1545.8215085884988,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut6_3584x1668.png",
+    "label": "STRUT",
+    "group": "strut6",
+    "camera": "R",
+    "cx": 3584.35,
+    "cy": 1668.2860343539955,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut7_4486x1093.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4486.5,
+    "cy": 1093.1118881118882,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut7_4498x1220.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4498.25,
+    "cy": 1220.3146853146852,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut7_4512x1345.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4512.0,
+    "cy": 1345.3916083916083,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut7_4522x1459.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4522.2,
+    "cy": 1459.3846153846155,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_L_STRUT_strut7_4536x1602.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "L",
+    "cx": 4536.0,
+    "cy": 1602.3986013986014,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut7_4066x1094.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4065.7,
+    "cy": 1093.875280059746,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut7_4077x1222.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4076.8,
+    "cy": 1221.6071695294995,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut7_4088x1347.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4087.8,
+    "cy": 1346.6079163554891,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut7_4098x1460.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4097.95,
+    "cy": 1459.673637042569,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  },
+  {
+    "file": "training_patches\\STRUT\\right_turn_reelout_frame_7811_R_STRUT_strut7_4110x1600.png",
+    "label": "STRUT",
+    "group": "strut7",
+    "camera": "R",
+    "cx": 4110.35,
+    "cy": 1600.3502613890964,
+    "patch": 20,
+    "image_id": "right_turn_reelout_frame_7811"
+  }
+]

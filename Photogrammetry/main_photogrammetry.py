@@ -367,7 +367,7 @@ if __name__ == "__main__":
         need_fresh_min_pairs=50,
 
         # --- epipolar lines overlay ---
-        epipolar_lines=True,
+        epipolar_lines=False,
 
         # --- SYNC (audio) ---
         sync_start_seconds=0.0,

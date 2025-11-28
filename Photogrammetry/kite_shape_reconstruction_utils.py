@@ -66,7 +66,7 @@ def separate_LE_and_struts(
     horizontal_spacing: float = 130.0,
     r_in: int = 6, r_out: int = 18,          # annulus radii for local background
     # --- New brightness-only "slider" threshold ---
-    bg_threshold: float = 0.7,               # 0.0..1.0 (fraction) OR 0..255 (absolute)
+    bg_threshold: float = 0.4,               # 0.0..1.0 (fraction) OR 0..255 (absolute)
     # Keep for compatibility; no longer used in brightness-only mode:
     min_points_per_strut: int = 2,           # require at least this many points per strut column
 ) -> List[Tuple[float, float, Union[int, str]]]:

@@ -285,6 +285,53 @@ def compute_billowing_segments(csv_path, *,
 
     return np.asarray(seg_idx), np.asarray(dist)
 
+
+def percent_change_with_uncertainty(billow_A, billow_B, sigma_L):
+    """
+    Compute percentage change in mean billowing from case A -> B
+    and its uncertainty, assuming:
+      - each segment length has standard uncertainty sigma_L (1σ, in meters)
+      - segments are independent
+      - mean is taken over segments where both A and B are valid (non-NaN)
+
+    Returns:
+        pct_change  : 100 * (mean_B / mean_A - 1)   [in %]
+        sigma_pct   : 1σ uncertainty on pct_change  [in %]
+        mean_A, mean_B, N_used : for reference
+    """
+    billow_A = np.asarray(billow_A, float)
+    billow_B = np.asarray(billow_B, float)
+
+    # Only use segments where both cases have valid values
+    valid = ~np.isnan(billow_A) & ~np.isnan(billow_B)
+    if not np.any(valid):
+        raise ValueError("No overlapping valid segments between A and B.")
+
+    A = billow_A[valid]
+    B = billow_B[valid]
+    N = len(A)
+
+    mean_A = A.mean()
+    mean_B = B.mean()
+
+    # uncertainty of mean billowing in each case
+    sigma_mean_A = sigma_L / np.sqrt(N)
+    sigma_mean_B = sigma_L / np.sqrt(N)
+
+    # percentage change A -> B
+    pct_change = 100.0 * (mean_B / mean_A - 1.0)
+
+    # propagate uncertainty
+    dP_dA = -100.0 * (mean_B / (mean_A**2))
+    dP_dB =  100.0 / mean_A
+
+    sigma_pct = np.sqrt(
+        (dP_dA**2) * (sigma_mean_A**2) +
+        (dP_dB**2) * (sigma_mean_B**2)
+    )
+
+    return pct_change, sigma_pct, mean_A, mean_B, N
+
 # ============================================================
 # PLOTTING: TWIST, BILLOWING, BARS
 # ============================================================
@@ -327,6 +374,10 @@ def plot_billowing(csvs, labels, colors,
         idx, billow = compute_billowing_segments(csv, exclude_struts=excl)
         y = billow[::-1]
         x = np.array(x_labels_flip[:len(y)], dtype=object)
+        print(lab)
+        for i in reversed(range(len(y))):
+            print(np.round(y[i], 3))
+
         plt.plot(x, y, marker="o", color=col, label=lab)
 
     for (_, cad), lab in zip(external_curves, external_labels):
@@ -371,6 +422,83 @@ def plot_billowing_deviation_bar(csvs, labels,
     plt.tight_layout()
     plt.show()
 
+
+def compute_centerstrut_tip_distances(csv_path):
+    """
+    Computes L_CS,T,R and L_CS,T,L for a given CSV file.
+
+    Steps:
+      1. Load pts_world and LE path
+      2. For strut3 and strut4: find the TE point (max idx)
+      3. Extract their x-coordinates
+      4. Find LE point with closest x-coordinate
+      5. Compute Euclidean distances:
+           - LE[0]     <-> nearest-to-strut3  (Right)
+           - LE[-1]    <-> nearest-to-strut4  (Left)
+    """
+
+    pts_world, le_path_world = _prep_dataset_from_csv(
+        csv_path,
+        endpoints_k=10,
+        jump_factor=2.5,
+        tip_policy="lowestZ",
+        global_up=(0, 0, 1),
+        force_flip_x=False,
+        transform_to_local=False
+    )
+
+    LE = pts_world.get("LE")
+    if LE is None:
+        raise ValueError(f"LE missing in {csv_path}")
+
+    LE = np.asarray(LE)
+
+    # ---------------------------
+    # Helper: max-index TE point
+    # ---------------------------
+    def max_index_point(P):
+        """Return the point with highest index (row) in P."""
+        if P is None or len(P) == 0:
+            return None
+        return P[-1]  # highest idx = last in list
+
+    # Get strut3 TE (right side)
+    P3 = pts_world.get("strut3")
+    S3 = max_index_point(P3)
+    if S3 is None:
+        raise ValueError(f"strut3 missing in {csv_path}")
+
+    # Get strut4 TE (left side)
+    P4 = pts_world.get("strut4")
+    S4 = max_index_point(P4)
+    if S4 is None:
+        raise ValueError(f"strut4 missing in {csv_path}")
+
+    # Extract x-coordinates
+    x3 = S3[0]  # right side
+    x4 = S4[0]  # left side
+
+    # ---------------------------
+    # Find LE point closest in x
+    # ---------------------------
+    LE_x = LE[:, 0]
+
+    idx_closest3 = np.argmin(np.abs(LE_x - x3))
+    idx_closest4 = np.argmin(np.abs(LE_x - x4))
+
+    LE_closest3 = LE[idx_closest3]
+    LE_closest4 = LE[idx_closest4]
+
+    # ---------------------------
+    # Distances:
+    #   Right side:  LE[0]   <-> LE_closest3
+    #   Left side :  LE[-1]  <-> LE_closest4
+    # ---------------------------
+    L_CS_T_R = np.linalg.norm(LE[0] - LE_closest3)
+    L_CS_T_L = np.linalg.norm(LE[-1] - LE_closest4)
+
+    return L_CS_T_R, L_CS_T_L, idx_closest3, idx_closest4
+
 # ============================================================
 # MAIN
 # ============================================================
@@ -378,18 +506,32 @@ def plot_billowing_deviation_bar(csvs, labels,
 if __name__ == "__main__":
 
     csvs = [
-        "static_test_output/powered_state_reelin_frame_17372.csv",
-        "static_test_output/depowered_state_reelin_frame_17701.csv",
-        "static_test_output/left_turn_reelout_frame_7362.csv",
+        "static_test_output/P1_S.csv",
+        "static_test_output/P1_PL1.csv",
+        "static_test_output/P1_PL2.csv",
+        "static_test_output/P1_TL1.csv",
+        "static_test_output/P1_TL2.csv",
+        "static_test_output/P2_S.csv",
+        "static_test_output/P2_PL1.csv",
+        "static_test_output/P2_PL2.csv",
+        "static_test_output/P2_TL1.csv",
+        "static_test_output/P2_TL2.csv",
     ]
 
     labels = [
-        "Powered, straight",
-        "Depowered, straight",
-        "Powered, left turn",
+        "P1+S",
+        "P1+PL1",
+        "P1+PL2",
+        "P1+TL1",
+        "P1+TL2",
+        "P2+S",
+        "P2+PL1",
+        "P2+PL2",
+        "P2+TL1",
+        "P2+TL2",
     ]
 
-    colors = ["C0","C1","C2"]
+    colors = ["C0","C1","C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
 
     cad_s = np.array([-1,-0.875,-0.625,-0.325,0,0.325,0.625,0.875,1])
     cad_twist = np.array([2.3,1.9,3.0,3.5,3.7,3.5,3.0,1.9,2.3])
@@ -422,3 +564,41 @@ if __name__ == "__main__":
         exclude_struts_per_file,
         cad_segments=cad_billow
     )
+
+    # Example: compute billowing arrays for three cases
+    idx_p, billow_p = compute_billowing_segments(
+        "static_test_output/powered_state_reelin_frame_17372.csv"
+    )
+    idx_d, billow_d = compute_billowing_segments(
+        "static_test_output/depowered_state_reelin_frame_17701.csv"
+    )
+    idx_t, billow_t = compute_billowing_segments(
+        "static_test_output/left_turn_reelout_frame_7362.csv"
+    )
+
+    print("\n===== Center-Strut–Tip Distances =====")
+    for csv, lab in zip(csvs, labels):
+        try:
+            R, L, idx3, idx4 = compute_centerstrut_tip_distances(csv)
+            print(f"{lab}:  L_CS,T,R = {R:.4f} m   (LE idx={idx3}),   "
+                  f"L_CS,T,L = {L:.4f} m   (LE idx={idx4})")
+        except Exception as e:
+            print(f"{lab}: ERROR -> {e}")
+
+    # Choose an estimate for segment-length uncertainty (in meters)
+    # e.g. if you think each segment length is known within ±0.02 m (1σ):
+    sigma_L = 0.02
+
+    # 1) powered straight -> depowered straight
+    pct_pd, sig_pd, m_p, m_d, N_pd = percent_change_with_uncertainty(
+        billow_p, billow_d, sigma_L
+    )
+    print(f"Powered → Depowered: Δ = {pct_pd:.2f}% ± {sig_pd:.2f}% "
+          f"(means: {m_p:.3f} m → {m_d:.3f} m, N={N_pd})")
+
+    # 2) powered straight -> powered left turn
+    pct_pt, sig_pt, m_p2, m_t, N_pt = percent_change_with_uncertainty(
+        billow_p, billow_t, sigma_L
+    )
+    print(f"Powered → Powered turn: Δ = {pct_pt:.2f}% ± {sig_pt:.2f}% "
+          f"(means: {m_p2:.3f} m → {m_t:.3f} m, N={N_pt})")

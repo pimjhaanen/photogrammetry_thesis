@@ -317,6 +317,7 @@ def apply_lr_gradient_gain(
 
     # --- draw ROI, midline, and labels on the returned frame ---
     # yellow lines
+    """
     line_color = (0, 255, 255)
     if roi_ok and show_rio:
         cv2.rectangle(out_bgr, (x0, y0), (x1, y1), line_color, 2)
@@ -350,7 +351,7 @@ def apply_lr_gradient_gain(
         cv2.line(out_bgr, (w//2, 0), (w//2, h-1), line_color, 2)
         txt = "B|D" if left_is_brighter else "D|B"
         cv2.putText(out_bgr, txt, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, line_color, 3, cv2.LINE_AA)
-
+    """
     return out_bgr
 
 def detect_crosses(frame, debug_mask=False, show_annot=False, min_area=60, min_dist=50):

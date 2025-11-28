@@ -361,18 +361,35 @@ def spherical_to_cartesian(lat_deg, lon_deg, radius_m):
     return np.column_stack((x, y, z))
 
 
-def _render_spherical_panel(lat, lon, length, output_size=(480,480), dpi=200):
-    """Render current spherical kite position (no history)."""
+def _render_spherical_panel(lat, lon, length, output_size=(360,360), dpi=120):
+    """Render current spherical kite position (no history) in a compact form."""
     pts = spherical_to_cartesian(lat, lon, length)
     if len(pts) == 0:
         return np.full((output_size[1], output_size[0], 3), 255, np.uint8)
-    fig = plt.figure(figsize=(5,5), dpi=dpi)
+
+    # Smaller figure, lower dpi → more compact panel
+    fig = plt.figure(figsize=(4, 4), dpi=dpi)
     ax = fig.add_subplot(1,1,1, projection="3d")
-    ax.scatter(pts[:,0], pts[:,1], pts[:,2], c="r", s=40)
-    ax.set_xlabel("X [m]"); ax.set_ylabel("Y [m]"); ax.set_zlabel("Z [m]")
-    ax.set_xlim(0,150); ax.set_ylim(-50,0) ; ax.set_zlim(0,300)
-    ax.set_title("Kite position (spherical→Cartesian)")
+
+    # Smaller marker size
+    ax.scatter(pts[:,0], pts[:,1], pts[:,2], c="r", s=20)
+
+    # Keep axis labels small
+    ax.set_xlabel("X [m]", fontsize=8)
+    ax.set_ylabel("Y [m]", fontsize=8)
+    ax.set_zlabel("Z [m]", fontsize=8)
+
+    # Same spatial limits
+    ax.set_xlim(0,150)
+    ax.set_ylim(-50,0)
+    ax.set_zlim(0,300)
+
+    # Smaller title
+    ax.set_title("Kite position", fontsize=10)
+
+    # Return resized BGR image
     return _matfig_to_bgr(fig, output_size=output_size, dpi=dpi)
+
 
 
 # ============================ Main render routine ============================
@@ -384,8 +401,8 @@ def render_video(
     fps=30,
     # smoothing for points (frame-to-frame)
     smooth_points=True,
-    point_alpha=0.9,
-    match_radius=0.35,
+    point_alpha=0.95,
+    match_radius=0.25,
     show_wireframe=True,
     # telemetry smoothing (zero-phase EMA)
     telemetry_zero_phase_alpha=0.95,
@@ -549,7 +566,7 @@ def render_video(
                                                   output_size=(cw, ch))
                 # front (z,x): AOA
                 aoa = metrics.get("airspeed_angle_of_attack_filt", metrics.get("airspeed_angle_of_attack"))
-                front_txt = f"AOA: {aoa:.1f}°" if pd.notna(aoa) else ""
+                front_txt = rf"$\alpha_{{fl}}$: {aoa:.1f}°" if pd.notna(aoa) else ""
                 img_front = _render_points_panel(pts_plot, segments, "front", x_lim, y_lim, z_lim,
                                                  show_wireframe=show_wireframe,
                                                  annotate={"text": front_txt} if front_txt else None,
