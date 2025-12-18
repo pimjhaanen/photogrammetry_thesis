@@ -478,7 +478,7 @@ def plot_coarse_3d_pair(
     uwb_span_m=None,
     face_alpha=1.0,      # 1.0 = fully solid
     cmap_name="viridis",
-    ups=12                # upsampling factor per axis for smooth gradients
+    ups=4                # upsampling factor per axis for smooth gradients
 ):
     """
     Left: epipolar mean|dy| (px)
@@ -659,7 +659,9 @@ def plot_coarse_3d_pair(
     _draw_block_faces(ax2, V_right, right_label, right_title)
 
     plt.tight_layout()
+    plt.savefig("3D_correction_plot_1.svg", format="svg", bbox_inches="tight")
     plt.show()
+    plt.close()
 
 # --------- 3) & 4) COARSE 2D SMOOTHED SLICE (side-by-side) ----------
 def plot_coarse_slice_smoothed(
@@ -845,7 +847,9 @@ def plot_coarse_slice_smoothed(
             ax.plot([px], [rx], marker='x', markersize=9, mew=2, color='k')
 
     plt.tight_layout()
+    plt.savefig("3D_corrections_plot2.svg", format="svg", bbox_inches="tight")
     plt.show()
+    plt.close()
 
 def coarse_to_fine_search_ypr(
     calib_file: str,
@@ -1012,11 +1016,11 @@ def coarse_to_fine_search_ypr(
 if __name__ == "__main__":
     # --- Inputs you’ll change ---
     calib_file = "../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
-    left_path  = "left_input_static/L_P2_TL2.jpg"
-    right_path = "right_input_static/R_P2_TL2.jpg"
-    frame = 7811
-    N_CLICKS = 10
-    UWB_SPAN_M = 8.224  # set None to ignore span constraints
+    left_path  = "../input/left_videos/09_10_merged.MP4"
+    right_path = "../input/right_videos/09_10_merged.MP4"
+    frame = 7362
+    N_CLICKS = 2
+    UWB_SPAN_M = 7.26  # set None to ignore span constraints
     SPAN_TOL_M = 0.05      # ±5 cm0.0
 
     out = coarse_to_fine_search_ypr(
@@ -1031,8 +1035,8 @@ if __name__ == "__main__":
         display_scale=0.6,
 
         # NEW: tweak if your frames are a bit dark/low-contrast
-        left_contrast=1, left_brightness=1.0,
-        right_contrast=1, right_brightness=1.0,
+        left_contrast=4, left_brightness=20.0,
+        right_contrast=4, right_brightness=20.0,
 
         yaw_coarse=(-1.5, 1.5, 0.2),
         pitch_coarse=(-1, 0.5, 0.2),

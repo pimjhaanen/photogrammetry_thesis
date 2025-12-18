@@ -122,7 +122,8 @@ def analyze_pitot_dataset(
         data["calibrated_ws"] = [ws_slope * v + ws_intercept for v in data["measured_ws"]]
 
     # --- Plot 1: wind-speed vs AoA, per true ws (RAW vs CALIBRATED), legend OUTSIDE ---
-    plt.figure(figsize=(10, 7))
+    fig = plt.figure(figsize=(7, 7))
+    ax = fig.add_subplot(111)
     for windspeed, data in sorted(plot_data.items()):
         pairs = sorted(zip(data["angle"], data["measured_ws"], data["calibrated_ws"]))
         angs = [p[0] for p in pairs]
@@ -134,12 +135,17 @@ def analyze_pitot_dataset(
         color = line_raw.get_color()
         plt.plot(angs, ws_cal, "--", label=f"{windspeed} m/s calibrated", color=color)
 
-    plt.xlabel(r"Inflow Angle $\phi$ (°)")
-    plt.ylabel("Wind Speed (m/s)")
-    plt.title("Wind Speed: raw vs calibrated across inflow angles")
-    plt.grid(True)
-    plt.legend(title="Series", bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0., fontsize=9)
-    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    ax.set_xlabel(r"Inflow Angle $\phi$ (°)")
+    ax.set_ylabel("Wind Speed (m/s)")
+    ax.set_title("Wind Speed: raw vs calibrated across inflow angles")
+    ax.grid(True)
+
+    # Legend outside but close
+    ax.legend(title="Series", bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0., fontsize=9)
+
+    # ↓↓↓ This removes the whitespace
+    fig.subplots_adjust(right=0.75)
+
     plt.show()
 
     # Build a per-windspeed table (optional, for inspection)

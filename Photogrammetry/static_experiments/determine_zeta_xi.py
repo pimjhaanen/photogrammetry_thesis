@@ -89,5 +89,5 @@ def compute_zeta_xi(csv_path_straight, csv_path_turn):
 
 compute_zeta_xi(
     "static_test_output/straight_flight_reelout_frame_7182.csv",
-    "static_test_output/left_turn_reelout_frame_7362.csv"
+    "static_test_output/right_turn_reelout_frame_7362.csv"
 )

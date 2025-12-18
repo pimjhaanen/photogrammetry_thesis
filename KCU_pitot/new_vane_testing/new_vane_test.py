@@ -163,7 +163,8 @@ else:
     plt.show()
 
 # --- (Optional) Re-plot curves with 5 m/s hidden; legend OUTSIDE ---
-plt.figure(figsize=(10, 6))
+fig = plt.figure(figsize=(7, 7))
+ax = fig.add_subplot(111)
 for ang in angles:
     y_raw = Y_meas[ang].copy()
     y_cal = Y_cal[ang].copy()
@@ -174,10 +175,10 @@ for ang in angles:
     color = plt.gca().lines[-1].get_color()
     plt.plot(x_vel, y_cal, linestyle='--', label=f'{ang}° calibrated', color=color)
 
-plt.xlabel('Velocity (m/s)')
-plt.ylabel('Angle α (°)')
-plt.title('Angle vs velocity (raw & calibrated)')
-plt.grid(True)
-plt.legend(fontsize=9, ncol=1, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
-plt.tight_layout(rect=[0, 0, 0.8, 1])
+ax.set_xlabel('Wind speed (m/s)')
+ax.set_ylabel('Inflow angle $\phi$ (°)')
+ax.set_title('Inflow angle: raw vs calibrated across wind speeds')
+ax.grid(True)
+ax.legend(title="Series", fontsize=9, ncol=1, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
+fig.subplots_adjust(right=0.75)
 plt.show()

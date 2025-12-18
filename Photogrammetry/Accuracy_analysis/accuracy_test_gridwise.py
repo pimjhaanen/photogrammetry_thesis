@@ -457,8 +457,8 @@ def run_stereo_photogrammetry(
 if __name__ == "__main__":
     # Example paths (same as your current script)
     calib_file = "../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl"
-    left_path = "video_input/left camera/trapezium_0005.png"
-    right_path = "video_input/right camera/trapezium_0005.png"
+    left_path = "video_input/left camera/trapezium_0003.png"
+    right_path = "video_input/right camera/trapezium_0003.png"
 
     run_stereo_photogrammetry(
         calib_file=calib_file,

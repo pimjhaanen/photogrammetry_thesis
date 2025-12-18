@@ -238,7 +238,10 @@ def detect_flash_start_frame(
             plt.xlim(occurs_after * fps, occurs_before * fps)
         plt.xlabel("Frame Index"); plt.ylabel("Δ Brightness")
         plt.grid(True); plt.legend(); plt.tight_layout()
+        plt.savefig("UWB_flash.pdf", format="pdf", bbox_inches="tight")
         plt.show()
+        plt.close()
+
 
     return flash_start
 
@@ -323,9 +326,11 @@ def match_videos(video1_path: str,
         plt.plot(time, shifted, label='Video 2 (shifted by lag)')
         plt.title('Matched Audio Signals')
         plt.xlabel('Time [s]'); plt.ylabel('Amplitude')
-        plt.legend(); plt.grid(True); plt.tight_layout(); plt.show()
+        plt.legend(); plt.grid(True); plt.tight_layout()
+        plt.savefig("matches_audio_signals.pdf", format="pdf", bbox_inches="tight")
+        plt.show()
+        plt.close()
 
-    # Step 3: Detect start-of-flash in the reference video (video 1).
     # Step 3: Detect start-of-flash in the reference video (video 1).
     flash_video_path = video1_files[0]
     flash_start_frame = detect_flash_start_frame(

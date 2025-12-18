@@ -7,6 +7,42 @@ from plot_static_results import _prep_dataset_from_csv
 # 1. BASIC UTILITIES
 # ============================================================
 
+import numpy as np
+
+# ------------------------------------------------------------
+# Helper: LE tangent in Z–X plane (already discussed earlier)
+# ------------------------------------------------------------
+def _le_tangent_zx_at(le_path, x_query):
+    if le_path is None or le_path.shape[0] < 2:
+        return None
+
+    le = np.asarray(le_path, float)
+    xs = le[:, 0]
+    zs = le[:, 2]
+
+    order = np.argsort(xs)
+    xs = xs[order]
+    zs = zs[order]
+
+    if x_query <= xs[0]:
+        x0, x1 = xs[0], xs[1]
+        z0, z1 = zs[0], zs[1]
+    elif x_query >= xs[-1]:
+        x0, x1 = xs[-2], xs[-1]
+        z0, z1 = zs[-2], zs[-1]
+    else:
+        j = int(np.searchsorted(xs, x_query))
+        x0, x1 = xs[j - 1], xs[j]
+        z0, z1 = zs[j - 1], zs[j]
+
+    v = np.array([x1 - x0, 0.0, z1 - z0], float)
+    n = np.linalg.norm(v)
+    return None if n == 0 else v / n
+
+
+# ------------------------------------------------------------
+# Existing helpers (your versions)
+# ------------------------------------------------------------
 def _pca_dir(points):
     if points is None or len(points) < 2:
         return None
@@ -27,9 +63,15 @@ def _span_mapping_from_le(le_path):
 def _compute_s_from_y(y, y_center, span_y):
     return 2.0 * (y - y_center) / span_y
 
-# ============================================================
-# 2. LE-BASED TWIST HELPERS
-# ============================================================
+def _unwrap_twist_along_span(twist_deg, thresh=50.0):
+    t = np.asarray(twist_deg, float).copy()
+    for i in range(1, len(t)):
+        delta = t[i] - t[i-1]
+        if delta > thresh:
+            t[i:] -= 360.0
+        elif delta < -thresh:
+            t[i:] += 360.0
+    return t
 
 def _le_tangent_yz_at(le_path, y_query):
     if le_path is None or le_path.shape[0] < 2:
@@ -57,27 +99,40 @@ def _le_tangent_yz_at(le_path, y_query):
     n = np.linalg.norm(v)
     return None if n == 0 else v / n
 
-# ============================================================
-# 2B. NEW: UNWRAP LARGE TWIST JUMPS (>50°)
-# ============================================================
-
-def _unwrap_twist_along_span(twist_deg, thresh=50.0):
+# ------------------------------------------------------------
+# NEW: node-wise remap according to your rules
+# ------------------------------------------------------------
+def _remap_twist_nodes(twist_deg):
     """
-    Remove ±360° jumps when twist jumps more than 'thresh' degrees.
+    Apply custom node corrections:
+
+      - If   60 < t < 130  -> t -= 90
+      - If   t > 200       -> t -= 270
+      - If -130 < t < -60  -> t += 90
+      - If   t < -200      -> t += 270
     """
     t = np.asarray(twist_deg, float).copy()
-    for i in range(1, len(t)):
-        delta = t[i] - t[i-1]
-        if delta > thresh:
-            t[i:] -= 360.0
-        elif delta < -thresh:
-            t[i:] += 360.0
+
+    # Positive side
+    mask1 = (t > 60.0) & (t < 130.0)
+    t[mask1] -= 90.0
+
+    mask2 = t > 200.0
+    t[mask2] -= 270.0
+
+    # Negative side
+    mask3 = (t < -60.0) & (t > -130.0)
+    t[mask3] += 90.0
+
+    mask4 = t < -200.0
+    t[mask4] += 270.0
+
     return t
 
-# ============================================================
-# 3. GEOMETRIC TWIST (LE-relative)
-# ============================================================
 
+# ============================================================
+# GEOMETRIC TWIST
+# ============================================================
 def compute_geometric_twist(
         csv_path,
         *,
@@ -86,9 +141,13 @@ def compute_geometric_twist(
         jump_factor=2.5,
         tip_policy="lowestZ",
         global_up=(0,0,1),
-        force_flip_x=False,
-        transform_to_local=True
+        force_flip_x=True,
+        transform_to_local=False,
+        center_twist=True,   # NEW: control t0 subtraction
 ):
+    # -----------------------------
+    # Load dataset
+    # -----------------------------
     pts_local, le_path = _prep_dataset_from_csv(
         csv_path,
         endpoints_k=endpoints_k,
@@ -102,11 +161,47 @@ def compute_geometric_twist(
     if le_path is None or le_path.shape[0] < 2:
         raise ValueError(f"[Twist] LE path missing in {csv_path}")
 
-    y_center, span_y = _span_mapping_from_le(le_path)
+    # -----------------------------
+    # Default behaviour of centering:
+    #   - if center_twist is None: behave like before
+    #       → center only when transform_to_local=True
+    # -----------------------------
+    if center_twist is None:
+        center_twist = transform_to_local
 
+    # -----------------------------
+    # Choose axis: Y (local) or X (global)
+    # -----------------------------
+    if transform_to_local:
+        # Conventional: use Y-axis span
+        y_center, span_y = _span_mapping_from_le(le_path)
+
+        def get_s_from_point(P):
+            y_mean = float(P[:, 1].mean())
+            return _compute_s_from_y(y_mean, y_center, span_y)
+
+        def get_tangent(y_or_x):
+            return _le_tangent_yz_at(le_path, y_or_x)
+
+    else:
+        # FRONT VIEW mode → use X–Z plane
+        x_center = float(le_path[:, 0].mean())
+        span_x   = float(le_path[:, 0].max() - le_path[:, 0].min())
+
+        def get_s_from_point(P):
+            x_mean = float(P[:, 0].mean())
+            return (x_mean - x_center) / (0.5 * span_x)
+
+        def get_tangent(y_or_x):
+            return _le_tangent_zx_at(le_path, y_or_x)
+
+    # -----------------------------
+    # Accumulate twist
+    # -----------------------------
     s_list = []
     twist_list = []
 
+    # Reference direction
     q = np.array([1.0, 0.0, 0.0])
 
     for i in range(expected_struts):
@@ -114,18 +209,19 @@ def compute_geometric_twist(
         if P is None or len(P) < 2:
             continue
         P = np.asarray(P, float)
-        y_mean = float(P[:,1].mean())
-        s_val  = _compute_s_from_y(y_mean, y_center, span_y)
+
+        s_val = get_s_from_point(P)
 
         d = _pca_dir(P)
         if d is None:
             continue
         d = d / np.linalg.norm(d)
 
-        n = _le_tangent_yz_at(le_path, y_mean)
+        n = get_tangent(P[:,1].mean() if transform_to_local else P[:,0].mean())
         if n is None:
             continue
 
+        # project on plane ⟂ n
         d_proj = d - np.dot(d, n)*n
         if np.linalg.norm(d_proj) < 1e-9:
             continue
@@ -147,6 +243,9 @@ def compute_geometric_twist(
     if not s_list:
         raise ValueError(f"[Twist] No valid struts found in {csv_path}")
 
+    # -----------------------------
+    # Sort + unwrap + node remap
+    # -----------------------------
     s_arr = np.asarray(s_list)
     twist_arr = np.asarray(twist_list)
 
@@ -154,32 +253,37 @@ def compute_geometric_twist(
     s_sorted = s_arr[order]
     twist_sorted = twist_arr[order]
 
-    # 🔥 APPLY YOUR 50° UNWRAP RULE HERE
+    # First: classical ±360° unwrapping
     twist_sorted = _unwrap_twist_along_span(twist_sorted, thresh=50.0)
+    # Then: your explicit node rules
+    twist_sorted = _remap_twist_nodes(twist_sorted)
 
-    # center twist at s=0
-    idx0 = np.where(np.isclose(s_sorted, 0))[0]
-    if len(idx0):
-        twist0 = twist_sorted[idx0[0]]
-    else:
-        r = np.searchsorted(s_sorted, 0)
-        if r == 0:
-            twist0 = twist_sorted[0]
-        elif r == len(s_sorted):
-            twist0 = twist_sorted[-1]
+    # -----------------------------
+    # Optional centering at s=0
+    # -----------------------------
+    if center_twist:
+        idx0 = np.where(np.isclose(s_sorted, 0))[0]
+        if len(idx0):
+            twist0 = twist_sorted[idx0[0]]
         else:
-            l = r - 1
-            tL, tR = twist_sorted[l], twist_sorted[r]
-            sL, sR = s_sorted[l], s_sorted[r]
-            twist0 = tL + (0 - sL)*(tR - tL)/(sR - sL)
+            r = np.searchsorted(s_sorted, 0)
+            if r == 0:
+                twist0 = twist_sorted[0]
+            elif r == len(s_sorted):
+                twist0 = twist_sorted[-1]
+            else:
+                l = r - 1
+                tL, tR = twist_sorted[l], twist_sorted[r]
+                sL, sR = s_sorted[l], s_sorted[r]
+                twist0 = tL + (0 - sL)*(tR - tL)/(sR - sL)
 
-    return s_sorted, twist_sorted - twist0
+        twist_sorted = twist_sorted - twist0
 
-# ============================================================
-# 4. BILLOWING & PLOTTING (unchanged)
-# ============================================================
+    return s_sorted, twist_sorted
 
-# [UNCHANGED: all your billowing + plotting code continues here...]
+
+
+
 
 
 # ============================================================
@@ -224,7 +328,7 @@ def compute_billowing_segments(csv_path, *,
         jump_factor=2.5,
         tip_policy="lowestZ",
         global_up=(0,0,1),
-        force_flip_x=False,
+        force_flip_x=True,
         transform_to_local=False):
 
     if exclude_struts is None:
@@ -339,26 +443,39 @@ def percent_change_with_uncertainty(billow_A, billow_B, sigma_L):
 def plot_geometric_aoa_relative(csvs, labels, colors,
                                 external_curves, external_labels):
     plt.figure(figsize=(10, 5))
+    ax = plt.gca()
+
+    # Plot twist curves
     for csv, lab, col in zip(csvs, labels, colors):
         s, twist = compute_geometric_twist(csv)
 
-        # --- FIX: Flip twist for FIRST FILE ONLY ---
-        if csv == csvs[0]:  # powered file
-            twist = -twist  # invert signs
-        # -------------------------------------------
+        twist = -twist
 
-        plt.plot(s, twist, marker="o", label=lab, color=col)
+        ax.plot(s, twist, marker="o", label=lab, color=col)
 
+    # External curves (CAD etc)
     for (s_ext, twist_ext), lab in zip(external_curves, external_labels):
-        plt.plot(s_ext, twist_ext, "r--", marker="o", label=lab)
+        ax.plot(s_ext, twist_ext, "r--", marker="o", label=lab)
 
-    plt.xlabel(r"$2y/b$")
-    plt.ylabel("Twist angle (deg)")
-    plt.title("Spanwise Geometric Twist (LE-relative)")
-    plt.grid(True, alpha=0.3)
-    plt.legend()
+    # -------------------------------------------------------
+    # Add shaded unreliable regions
+    # -------------------------------------------------------
+    # Add the first region with a label
+    #ax.axvspan(-1, -0.75, color='red', alpha=0.15, label="Unreliable region")
+    # Second region without label to avoid duplicate legend entries
+    #ax.axvspan(0.75, 1, color='red', alpha=0.15)
+
+    # -------------------------------------------------------
+    # Labels and formatting
+    # -------------------------------------------------------
+    ax.set_xlabel(r"$2y/b$")
+    ax.set_ylabel(r"Twist angle $\tau$ (deg)")
+    ax.set_title("Spanwise Geometric Twist")
+    ax.grid(True, alpha=0.3)
+    ax.legend()
     plt.tight_layout()
     plt.show()
+
 
 def plot_billowing(csvs, labels, colors,
                    exclude_struts_per_file,
@@ -387,7 +504,7 @@ def plot_billowing(csvs, labels, colors,
 
     plt.xlabel("Segments")
     plt.ylabel("Distance (m)")
-    plt.title("Billowing")
+    plt.title("Billowing of segments for different flight cases")
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -506,32 +623,18 @@ def compute_centerstrut_tip_distances(csv_path):
 if __name__ == "__main__":
 
     csvs = [
-        "static_test_output/P1_S.csv",
-        "static_test_output/P1_PL1.csv",
-        "static_test_output/P1_PL2.csv",
-        "static_test_output/P1_TL1.csv",
-        "static_test_output/P1_TL2.csv",
-        "static_test_output/P2_S.csv",
-        "static_test_output/P2_PL1.csv",
-        "static_test_output/P2_PL2.csv",
-        "static_test_output/P2_TL1.csv",
-        "static_test_output/P2_TL2.csv",
+        "static_test_output/powered_state_reelin_frame_17372.csv",
+        "static_test_output/depowered_state_reelin_frame_17701.csv",
+        "static_test_output/left_turn_reelout_frame_7811.csv"
     ]
 
     labels = [
-        "P1+S",
-        "P1+PL1",
-        "P1+PL2",
-        "P1+TL1",
-        "P1+TL2",
-        "P2+S",
-        "P2+PL1",
-        "P2+PL2",
-        "P2+TL1",
-        "P2+TL2",
+        "Powered, straight",
+        "Depowered, straight",
+        "Powered, turn",
     ]
 
-    colors = ["C0","C1","C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
+    colors = ["C0","C1","C2"]
 
     cad_s = np.array([-1,-0.875,-0.625,-0.325,0,0.325,0.625,0.875,1])
     cad_twist = np.array([2.3,1.9,3.0,3.5,3.7,3.5,3.0,1.9,2.3])
@@ -549,7 +652,7 @@ if __name__ == "__main__":
     plot_geometric_aoa_relative(
         csvs, labels, colors,
         external_curves=[(cad_s,cad_twist)],
-        external_labels=["CAD twist"]
+        external_labels=["CAD"]
     )
 
     plot_billowing(
@@ -572,8 +675,9 @@ if __name__ == "__main__":
     idx_d, billow_d = compute_billowing_segments(
         "static_test_output/depowered_state_reelin_frame_17701.csv"
     )
-    idx_t, billow_t = compute_billowing_segments(
-        "static_test_output/left_turn_reelout_frame_7362.csv"
+
+    idx_l, billow_l = compute_billowing_segments(
+        "static_test_output/left_turn_reelout_frame_7811.csv"
     )
 
     print("\n===== Center-Strut–Tip Distances =====")
@@ -587,7 +691,7 @@ if __name__ == "__main__":
 
     # Choose an estimate for segment-length uncertainty (in meters)
     # e.g. if you think each segment length is known within ±0.02 m (1σ):
-    sigma_L = 0.02
+    sigma_L = 1/5*0.1
 
     # 1) powered straight -> depowered straight
     pct_pd, sig_pd, m_p, m_d, N_pd = percent_change_with_uncertainty(
@@ -596,9 +700,9 @@ if __name__ == "__main__":
     print(f"Powered → Depowered: Δ = {pct_pd:.2f}% ± {sig_pd:.2f}% "
           f"(means: {m_p:.3f} m → {m_d:.3f} m, N={N_pd})")
 
-    # 2) powered straight -> powered left turn
+
     pct_pt, sig_pt, m_p2, m_t, N_pt = percent_change_with_uncertainty(
-        billow_p, billow_t, sigma_L
+        billow_p, billow_l, sigma_L
     )
-    print(f"Powered → Powered turn: Δ = {pct_pt:.2f}% ± {sig_pt:.2f}% "
+    print(f"Powered → Powered left turn: Δ = {pct_pt:.2f}% ± {sig_pt:.2f}% "
           f"(means: {m_p2:.3f} m → {m_t:.3f} m, N={N_pt})")

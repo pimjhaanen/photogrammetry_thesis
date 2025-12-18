@@ -260,6 +260,51 @@ def plot_static_shape(
         le_path = le_path_world
         coord_label = "world"
 
+    # --- Compute projected wing area in local frame (x–y) ---
+    projected_area_xy = None
+    if le_path is not None and le_path.shape[0] >= 3:
+        # take x,y only
+        poly = le_path[:, :2]
+
+        # close polygon between tips
+        if not np.allclose(poly[0], poly[-1]):
+            poly = np.vstack([poly, poly[0]])
+
+        # shoelace formula
+        x = poly[:, 0]
+        y = poly[:, 1]
+        projected_area_xy = 0.5 * np.abs(np.dot(x[:-1], y[1:]) - np.dot(y[:-1], x[1:]))
+
+        print(f"Projected LE area (x–y local frame): {projected_area_xy:.4f} m^2")
+    else:
+        print("Projected LE area: not available")
+
+    # --- Compute perimeter ---
+    perimeter = None
+    inflated_area_xy = None
+    r = 0.1  # 10 cm inflation
+
+    if le_path is not None and le_path.shape[0] >= 3:
+        poly = le_path[:, :2]
+
+        # close polygon
+        if not np.allclose(poly[0], poly[-1]):
+            poly = np.vstack([poly, poly[0]])
+
+        # perimeter
+        diffs = np.diff(poly, axis=0)
+        seg_lengths = np.linalg.norm(diffs, axis=1)
+        perimeter = float(seg_lengths.sum())
+
+        # inflated area using Minkowski sum formula
+        if projected_area_xy is not None:
+            inflated_area_xy = projected_area_xy + perimeter * r + np.pi * r * r
+
+        print(f"Perimeter of LE polygon: {perimeter:.4f} m")
+        print(f"Inflated projected area (+0.1 m buffer): {inflated_area_xy:.4f} m^2")
+    else:
+        print("Perimeter and inflated area unavailable")
+
     # Metrics (printed for convenience)
     phot_span_m = float(np.linalg.norm(le_path[-1] - le_path[0])) if le_path is not None and le_path.shape[0] >= 2 else None
     strut_lengths_meas = {}
@@ -471,6 +516,7 @@ def plot_multi_static_shapes_from_csv(
     invert_top_x: bool = False,
     invert_top_y: bool = False,
     x_shifts: Optional[Sequence[float]] = None,
+    three_view_row: bool = False,   # NEW
 ):
     """
     Panels:
@@ -544,6 +590,26 @@ def plot_multi_static_shapes_from_csv(
 
     datasets = shifted_datasets
 
+    # --------------------------------------------------
+    # WORLD FRAME ONLY: Flip X coordinate of DATA
+    # --------------------------------------------------
+    if not transform_to_local:
+        flipped = []
+        for (pts_local, le_path) in datasets:
+
+            pts_new = {
+                g: np.column_stack([-P[:, 0], P[:, 1], P[:, 2]])
+                for g, P in pts_local.items()
+            }
+
+            le_new = None
+            if le_path is not None:
+                le_new = np.column_stack([-le_path[:, 0], le_path[:, 1], le_path[:, 2]])
+
+            flipped.append((pts_new, le_new))
+
+        datasets = flipped
+
     # Compute cube limits (or use fixed)
     def _collect_axis_values(dsets, axis_index: int) -> np.ndarray:
         vals = []
@@ -591,10 +657,22 @@ def plot_multi_static_shapes_from_csv(
         front_proj= (1, 2); front_labels= ("y [m]", "z [m]"); front_xlim, front_ylim = ylim, zlim
         side_title, front_title = "Side view (x, z)", "Front view (y, z)"
     else:
-        side_proj = (1, 2); side_labels = ("y [m]", "z [m]"); side_xlim, side_ylim = ylim, zlim
-        top_proj  = (0, 1); top_labels  = ("x [m]", "y [m]"); top_xlim,  top_ylim  = xlim, ylim
-        front_proj= (0, 2); front_labels= ("x [m]", "z [m]"); front_xlim, front_ylim = xlim, zlim
-        side_title, top_title, front_title = "Side view (y, z)", "Top view (x, y)", "Front view (x, z)"
+        # World frame: flip X-axis
+        side_proj = (1, 2)
+        top_proj = (0, 1)
+        front_proj = (0, 2)
+
+        side_labels = ("y [m]", "z [m]")
+        top_labels = ("x [m]", "y [m]")
+        front_labels = ("x [m]", "z [m]")
+
+        side_xlim, side_ylim = ylim, zlim
+        top_xlim, top_ylim = xlim, ylim
+        front_xlim, front_ylim = xlim, zlim
+
+        side_title = "Side view (y, z)"
+        top_title = "Bottom view (x, y)"
+        front_title = "Front view (x, z)"
 
     # Figure & axes
     was_interactive = plt.isinteractive()
@@ -605,13 +683,64 @@ def plot_multi_static_shapes_from_csv(
     top_margin = 0.90 if figure_title else 0.96
 
     fig = _new_figure(figsize)
-    gs = fig.add_gridspec(2, 2, left=0.06, right=right_margin, bottom=0.06, top=top_margin, wspace=0.18, hspace=0.18)
 
-    # Layout: [0,0]=3D, [0,1]=Top, [1,0]=Side, [1,1]=Front
-    ax3d  = fig.add_subplot(gs[0, 0], projection="3d")
-    ax_tp = fig.add_subplot(gs[0, 1])
-    ax_sd = fig.add_subplot(gs[1, 0])
-    ax_fr = fig.add_subplot(gs[1, 1])
+    if three_view_row:
+        span_x = xlim[1] - xlim[0]
+        span_y = ylim[1] - ylim[0]
+        span_z = zlim[1] - zlim[0]
+
+        # horizontal spans per view
+        w_bottom = span_y  # (y, x)
+        w_side = span_x  # (x, z)
+        w_front = span_y  # (y, z)
+
+        gs = fig.add_gridspec(
+            1, 3,
+            width_ratios=[w_bottom, w_side, w_front],
+            left=0.06, right=0.96,
+            bottom=0.15, top=0.90,
+            wspace=0.25,
+        )
+
+        ax_tp = fig.add_subplot(gs[0, 0])  # Bottom
+        ax_sd = fig.add_subplot(gs[0, 1])  # Side
+        ax_fr = fig.add_subplot(gs[0, 2])  # Front
+        ax3d = None
+    else:
+        # Existing 4-view layout
+        gs = fig.add_gridspec(
+            2, 2,
+            left=0.06, right=right_margin,
+            bottom=0.06, top=top_margin,
+            wspace=0.18, hspace=0.18
+        )
+        ax3d = fig.add_subplot(gs[0, 0], projection="3d")
+        ax_tp = fig.add_subplot(gs[0, 1])
+        ax_sd = fig.add_subplot(gs[1, 0])
+        ax_fr = fig.add_subplot(gs[1, 1])
+
+    if not transform_to_local:
+        ax_tp.invert_xaxis()
+    if not transform_to_local:
+        ax_fr.invert_xaxis()
+
+    # --------------------------------------------------
+    # FORCE IDENTICAL DATA SCALING ACROSS ALL 2D AXES
+    # --------------------------------------------------
+    for ax in (ax_tp, ax_sd, ax_fr):
+        ax.set_aspect("equal", adjustable="box")
+
+    # Bottom view (y, x)
+    ax_tp.set_xlim(*ylim)
+    ax_tp.set_ylim(*xlim)
+
+    # Side view (x, z)
+    ax_sd.set_xlim(*xlim)
+    ax_sd.set_ylim(*zlim)
+
+    # Front view (y, z)
+    ax_fr.set_xlim(*ylim)
+    ax_fr.set_ylim(*zlim)
 
     # 3D
     for (pts_local, le_path), color, _ in zip(datasets, colors, labels):
@@ -625,15 +754,24 @@ def plot_multi_static_shapes_from_csv(
             title=None, ax=ax3d, color=color, label=None,
         )
 
-    ax3d.set_xlim(*xlim); ax3d.set_ylim(*ylim); ax3d.set_zlim(*zlim)
-    ax3d.set_xlabel("x [m]"); ax3d.set_ylabel("y [m]"); ax3d.set_zlabel("z [m]")
-    ax3d.view_init(elev=elev_3d, azim=azim_3d)
-    try:
-        _set_equal_aspect(ax3d)
-    except Exception:
-        pass
-    if add_grid:
-        ax3d.grid(True, which="both")
+    if ax3d is not None:
+        ax3d.set_xlim(*xlim)
+        ax3d.set_ylim(*ylim)
+        ax3d.set_zlim(*zlim)
+
+        if not transform_to_local:
+            ax3d.set_xlim(xlim[1], xlim[0])
+
+        ax3d.set_xlabel("x [m]")
+        ax3d.set_ylabel("y [m]")
+        ax3d.set_zlabel("z [m]")
+        ax3d.view_init(elev=elev_3d, azim=azim_3d)
+        try:
+            _set_equal_aspect(ax3d)
+        except Exception:
+            pass
+        if add_grid:
+            ax3d.grid(True, which="both")
 
     # Top view
     for (pts_local, le_path), color, _ in zip(datasets, colors, labels):
@@ -690,6 +828,8 @@ def plot_multi_static_shapes_from_csv(
         fig.legend(handles=proxies, loc="center",
                    bbox_to_anchor=(x_center, y_center), bbox_transform=fig.transFigure,
                    frameon=True, title=legend_title, ncol=legend_ncol, borderaxespad=0.0)
+    else:
+        pass
 
     try:
         fig.tight_layout()
@@ -717,27 +857,40 @@ if __name__ == "__main__":
     TARGETS = [1.14, 1.53, 1.92, 2.02, 2.02, 1.92, 1.53, 1.14]
 
     fig, axes = plot_multi_static_shapes_from_csv(
-        csv_paths=[
-            "static_test_output/P2_S.csv",
-            "static_test_output/P2_PL1.csv",
-            "static_test_output/P2_PL2.csv",
-            "static_test_output/P2_TL1.csv",
-            "static_test_output/P2_TL2.csv",
+        csv_paths=["static_test_output/straight_flight_reelout_frame_7182.csv",
+                    "static_test_output/depowered_state_reelin_frame_17701.csv"
         ],
-        labels=["P2 + S", "P2 + PL1", "P2 + PL2", "P2 + TL1", "P2 + TL2", ],
-        colors=["C0", "C1", "C2", "C3", "C4"],
-        transform_to_local=True,
-        fixed_limits={'x': (-2, 2), 'y': (-5, 5), 'z': (-4, 1)},
-        flip_x=[False, False, False, False, False],
-        x_shifts=[0.0, 0.0, 0.0, 0.0, 0.0],
-        flip_top_xy_in_local=True,
+        labels=["straight flight", "right turn"],
+        colors=["C0", "C1"],
+        transform_to_local=False,
+        fixed_limits={'x': (-5, 5), 'y': (-2, 2), 'z': (4, 8)},
+        flip_x=[False, False],
+        x_shifts=[0.0, 0.0],
+        flip_top_xy_in_local=False,
         invert_top_x=False,
         invert_top_y=False,
-        figure_title="Kite shape for different load cases",
+        figure_title="Kite shape in straight and turning flight, camera coordinate frame",
         legend_title=None,
         legend_position="between_right",
         save_path="static_kite_four_views_with_title_and_legend.png",
         dpi=300,
     )
+
+    fig, axes = plot_multi_static_shapes_from_csv(
+        csv_paths=["static_test_output/straight_flight_reelout_frame_7182.csv",
+
+                   ],
+        labels=["powered"],
+        colors=["C0"],
+        transform_to_local=True,
+        flip_x=[True],
+        x_shifts=[0.0],
+        fixed_limits={'x': (-2, 2), 'y': (-5, 5), 'z': (-3.5, 0.5)},
+        three_view_row=True,
+        legend_position="none",
+        figure_title="Orthographic kite shape views",
+        save_path="kite_orthographic_views.png",
+    )
+
 
 

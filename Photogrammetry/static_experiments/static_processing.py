@@ -629,8 +629,8 @@ if __name__ == "__main__":
 
     CSV = static_manual_triangulation_test(
         calib_file="../Calibration/stereoscopic_calibration/stereo_calibration_output/final_stereo_calibration_V3.pkl",
-        left_image_path="left_input_static/L_P2_TL2.jpg",
-        right_image_path="right_input_static/R_P2_TL2.jpg",
+        left_image_path="../input/left_videos/09_10_merged.MP4",
+        right_image_path="../input/right_videos/09_10_merged.MP4",
         left_frame_idx=left_frame,
         right_frame_idx=left_frame - 15,    # e.g. small offset
         n_le=23,

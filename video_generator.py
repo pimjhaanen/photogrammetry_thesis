@@ -368,7 +368,7 @@ def _render_spherical_panel(lat, lon, length, output_size=(360,360), dpi=120):
         return np.full((output_size[1], output_size[0], 3), 255, np.uint8)
 
     # Smaller figure, lower dpi → more compact panel
-    fig = plt.figure(figsize=(4, 4), dpi=dpi)
+    fig = plt.figure(figsize=(3.5,3.5), dpi=dpi)
     ax = fig.add_subplot(1,1,1, projection="3d")
 
     # Smaller marker size
@@ -593,7 +593,7 @@ def render_video(
         uwb = metrics.get("uwb_distance_m_filt", metrics.get("uwb_distance_m"))
         span_txt = f"Span (UWB): {uwb:.3f} m" if pd.notna(uwb) else ""
         aoa = metrics.get("airspeed_angle_of_attack_filt", metrics.get("airspeed_angle_of_attack"))
-        aoa_txt = f"AOA: {aoa:.1f}°" if pd.notna(aoa) else ""
+        aoa_txt = fr"$\alpha_{{fl}}$: {aoa:.1f}°" if pd.notna(aoa) else ""
         ss = metrics.get("airspeed_sideslip_angle_filt", metrics.get("airspeed_sideslip_angle"))
         sideslip_txt = f"Sideslip: {ss:.1f}°" if pd.notna(ss) else ""
 
