@@ -860,7 +860,7 @@ if __name__ == "__main__":
         csv_paths=["static_test_output/straight_flight_reelout_frame_7182.csv",
                     "static_test_output/depowered_state_reelin_frame_17701.csv"
         ],
-        labels=["straight flight", "right turn"],
+        labels=["Straight", "Turn"],
         colors=["C0", "C1"],
         transform_to_local=False,
         fixed_limits={'x': (-5, 5), 'y': (-2, 2), 'z': (4, 8)},
@@ -878,13 +878,14 @@ if __name__ == "__main__":
 
     fig, axes = plot_multi_static_shapes_from_csv(
         csv_paths=["static_test_output/straight_flight_reelout_frame_7182.csv",
+                   "static_test_output/right_turn_reelout_frame_7362.csv"
 
                    ],
-        labels=["powered"],
-        colors=["C0"],
+        labels=["Straight", "Turn"],
+        colors=["C0", "C1"],
         transform_to_local=True,
-        flip_x=[True],
-        x_shifts=[0.0],
+        flip_x=[True, False],
+        x_shifts=[0.0, 0.0],
         fixed_limits={'x': (-2, 2), 'y': (-5, 5), 'z': (-3.5, 0.5)},
         three_view_row=True,
         legend_position="none",

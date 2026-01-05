@@ -442,7 +442,7 @@ def percent_change_with_uncertainty(billow_A, billow_B, sigma_L):
 
 def plot_geometric_aoa_relative(csvs, labels, colors,
                                 external_curves, external_labels):
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(5,3))
     ax = plt.gca()
 
     # Plot twist curves
@@ -470,7 +470,6 @@ def plot_geometric_aoa_relative(csvs, labels, colors,
     # -------------------------------------------------------
     ax.set_xlabel(r"$2y/b$")
     ax.set_ylabel(r"Twist angle $\tau$ (deg)")
-    ax.set_title("Spanwise Geometric Twist")
     ax.grid(True, alpha=0.3)
     ax.legend()
     plt.tight_layout()
@@ -485,7 +484,7 @@ def plot_billowing(csvs, labels, colors,
                 "$L_f$", "$L_g$", "$L_h$", "$L_i$"]
     x_labels_flip = x_labels[::-1]
 
-    plt.figure(figsize=(10,5))
+    plt.figure(figsize=(5,3))
     for csv, lab, col in zip(csvs, labels, colors):
         excl = exclude_struts_per_file.get(csv,[])
         idx, billow = compute_billowing_segments(csv, exclude_struts=excl)
@@ -504,7 +503,7 @@ def plot_billowing(csvs, labels, colors,
 
     plt.xlabel("Segments")
     plt.ylabel("Distance (m)")
-    plt.title("Billowing of segments for different flight cases")
+    #plt.title("Billowing of segments for different flight cases")
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -529,12 +528,12 @@ def plot_billowing_deviation_bar(csvs, labels,
     labels_plot = ["CAD"] + labels
     vals = np.array([1.0] + results)
 
-    plt.figure(figsize=(10,5))
+    plt.figure(figsize=(5,3))
     colors = ["red"] + ["C0","C1","C2"][:len(labels)]
     plt.bar(labels_plot, (vals-1)*100, color=colors, width=0.4)
     plt.axhline(0,color="black")
     plt.ylabel("% difference")
-    plt.title("Billowing deviation vs CAD")
+    #plt.title("Billowing deviation vs CAD")
     plt.grid()
     plt.tight_layout()
     plt.show()

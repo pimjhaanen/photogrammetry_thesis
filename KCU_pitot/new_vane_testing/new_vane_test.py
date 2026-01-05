@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from matplotlib.lines import Line2D
 
 # === 1) Load lookup table (CSV) ===
 csv_file = 'testing_identifiers.csv'  # change path if needed
@@ -65,24 +66,56 @@ else:
 # === 4) Apply calibration to all points ===
 Y_cal = {ang: a * Y_meas[ang] + b for ang in angles}
 
-# === 5) Plot raw and calibrated lines (same color, calibrated dashed), legend OUTSIDE ===
+# === 5) Plot raw and calibrated lines + truth crosses (same color), legend as style-key + angles ===
+from matplotlib.lines import Line2D
+
 plt.figure(figsize=(10, 6))
+ax = plt.gca()
+
+angle_handles = []
+
 for ang in angles:
     y_raw = Y_meas[ang]
     y_cal = Y_cal[ang]
-    # Raw
-    plt.plot(x_vel, y_raw, marker='o', label=f'{ang}° raw')
-    # Calibrated (same color as previous by picking last line color)
-    color = plt.gca().lines[-1].get_color()
-    plt.plot(x_vel, y_cal, linestyle='--', label=f'{ang}° calibrated', color=color)
 
-plt.xlabel('Velocity (m/s)')
-plt.ylabel('Angle')
-plt.title('Angle vs velocity: raw and globally calibrated (fit from Va ≥ 10 m/s)')
-plt.grid(True)
-plt.legend(fontsize=9, ncol=1, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
-plt.tight_layout(rect=[0, 0, 0.8, 1])  # leave space right for legend
+    # Raw line defines the colour; only angle goes into legend
+    h_raw, = ax.plot(x_vel, y_raw, marker='o', linestyle='-', label=f'{ang}°')
+    color = h_raw.get_color()
+    angle_handles.append(h_raw)
+
+    # Calibrated (same colour) -> no legend entry
+    ax.plot(x_vel, y_cal, linestyle='--', color=color, label='_nolegend_')
+
+    # Truth crosses: nominal inflow angle (only for tested angles >= 10°)
+    if ang >= 10:
+        ax.plot(
+            x_vel, np.full_like(x_vel, ang, dtype=float),
+            linestyle='None', marker='x',
+            markersize=7, markeredgewidth=1.5,
+            color=color, label='_nolegend_'
+        )
+
+ax.set_xlabel('Velocity (m/s)')
+ax.set_ylabel('Inflow angle (°)')
+ax.set_title('Inflow angle vs velocity: raw vs calibrated vs truth (fit from Va ≥ 10 m/s)')
+ax.grid(True)
+
+# Style key (black)
+style_handles = [
+    Line2D([0], [0], color='k', marker='o', linestyle='-', label='raw'),
+    Line2D([0], [0], color='k', linestyle='--', label='calibrated'),
+    Line2D([0], [0], color='k', marker='x', linestyle='None', markersize=7, label='truth (≥10°)'),
+]
+
+handles = style_handles + angle_handles
+labels  = [h.get_label() for h in handles]
+
+ax.legend(handles, labels, fontsize=9, ncol=1,
+          bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
+
+plt.tight_layout(rect=[0, 0, 0.8, 1])
 plt.show()
+
 
 # === 6) Accuracy & plots for Va >= 10 m/s only (simple: mean±95% CI + central 95%) ===
 import math
@@ -165,20 +198,51 @@ else:
 # --- (Optional) Re-plot curves with 5 m/s hidden; legend OUTSIDE ---
 fig = plt.figure(figsize=(7, 7))
 ax = fig.add_subplot(111)
+
+angle_handles = []
+
 for ang in angles:
     y_raw = Y_meas[ang].copy()
     y_cal = Y_cal[ang].copy()
+
+    # hide Va < 10
     y_raw[~mask_10] = np.nan
     y_cal[~mask_10] = np.nan
 
-    plt.plot(x_vel, y_raw, marker='o', label=f'{ang}° raw')
-    color = plt.gca().lines[-1].get_color()
-    plt.plot(x_vel, y_cal, linestyle='--', label=f'{ang}° calibrated', color=color)
+    # Raw sets the colour; only angle label goes into legend
+    h_raw, = ax.plot(x_vel, y_raw, marker='o', linestyle='-', label=f'{ang}°')
+    color = h_raw.get_color()
+    angle_handles.append(h_raw)
+
+    # Calibrated (same colour), no legend entry
+    ax.plot(x_vel, y_cal, linestyle='--', color=color, label='_nolegend_')
+
+    # Truth crosses: nominal inflow angle (only for tested angles >= 10°)
+    if ang >= 10:
+        y_truth = np.full_like(x_vel, ang, dtype=float)
+        y_truth[~mask_10] = np.nan
+        ax.plot(
+            x_vel, y_truth,
+            linestyle='None', marker='x',
+            markersize=7, markeredgewidth=1.5,
+            color=color, label='_nolegend_'
+        )
 
 ax.set_xlabel('Wind speed (m/s)')
-ax.set_ylabel('Inflow angle $\phi$ (°)')
-ax.set_title('Inflow angle: raw vs calibrated across wind speeds')
+ax.set_ylabel(r'Inflow angle $\phi$ (°)')
 ax.grid(True)
-ax.legend(title="Series", fontsize=9, ncol=1, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
+
+# Style key (black) + angles only
+style_handles = [
+    Line2D([0], [0], color='k', marker='o', linestyle='-', label='raw'),
+    Line2D([0], [0], color='k', linestyle='--', label='calibrated'),
+    Line2D([0], [0], color='k', marker='x', linestyle='None', markersize=7, label='truth (≥10°)'),
+]
+handles = style_handles + angle_handles
+labels  = [h.get_label() for h in handles]
+
+ax.legend(handles, labels, title="Legend", fontsize=9,
+          bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0.)
+
 fig.subplots_adjust(right=0.75)
 plt.show()

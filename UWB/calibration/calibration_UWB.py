@@ -54,13 +54,12 @@ def fit_uwb_calibration(
 
     # --- Plot (optional) ---
     if make_plot:
-        plt.figure(figsize=(6, 5))
+        plt.figure(figsize=(4, 3))
         plt.plot(actual, error_before, "o-", label="RAW")
         plt.plot(actual, error_after, "--",  label="Calibrated")
         plt.axhline(0, linestyle=":", linewidth=0.8)
         plt.xlabel("Actual distance (m)")
-        plt.ylabel("$\epsilon_{UWB}$ (m)")
-        plt.title(title)
+        plt.ylabel(r"$\epsilon_\mathrm{UWB}$ (m)")
         plt.grid(True)
         plt.legend()
         plt.tight_layout()

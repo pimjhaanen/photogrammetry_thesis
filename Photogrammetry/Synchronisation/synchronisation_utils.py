@@ -315,7 +315,7 @@ def match_videos(video1_path: str,
 
     if plot:
         time = np.linspace(0, len(audio1) / eff_fps, len(audio1))
-        plt.figure(figsize=(15, 6))
+        plt.figure(figsize=(8, 3))
         plt.plot(time, audio1, label='Video 1 (ref)')
         if lag_samples > 0:
             shifted = np.pad(audio2, (lag_samples, 0), mode='constant')[:len(audio1)]
@@ -324,8 +324,7 @@ def match_videos(video1_path: str,
             pad_len = len(audio1) - len(shifted)
             shifted = np.pad(shifted, (0, max(0, pad_len)), mode='constant')[:len(audio1)]
         plt.plot(time, shifted, label='Video 2 (shifted by lag)')
-        plt.title('Matched Audio Signals')
-        plt.xlabel('Time [s]'); plt.ylabel('Amplitude')
+        plt.xlabel('Time (s)'); plt.ylabel('Amplitude (PCM counts)')
         plt.legend(); plt.grid(True); plt.tight_layout()
         plt.savefig("matches_audio_signals.pdf", format="pdf", bbox_inches="tight")
         plt.show()

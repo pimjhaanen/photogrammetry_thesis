@@ -9,9 +9,9 @@ from typing import Dict, List, Tuple, Union, Optional
 
 def depth_error_vs_baseline(
     depths: List[float] = [7.0],
-    focal_lengths: Dict[str, float] = {"Wide": 2337.803},  # focal length in pixels
-    disparity_errors: List[float] = [0.25, 0.5, 0.75, 1.0],  # ε_d in pixels
-    baseline_range: Tuple[float, float, float] = (0.01, 1.0, 0.01),  # start, stop, step in meters
+    focal_lengths: Dict[str, float] = {"Wide": 2337.803},  # <-- FIX
+    disparity_errors: List[float] = [0.25, 0.5, 0.75, 1.0],
+    baseline_range: Tuple[float, float, float] = (0.01, 1.0, 0.01),
     accuracy_max_cm: float = 5.0,
     ylim_max_cm: float = 6.0,
     plot: bool = True
@@ -51,7 +51,9 @@ def depth_error_vs_baseline(
                 results["curves"][lens_label][eps_d] = eps_z_cm
 
                 if plot:
-                    label = f"{lens_label}, $\\epsilon_d$ = {eps_d}"
+                    show_lens_label = len(focal_lengths) > 1  # alleen lensnaam tonen als je meerdere lenzen plot
+
+                    label = (f"{lens_label}, " if show_lens_label else "") + f"$\\epsilon_d$ = {eps_d}"
                     plt.plot(B, eps_z_cm, label=label)
 
                 # Find first baseline meeting accuracy requirement
@@ -72,7 +74,6 @@ def depth_error_vs_baseline(
 
         if plot:
             plt.ylim(0, ylim_max_cm)
-            plt.title(f"Estimated depth error ($\\epsilon_z$) at $z$ = {z} m")
             plt.xlabel("Baseline $B$ (m)")
             plt.ylabel("Depth error $\\epsilon_z$ (cm)")
             plt.grid(True)

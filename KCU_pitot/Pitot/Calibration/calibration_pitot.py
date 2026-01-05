@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
-
+from matplotlib.lines import Line2D
 def analyze_pitot_dataset(
     data_dir: str,
     take_first_seconds: float = 5.0,
@@ -124,28 +124,55 @@ def analyze_pitot_dataset(
     # --- Plot 1: wind-speed vs AoA, per true ws (RAW vs CALIBRATED), legend OUTSIDE ---
     fig = plt.figure(figsize=(7, 7))
     ax = fig.add_subplot(111)
+    windspeed_handles = []
+
     for windspeed, data in sorted(plot_data.items()):
         pairs = sorted(zip(data["angle"], data["measured_ws"], data["calibrated_ws"]))
         angs = [p[0] for p in pairs]
         ws_meas = [p[1] for p in pairs]
-        ws_cal  = [p[2] for p in pairs]
+        ws_cal = [p[2] for p in pairs]
 
-        # Raw first; calibrated reuses same color (dashed)
-        line_raw, = plt.plot(angs, ws_meas, "o-", label=f"{windspeed} m/s raw")
-        color = line_raw.get_color()
-        plt.plot(angs, ws_cal, "--", label=f"{windspeed} m/s calibrated", color=color)
+        # Measured defines colour, but only windspeed goes in legend
+        h_meas, = ax.plot(angs, ws_meas, "o-", label=f"{windspeed} m/s")
+        color = h_meas.get_color()
+        windspeed_handles.append(h_meas)
+
+        # Calibrated (same colour) -> NOT in legend
+        ax.plot(angs, ws_cal, "--", color=color, label="_nolegend_")
+
+        # Truth crosses (same colour) -> NOT in legend
+        ax.plot(
+            angs, [windspeed] * len(angs),
+            linestyle="None", marker="x",
+            markersize=7, markeredgewidth=1.5,
+            color=color, label="_nolegend_"
+        )
 
     ax.set_xlabel(r"Inflow Angle $\phi$ (°)")
     ax.set_ylabel("Wind Speed (m/s)")
-    ax.set_title("Wind Speed: raw vs calibrated across inflow angles")
     ax.grid(True)
 
-    # Legend outside but close
-    ax.legend(title="Series", bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0., fontsize=9)
+    # Style key (black)
+    style_handles = [
+        Line2D([0], [0], color="k", marker="o", linestyle="-", label="measured"),
+        Line2D([0], [0], color="k", linestyle="--", label="calibrated"),
+        Line2D([0], [0], color="k", marker="x", linestyle="None", markersize=7, label="truth"),
+    ]
 
-    # ↓↓↓ This removes the whitespace
+    # One combined legend: first the style key, then wind speeds
+    handles = style_handles + windspeed_handles
+    labels = [h.get_label() for h in handles]
+
+    ax.legend(
+        handles, labels,
+        title="Legend",
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+        borderaxespad=0.,
+        fontsize=9,
+    )
+
     fig.subplots_adjust(right=0.75)
-
     plt.show()
 
     # Build a per-windspeed table (optional, for inspection)
