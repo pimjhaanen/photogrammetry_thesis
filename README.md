@@ -206,5 +206,34 @@ open3d==0.13.0  # Optional, for 3D point cloud visualization
 pymesh==0.2.1  # Optional, for 3D mesh handling
 pyvista==0.30.1  # Optional, for 3D visualization and mesh processing
 
+## Installation Instructions
+
+1. **Clone the repository**:
+   First, clone the repository to your local machine:
+   ```bash
+   git clone https://github.com/pimjhaanen/photogrammetry_thesis.git
+   cd photogrammetry_thesis
+   ```
+2. **Create and activate the virtual environment**:
+   To keep your dependencies isolated, create a virtual environment and activate it:
+   - **Windows**:
+     ```bash
+     python -m venv photogrammetry_env
+     photogrammetry_env\Scripts\activate
+     ```
+   - **Mac/Linux**:
+     ```bash
+     python3 -m venv photogrammetry_env
+     source photogrammetry_env/bin/activate
+     ```
+
+3. **Install the required dependencies**:
+   With the virtual environment activated, install the necessary Python libraries:
+   ```bash
+   pip install opencv-python numpy matplotlib pandas scipy pyPozyx scikit-image open3d pymesh pyvista
+   ```
+
+4. **Run the code**
+   With everything ready, you can run the code, or parts of the code. However, remember that a lot of hardware is required (camera's, calibration images, markers, UWB sensors, etc.) to make the setup work. Good luck :)
 
 
