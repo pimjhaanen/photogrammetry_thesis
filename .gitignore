@@ -19,7 +19,7 @@ Practising_with_phones/time_series/
 *.obj
 *.ply
 *.csv
-!static_test_output/*.csv
+!Photogrammetry/static_experiments/static_test_output/*.csv
 *.npy
 *.wav
 *.ulg
