@@ -2,6 +2,8 @@
 
 This repository contains the code for determining the shape of a **Leading Edge Inflatable (LEI)** kite in flight using **stereoscopic photogrammetry** and **ultra-wideband (UWB) ranging**. These methods are time-synchronized and combined with **KCU (Kite Control Unit)** and **Pitot tube data** to provide accurate 3D reconstructions of the kite's deformation during flight. The system is designed to analyze the kite's behavior and aerodynamic characteristics by combining several subsystems that include sensor data processing, image analysis, and synchronization.
 
+The code was used for the graduation project of Pim Julius Haanen, which is found on https://resolver.tudelft.nl/uuid:40f2626a-a436-4068-8269-3c663fc249fd. The report gives a detailed explanation on the steps taken and why some pieces of code were necessary. The code uses the flight data available on https://github.com/awegroup/Flightdata09102025 and this is also what the results are based on. 
+
 The code is divided into several key subsystems:
 
 ---
