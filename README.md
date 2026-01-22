@@ -221,3 +221,101 @@ Triangulation: Converts matched 2D points from both stereo images into 3D coordi
 Debugging and Visualization: Offers options for visualizing stereo frames with overlaid markers and diagnostic statistics, such as epipolar line alignment.
 
 Purpose: It provides the core processing functions for handling stereo images, including rectification, tracking, and 3D reconstruction, enabling precise measurement of the kite's deformation.
+
+**UWB subsystem**
+
+The UWB subsystem handles the setup, calibration, and data collection of UWB distance measurements. It also provides tools for post-processing and visualizing the data. This subsystem is integral for measuring distances in the photogrammetry pipeline, where accurate positioning data is required for 3D reconstruction.
+
+1. Calibration Folder:
+
+calibration_UWB.py
+
+Function: This script performs linear calibration of the UWB sensors by fitting a linear model to the raw and actual distance measurements. It calculates the coefficients (a, b) for the calibration equation: corrected = a * measured + b.
+
+Purpose: Provides the calibration parameters to adjust raw UWB measurements and reduce errors.
+
+ranging_accuracy_uwb.py
+
+Function: This script analyzes the noise in UWB measurements by determining the consistency and accuracy of the sensor readings over time.
+
+Purpose: Helps assess the precision of the UWB system by measuring how much variation exists in the readings over a short period (typically 5 seconds), ensuring stable measurements for later use.
+
+static_measurement.py
+
+Function: Takes UWB distance measurements over a fixed 5-second period and calculates the average, since static setups (no movement) are assumed for this test.
+
+Purpose: Provides a stable and reliable UWB reading for calibration and further analysis.
+
+range_test.py
+
+Function: Determines the range of the UWB sensors by measuring the distance over a longer duration (typically 1 minute), simulating the conditions where one device is moved away from the other.
+
+Purpose: Provides an understanding of the operational range and signal loss for the UWB system as the distance between sensors increases.
+
+fresnel_zone_calculation.py
+
+Function: Calculates the Fresnel zone radius, which indicates the minimum ground clearance required to avoid obstruction of the UWB signal. This is based on the operating frequency and the separation distance between the two devices.
+
+Purpose: Ensures that the UWB sensors are positioned at the appropriate height to avoid signal degradation due to ground interference.
+
+2. Data Processing Folder:
+
+lag_light_wrt_first_log.py
+
+Function: Measures the lag between the UWB signal and the LED light used for synchronization. It compares timestamps between UWB logs and the light flashes (triggered by the system) to determine the time offset between them.
+
+Purpose: Ensures synchronization between the UWB system and external signals (e.g., light flashes) to maintain precise time alignment in the data.
+
+noise_visualization_uwb.py
+
+Function: This script visualizes the UWB distance noise by plotting the variations in the UWB data. It applies a zero-phase exponential moving average (EMA) filter to the data to highlight slow variations and suppress high-frequency noise without introducing any time lag.
+
+Purpose: Provides a visual representation of the noise characteristics, helping assess the quality of UWB data and guiding improvements.
+
+postprocess_RAW_UWB_file.py
+
+Function: This script post-processes raw UWB data that has not been automatically processed. It applies the previously calculated linear calibration, interpolates missing data, and smooths the data using the zero-phase EMA filter.
+
+Purpose: Ensures the raw UWB data is cleaned and calibrated, ready for further analysis.
+
+3. Main UWB Code:
+
+main_UWB.py
+
+Function: This is the main script that initiates UWB ranging. It starts the distance measurement process, logs the data, applies calibration, and post-processes the results. It interacts with the UWB sensors and automatically saves the processed data for later use.
+
+Purpose: The central code for UWB ranging in the pipeline, ensuring that data is collected, processed, and stored automatically.
+
+**Main postprocessing pipeline**
+
+This pipeline integrates the results from the KCU + Pitot, Photogrammetry, and UWB subsystems and generates a synchronized, processed output. It involves combining the data into a single dataset and visualizing it as a video with relevant metrics overlaid.
+
+1. combine_all_results.py
+
+Function: Combines the results from the KCU + Pitot, Photogrammetry, and UWB subsystems into a single, unified Pandas DataFrame. This is done by merging the data based on timestamps or other relevant parameters from each subsystem (e.g., camera frames, sensor data).
+
+Purpose: This script consolidates all collected data from different subsystems, making it ready for further processing and visualization.
+
+2. video_generator.py
+
+Function: This script generates a video from the synchronized and combined data. The video includes:
+
+4 views of the kite: front, side, bottom, and 3D.
+
+Phase of flight and other relevant telemetry data are displayed on the video.
+
+Synchronized data (e.g., wind speed, tether force) is overlaid on the video in real-time.
+
+Key Steps:
+
+Data Visualization: The telemetry data (e.g., airspeed, tether force, span) is used to generate annotations that are overlaid on the video frames.
+
+Rendering 3D Views: The 3D structure of the kite, including markers and the leading edge (LE), is visualized in 3D.
+
+Panels: Different panels show the front, side, bottom views of the kite, as well as metrics like angle of attack (AOA) and tether length.
+
+Output: The final video is saved, providing a comprehensive visual representation of the kite's performance during the test.
+
+Purpose of the Main Post-Processing Pipeline:
+
+The pipeline provides a comprehensive, synchronized output of the data collected from different sensors and cameras. It not only combines these results into a unified dataset but also creates a visual representation in the form of a video. This allows for easy analysis of the kite's behavior, deformation, and performance over time, with all the necessary telemetry overlaid in a clear format.
