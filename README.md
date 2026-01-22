@@ -214,19 +214,7 @@ pyvista==0.30.1  # Optional, for 3D visualization and mesh processing
    git clone https://github.com/pimjhaanen/photogrammetry_thesis.git
    cd photogrammetry_thesis
    ```
-2. **Create and activate the virtual environment**:
-   To keep your dependencies isolated, create a virtual environment and activate it:
-   - **Windows**:
-     ```bash
-     python -m venv photogrammetry_env
-     photogrammetry_env\Scripts\activate
-     ```
-   - **Mac/Linux**:
-     ```bash
-     python3 -m venv photogrammetry_env
-     source photogrammetry_env/bin/activate
-     ```
-
+   
 3. **Install the required dependencies**:
    With the virtual environment activated, install the necessary Python libraries:
    ```bash
