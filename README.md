@@ -192,3 +192,19 @@ This pipeline integrates the results from the **KCU + Pitot**, **Photogrammetry*
      - **Synchronized data** (e.g., wind speed, tether force) displayed in real-time.
    - **Purpose**: The video provides a **comprehensive visual representation** of the kite's performance during the test.
 
+---
+## Required external libraries
+
+opencv-python==4.5.3.56
+numpy==1.21.2
+matplotlib==3.4.3
+pandas==1.3.3
+scipy==1.7.1
+pyPozyx==1.0.1
+scikit-image==0.18.3  # Optional, if used in image processing
+open3d==0.13.0  # Optional, for 3D point cloud visualization
+pymesh==0.2.1  # Optional, for 3D mesh handling
+pyvista==0.30.1  # Optional, for 3D visualization and mesh processing
+
+
+
