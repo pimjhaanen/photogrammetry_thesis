@@ -59,6 +59,8 @@ def compute_zeta_xi(csv_path_straight, csv_path_turn):
     # --- extract tips ---
     tipL_s, tipR_s = _tip_points(le_s)
     tipL_t, tipR_t = _tip_points(le_t)
+    print(f"The tip positions in straight flight are: {tipL_s, tipR_s}")
+    print(f"The tip positions in turn are: {tipL_t, tipR_t}")
 
     # --- angles straight flight ---
     ang_xy_s = _angle_in_plane(tipL_s, tipR_s, idx_a=1, idx_b=0)   # y–x plane

@@ -154,7 +154,7 @@ def analyze_pitot_dataset(
 
     # Style key (black)
     style_handles = [
-        Line2D([0], [0], color="k", marker="o", linestyle="-", label="measured"),
+        Line2D([0], [0], color="k", marker="o", linestyle="-", label="raw"),
         Line2D([0], [0], color="k", linestyle="--", label="calibrated"),
         Line2D([0], [0], color="k", marker="x", linestyle="None", markersize=7, label="truth"),
     ]

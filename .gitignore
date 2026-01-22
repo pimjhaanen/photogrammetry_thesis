@@ -18,7 +18,7 @@ Practising_with_phones/time_series/
 *.drawio
 *.obj
 *.ply
-*.csv
+#*.csv
 *.npy
 *.wav
 *.ulg

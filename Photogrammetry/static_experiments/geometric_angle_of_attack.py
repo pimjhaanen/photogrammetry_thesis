@@ -454,8 +454,8 @@ def plot_geometric_aoa_relative(csvs, labels, colors,
         ax.plot(s, twist, marker="o", label=lab, color=col)
 
     # External curves (CAD etc)
-    for (s_ext, twist_ext), lab in zip(external_curves, external_labels):
-        ax.plot(s_ext, twist_ext, "r--", marker="o", label=lab)
+    #for (s_ext, twist_ext), lab in zip(external_curves, external_labels):
+        #ax.plot(s_ext, twist_ext, "r--", marker="o", label=lab)
 
     # -------------------------------------------------------
     # Add shaded unreliable regions
@@ -494,12 +494,12 @@ def plot_billowing(csvs, labels, colors,
         for i in reversed(range(len(y))):
             print(np.round(y[i], 3))
 
-        plt.plot(x, y, marker="o", color=col, label=lab)
+        plt.scatter(x, y, color=col, label=lab)
 
     for (_, cad), lab in zip(external_curves, external_labels):
         y = cad[::-1]
         x = np.array(x_labels_flip[:len(y)], dtype=object)
-        plt.plot(x, y, "r--", marker="o", label=lab)
+        plt.scatter(x, y, color="r", label=lab)
 
     plt.xlabel("Segments")
     plt.ylabel("Distance (m)")
@@ -676,7 +676,7 @@ if __name__ == "__main__":
     )
 
     idx_l, billow_l = compute_billowing_segments(
-        "static_test_output/left_turn_reelout_frame_7811.csv"
+        "static_test_output/right_turn_reelout_frame_7362.csv"
     )
 
     print("\n===== Center-Strut–Tip Distances =====")
@@ -690,7 +690,7 @@ if __name__ == "__main__":
 
     # Choose an estimate for segment-length uncertainty (in meters)
     # e.g. if you think each segment length is known within ±0.02 m (1σ):
-    sigma_L = 1/5*0.1
+    sigma_L = 0.033
 
     # 1) powered straight -> depowered straight
     pct_pd, sig_pd, m_p, m_d, N_pd = percent_change_with_uncertainty(

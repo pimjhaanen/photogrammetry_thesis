@@ -36,7 +36,7 @@ def depth_error_vs_baseline(
     for z in depths:
         if plot:
             plt.figure()
-            plt.axhline(y=accuracy_max_cm, color='grey', linestyle='--', label='REQ-EXP-01.2')
+            plt.axhline(y=accuracy_max_cm, color='grey', linestyle='--', label='REQ-EXP-01b')
 
         # For minimal changes: keep one black dot (first time we meet the requirement) for Wide, ε_d=1
         plotted_point = False
@@ -53,7 +53,7 @@ def depth_error_vs_baseline(
                 if plot:
                     show_lens_label = len(focal_lengths) > 1  # alleen lensnaam tonen als je meerdere lenzen plot
 
-                    label = (f"{lens_label}, " if show_lens_label else "") + f"$\\epsilon_d$ = {eps_d}"
+                    label = (f"{lens_label}, " if show_lens_label else "") + rf"$\epsilon_{{\delta,\mathrm{{x}}}} = {eps_d}$"
                     plt.plot(B, eps_z_cm, label=label)
 
                 # Find first baseline meeting accuracy requirement
