@@ -1,321 +1,192 @@
-This code is used to to determine the shape of a LEI kite in flight. It uses stereoscopic photogrammetry (through OpenCV library) together with ultra-wideband ranging (UWB) for this purpose. These are time-synchronised, and combined with KCU and Pitot tube data.
+# LEI Kite Photogrammetry and UWB Ranging System
 
-The code consists of four subsystems:
+This repository contains the code for determining the shape of a **Leading Edge Inflatable (LEI)** kite in flight using **stereoscopic photogrammetry** and **ultra-wideband (UWB) ranging**. These methods are time-synchronized and combined with **KCU (Kite Control Unit)** and **Pitot tube data** to provide accurate 3D reconstructions of the kite's deformation during flight. The system is designed to analyze the kite's behavior and aerodynamic characteristics by combining several subsystems that include sensor data processing, image analysis, and synchronization.
 
-**KCU Pitot Subsystem**
+The code is divided into several key subsystems:
 
-The KCU Pitot Subsystem is integral to processing wind tunnel experiment data, focusing on the analysis and calibration of pitot tubes, wind speed, and angle of attack (AoA) measurements. This subsystem is housed within the KCU_pitot folder and includes several components that facilitate the analysis of both initial and ongoing wind tunnel campaigns. The primary tasks handled within this subsystem include:
+---
 
-Pitot Calibration and Data Processing: The pitot_noise_test.py script processes and filters noise from sensor data collected during wind tunnel experiments, especially focusing on wind speed and AoA measurements. The calibration procedure is performed by applying a linear model to correct the measured pitot values using reference data.
+## Subsystems Overview
 
-New Vane Testing: The new_vane_testing.py script analyzes the performance of redesigned angular vanes. These vanes are tested for their responsiveness to varying flow conditions, and the results are used to assess their suitability for integration with the pitot system.
+### 1. KCU Pitot Subsystem
 
-Main Data Processing: The main_KCU_pitot.py script consolidates results from the pitot, angular vanes, and KCU system. It performs calibration, filtering, and data processing, outputting a cleaned dataset ready for further analysis. This script ensures that the collected data is consistently processed and aligned with the experimental goals.
+The **KCU Pitot Subsystem** processes **wind tunnel experiment data**, focusing on the analysis and calibration of **Pitot tubes**, **wind speed**, and **angle of attack (AoA)** measurements. It plays a crucial role in ensuring that the aerodynamic parameters are measured accurately for the kite's performance analysis.
 
-Visualizations and Results Analysis: The subsystem also generates visualizations to compare the raw and calibrated data, ensuring the results are aligned with expected physical behaviors. The processed data is stored and can be used for validation purposes in future experiments.
+#### Main Functions:
+1. **Pitot Calibration and Data Processing**  
+   - **File**: `pitot_noise_test.py, calibration_pitot.py`  
+   - **Purpose**: Filters noise from sensor data collected during wind tunnel experiments and calibrates **Pitot measurements** using a **linear model**.
 
-**Photogrammetry Subsystem**
+2. **New Vane Testing**  
+   - **File**: `new_vane_testing.py`  
+   - **Purpose**: Analyzes the performance of redesigned **angular vanes**. Tests their responsiveness to varying flow conditions and assesses their integration with the **Pitot system**.
 
-The photogrammetry subsystem consists of several subsystems in itself. It hosts an accuracy analysis, calibration, codes for marker detection, the static testing campaing and synchronisation.
+3. **Main Data Processing**  
+   - **File**: `main_KCU_pitot.py`  
+   - **Purpose**: Combines results from the **Pitot**, **angular vanes**, and **KCU system**. Applies **calibration**, **data filtering**, and generates a cleaned dataset ready for further analysis.
 
-**Photogrammetry accuracy**
+4. **Visualizations and Results Analysis**  
+   - **Purpose**: Generates visualizations to compare the raw and calibrated data, ensuring the results are aligned with expected physical behaviors.
 
-The accuracy subsystem evaluates the precision of the photogrammetry system by comparing the detected marker positions with ideal reference points arranged in a grid.
+---
 
-Matching Detected Points: The accuracy_test_gridwise.py script matches the measured markers to an ideal reference grid, minimizing the Euclidean distance between corresponding points.
+### 2. Photogrammetry Subsystem
 
-Error Calculation: It calculates the error between the detected and ideal positions of the markers, providing a measure of system accuracy.
+The **Photogrammetry Subsystem** is responsible for accurately measuring the 3D shape of the kite by detecting and analyzing markers placed on it. It integrates various subcomponents, including **accuracy analysis**, **marker detection**, **calibration**, and **synchronization**.
 
-Error Visualization: The gridwise_plotting_functions.py script visualizes the discrepancies by plotting the markers in 3D space, showing the alignment errors and helping to identify areas where the system needs improvement.
+#### Main Functions:
 
-**Photogrammetry Calibration**
+1. **Accuracy Analysis**  
+   - **Files**: `accuracy_test_gridwise.py`, `gridwise_plotting_functions.py`  
+   - **Purpose**: Compares detected marker positions with an ideal reference grid. This subsystem calculates **Euclidean errors** and visualizes discrepancies to ensure precision in marker placement.
 
-The calibration subsystem in OpenCV performs both intrinsic and extrinsic calibration for single and stereo camera setups.
+2. **Calibration**  
+   - **Files**: `calibrate_charuco.py`, `calibrate_checkerboard.py`, `calibrate_circles.py`, `calibrate_fisheye.py`  
+   - **Purpose**: Performs **intrinsic** (single camera) and **extrinsic** (stereo camera) calibration to adjust for lens distortion and stereo alignment.
+     - **Intrinsic Calibration**:
+       - **Charuco boards**: `calibrate_charuco.py`
+       - **Checkerboards**: `calibrate_checkerboard.py`
+       - **Asymmetric circles**: `calibrate_circles.py`
+     - **Extrinsic Calibration**:
+       - **Stereo calibration**: `stereoscopic_calibration.py`
+       - **Stereo calibration quality check**: `stereo_calibration_quality.py`
+       - **Fisheye lens calibration**: `stereo_calibration_fisheye.py`
 
-Intrinsic Calibration (Single Camera)
+   - **Output**: Saves calibrated values in `.pkl` files, with undistorted images provided for verification.
 
-The calibration process for single cameras involves using different patterns (checkerboards, Charuco boards, or asymmetric circles) to determine the intrinsic parameters of the camera, including the camera matrix and distortion coefficients.
+3. **Marker Detection**  
+   - **Files**: `detect_crosses.py`, `detection_test_without_crosses.py`, `centre_detection.py`, `check_HSV_colour.py`, `marker_detection_utils.py`  
+   - **Purpose**: Detects markers (e.g., red crosses, circular blobs) in stereo images, refining their positions with **subpixel accuracy** to ensure reliable 3D reconstruction.
 
-Scripts:
+## 4. **Static Experiments**  
 
-calibrate_charuco.py – Uses Charuco boards to refine calibration with ArUco markers.
+   **Files**:  
+   `correction_factor_calculator.py`, `span_calculator.py`, `static_processing.py`, `static_processing_fisheye.py`, `anhedral_angle_calculator.py`, `determine_pitch_angle.py`, `determine_zeta_xi.py`, `twist_and_billowing.py`, `plot_static_results.py`  
 
-calibrate_checkerboard.py – Uses checkerboards to calibrate the camera.
+   **Purpose**:  
+   The **Static Experiments** subsystem processes **static frames** by manually clicking matching markers in both the left and right frames of stereo pairs. The objective is to generate **3D point clouds** for further analysis, focusing on a variety of critical angles and deformations in the kite. This subsystem is designed to work with **non-moving (static) frames**, and the following steps are carried out for processing:
 
-calibrate_circles.py – Uses asymmetric circle grids for calibration.
+   - **Correction Factor Calculation**:  
+     - **File**: `correction_factor_calculator.py`  
+     - **Purpose**: This script computes the **correction factors** required to compensate for **bar bending** and **twist** in the kite's structure. It adjusts the yaw, roll, and pitch angles of the cameras by minimizing **vertical disparity** and **span deviation** from UWB data, thus improving the accuracy of 3D point cloud generation.
 
-calibrate_fisheye.py – Specifically for fisheye lens calibration.
+   - **Span Check**:  
+     - **File**: `span_calculator.py`  
+     - **Purpose**: This script offers a quick check to validate the **span measurement** of the kite. It computes the **pixel coordinates** in the stereo images and compares them against the expected span values, ensuring the accuracy of the calibration.
 
-Output: Calibrated values are saved as .pkl files and can also output undistorted images.
+   - **3D Point Cloud Generation**:  
+     - **Files**: `static_processing.py`, `static_processing_fisheye.py`  
+     - **Purpose**: These scripts allow users to manually click matching markers in the **left** and **right** frames, generating a **3D point cloud**. The **static_processing.py** is the recommended approach for standard cameras, while **static_processing_fisheye.py** can be used for fisheye lens calibration, although its use is not recommended unless specifically required.
 
-Extrinsic Calibration (Stereo Camera)
+   - **Calculation of Critical Angles and Shear**:  
+     The following scripts calculate the deformation characteristics of the kite using the generated 3D point clouds:
+     - **Anhedral Angle**:  
+       - **File**: `anhedral_angle_calculator.py`  
+       - **Purpose**: This script computes the **anhedral angle** of the kite’s wing by analyzing the midpoints of the left and right wing tips in the yz-plane. This angle provides insight into the wing’s tilt relative to the horizontal plane.
+     - **Pitch Angle**:  
+       - **File**: `determine_pitch_angle.py`  
+       - **Purpose**: Calculates the **pitch angle** of the kite’s wing by analyzing the average pitch of the wing’s struts. This angle is essential for understanding the orientation of the kite in flight.
+     - **Shear Angles**:  
+       - **File**: `determine_zeta_xi.py`  
+       - **Purpose**: This script calculates the **front shear (zeta)** and **bottom shear (xi)** angles by analyzing changes in the tip-line angles across both the y–x and z–y planes. These angles are used to quantify the deformation behavior of the kite under varying flight conditions.
 
-This step involves matching frames from the left and right cameras, which is essential for stereo calibration.
+   - **Deformation Analysis and Plotting**:  
+     - **Files**: `twist_and_billowing.py`, `plot_static_results.py`  
+     - **Purpose**: The **twist_and_billowing.py** script calculates the **twist** and **billowing** of the kite during the static frame analysis. It generates different output files that provide insight into how the kite deforms. The **plot_static_results.py** script is responsible for visualizing the static test results by plotting the **3D reconstructed shapes** and deformation characteristics of the kite, enabling a thorough analysis of the static experiment.
 
-Scripts:
+## 5. **Photogrammetry Main Functions**  
 
-stereoscopic_calibration.py – Performs stereo calibration by calculating intrinsic parameters for both cameras and their relative pose (rotation and translation).
+   **Files**:  
+   `determine_baselength.py`, `kite_shape_reconstruction_utils.py`, `main_photogrammetry.py`, `stereo_photogrammetry_utils.py`  
 
-stereo_calibration_quality.py – Evaluates the quality of the stereo calibration by checking reprojection errors and epipolar distances.
+   **Purpose**:  
+   The **Photogrammetry Subsystem** processes stereo images to generate accurate **3D point clouds** of the kite, which are crucial for understanding its deformation and geometry in flight. This subsystem is responsible for the key photogrammetry operations, including **camera calibration**, **feature matching**, and **3D reconstruction**. The following are the key functions:
 
-stereo_calibration_fisheye.py – Calibration for fisheye lenses in stereo setups, though not recommended for general use.
+   - **Baseline Length Calculation**:  
+     - **File**: `determine_baselength.py`  
+     - **Purpose**: This script computes the **baseline length** required for accurate stereo vision measurements. It calculates the **depth error** as a function of the baseline distance and analyzes the effect of baseline length on depth precision. This is essential to determine the optimal stereo camera setup for minimizing depth errors during 3D reconstruction.
 
-Data Export and Visualization
+   - **Kite Shape Reconstruction**:  
+     - **File**: `kite_shape_reconstruction_utils.py`  
+     - **Purpose**: This script contains utilities for reconstructing the **kite’s shape** from the marker detections in stereo images. It processes the detected markers and fits the **leading edge (LE)** and **struts** into 3D space. It also provides essential utilities for triangulating points, estimating angles, and fitting 3D lines and planes to the kite's structure, enabling accurate modeling of the kite’s deformation.
 
-Scripts:
+   - **Main Photogrammetry Pipeline**:  
+     - **File**: `main_photogrammetry.py`  
+     - **Purpose**: This is the central script for processing stereo frames in the photogrammetry pipeline. It reads camera calibration data, processes stereo image pairs, applies **rotation corrections**, performs **feature matching**, and triangulates points to generate the 3D structure of the kite. It ties together all processes from calibration to triangulation, generating the final 3D point cloud used for analysis.
 
-export_stereo_staes.py – Exports calibration results for visualization, such as raw, undistorted, rectified, and epipolar-aligned images.
+   - **Stereo Photogrammetry Utilities**:  
+     - **File**: `stereo_photogrammetry_utils.py`  
+     - **Purpose**: This script provides various utilities for stereo image processing, such as **feature tracking**, **rectification**, and **triangulation**. It handles stereo pair processing with **rotation corrections** and includes options for visualizing stereo frames with overlaid markers and diagnostic statistics, such as **epipolar line alignment**. These utilities are essential for ensuring that stereo image pairs are properly aligned, enabling precise 3D reconstruction of the kite’s geometry.
 
-**Photogrammetry marker detection**
+---
 
-detect_crosses.py
+### 3. Synchronization Subsystem (integrated in photogrammetry folder)
 
-Function: Detects red cross markers in video frames. It uses HSV segmentation to isolate red regions, then applies morphological operations (e.g., opening, closing) to clean the mask. It then finds contours of the mask and refines the marker center using subpixel accuracy.
+The **Synchronization Subsystem** ensures that data from different video and sensor sources (e.g., UWB, cameras) are aligned in time, allowing for accurate correlation and 3D reconstruction.
 
-Purpose: Determines if and where red cross markers appear in video frames, essential for tracking marker positions in 3D reconstruction.
+#### Main Functions:
 
-detection_test_without_crosses.py
+1. **Video Merging**  
+   - **File**: `merge_multiple_videos.py`  
+   - **Purpose**: Merges **split video files** from GoPro cameras into one continuous stream.
 
-Function: A variant of the marker detection test that checks for general marker detection without relying on red crosses. It analyzes video frames to detect red color segments and tests various marker sizes to determine the minimum size in pixels for detection.
+2. **Drift Testing**  
+   - **File**: `gopro_drift_test.py`  
+   - **Purpose**: Measures **drift** between two GoPro videos by comparing their **audio tracks**, adjusting for any time offsets.
 
-Purpose: Helps determine the minimum marker size required for detection, ensuring the system can accurately identify markers in different conditions.
+3. **Synchronization Utilities**  
+   - **File**: `synchronisation_utils.py`  
+   - **Purpose**: Synchronizes **photogrammetry cameras** with **UWB data** using timestamp adjustments and calibration.
 
-centre_detection.py
+4. **Audio Plotting**  
+   - **File**: `audio_plotting_utils.py`  
+   - **Purpose**: Visualizes and analyzes **audio data** from videos, ensuring synchronization through waveforms and spectrograms.
 
-Function: This code allows users to interactively pick pixel locations on frames and analyze the HSV values of those pixels. It performs brightness/contrast boosting and scaling for better visualization, and allows the user to click on regions of interest in a frame to obtain the HSV values.
+---
 
-Purpose: Facilitates the calibration of the marker detection process by helping determine accurate color ranges for different markers.
+### 4. UWB Subsystem
 
-check_HSV_colour.py
+The **UWB Subsystem** processes distance measurements from **UWB sensors**, applying calibration, filtering, and noise reduction techniques to ensure accurate positional data.
 
-Function: Interactively checks the HSV values of specific regions in video frames. Users can click on areas of the image, and the script will report the corresponding HSV values.
+#### Main Functions:
 
-Purpose: This helps refine color thresholds (e.g., for red markers) by checking pixel values in the context of the frame, ensuring that the right marker color is targeted.
+1. **Calibration**  
+   - **Files**: `calibration_UWB.py`, `ranging_accuracy_uwb.py`, `static_measurement.py`, `range_test.py`, `fresnel_zone_calculation.py`  
+   - **Purpose**:  
+     - **`calibration_UWB.py`**: Performs **linear calibration** of the UWB sensors to correct raw distance measurements based on a reference.
+     - **`ranging_accuracy_uwb.py`**: Analyzes **sensor accuracy** by determining the consistency of UWB readings over time.
+     - **`static_measurement.py`**: Takes **static UWB measurements** (5-second averages) for calibration under stationary conditions.
+     - **`range_test.py`**: Measures the **operational range** of the UWB sensors by assessing distance over time.
+     - **`fresnel_zone_calculation.py`**: Calculates the **Fresnel zone radius**, indicating the minimum ground clearance to avoid interference with UWB signals.
 
-marker_detection_utils.py
+2. **Data Processing**  
+   - **Files**: `lag_light_wrt_first_log.py`, `noise_visualization_uwb.py`, `postprocess_RAW_UWB_file.py`  
+   - **Purpose**:  
+     - **`lag_light_wrt_first_log.py`**: Measures the **lag** between UWB signals and external synchronization sources like LED lights.
+     - **`noise_visualization_uwb.py`**: **Visualizes UWB noise**, showing variations in the sensor data and filtering out high-frequency noise.
+     - **`postprocess_RAW_UWB_file.py`**: Processes **raw UWB data**, applying calibration, interpolation, and smoothing techniques to prepare data for further analysis.
 
-Function: This utility script contains functions for detecting circular blobs (e.g., for markers), refining their subpixel centers, and estimating ArUco marker poses. It includes blob detection using HSV masking and subpixel refinement using Gaussian fitting.
+3. **Main Ranging Process**  
+   - **File**: `main_UWB.py`  
+   - **Purpose**: Starts **UWB ranging**, applying calibration to the data, performing necessary adjustments, and automatically saving the processed measurements for later use in photogrammetry or other subsystems.
 
-Purpose: Supports high-precision marker detection, crucial for accurate marker positioning and 3D reconstruction in photogrammetry workflows.
 
-**Photogrammetry static experiments**
+---
 
-This subsystem focuses on processing static frames manually by clicking matching markers in the left and right images of a stereo pair, generating a 3D point cloud from these clicks. Here’s what each script does:
+### 5. Main Post-Processing Pipeline
 
-correction_factor_calculator.py
+This pipeline integrates the results from the **KCU + Pitot**, **Photogrammetry**, and **UWB** subsystems and generates a synchronized, processed output. It involves combining the data into a single dataset and visualizing it as a video with relevant metrics overlaid.
 
-Function: Computes the correction factors needed for bar bending and twist. It adjusts the yaw, roll, and pitch angles of the cameras by minimizing the vertical disparity and span deviation from UWB (Ultra-Wideband) data, ensuring accurate 3D reconstruction from stereo frames.
+#### Main Functions:
 
-span_calculator.py
+1. **combine_all_results.py**  
+   - **Function**: Combines the results from the **KCU + Pitot**, **Photogrammetry**, and **UWB** subsystems into a unified Pandas DataFrame. It merges the data based on timestamps or other relevant parameters from each subsystem (e.g., camera frames, sensor data).
+   - **Purpose**: Consolidates data for further processing and visualization.
 
-Function: Provides a quick check for the span measurement. It computes the pixel coordinates from the stereo images and compares them against expected span values, helping verify the results of the stereo calibration and ensuring consistency.
+2. **video_generator.py**  
+   - **Function**: Generates a **video** from the synchronized and combined data. The video includes:
+     - **4 views** of the kite: front, side, bottom, and 3D.
+     - **Phase of flight** and telemetry data overlaid on the video.
+     - **Synchronized data** (e.g., wind speed, tether force) displayed in real-time.
+   - **Purpose**: The video provides a **comprehensive visual representation** of the kite's performance during the test.
 
-static_processing.py
-
-Function: Lets you manually click matching markers in left and right images. The script then uses these clicks to generate a 3D point cloud, which is saved to the static_test_output folder. These point clouds are used for analysis and are part of the results discussed in the report.
-
-Output: 3D point clouds in CSV format for further analysis.
-
-static_processing_fisheye.py
-
-Function: A variant of static_processing.py designed to handle fisheye lens calibration. It's only recommended when the camera system is calibrated with fisheye lenses.
-
-anhedral_angle_calculator.py
-
-Function: Computes the anhedral angle of the wing by analyzing the midpoints of the left and right wing tips in the yz-plane. This angle provides insights into the wing’s tilt relative to the horizontal plane.
-
-determine_pitch_angle.py
-
-Function: Calculates the pitch angle of the wing by analyzing the average pitch of the wing struts, providing a measure of the wing’s overall orientation.
-
-determine_zeta_xi.py
-
-Function: Computes the front shear (zeta) and bottom shear (xi) angles based on the tip-line angle changes in both the y–x and z–y planes. These angles help in understanding the deformation behavior of the wing under different conditions.
-
-twist_and_billowing.py
-
-Function: Calculates the twist and billowing of the wing based on the markers' positional data. This is crucial for understanding the aerodynamic characteristics of the kite and how it deforms during operation.
-
-plot_static_results.py
-
-Function: Provides a visualization of the static results, plotting the reconstructed 3D shapes and deformation characteristics of the wing. It helps in analyzing the quality and accuracy of the static frame processing.
-
-**Photogrammetry synchronisation**
-
-The synchronization subsystem ensures that different video and sensor data sources are aligned in time, making it possible to correlate measurements and generate accurate 3D reconstructions. The subsystem includes several components:
-
-merge_multiple_videos.py
-
-Function: Merges videos automatically split by GoPro cameras (e.g., GX01, GX02, etc.). This script finds and concatenates multiple video files from a GoPro camera into a single file.
-
-Use: Helps process videos that are split across several files, ensuring they are combined into one continuous video for easier analysis.
-
-gopro_drift_test.py
-
-Function: Detects and measures drift between two GoPro videos by extracting and comparing the audio tracks. It uses cross-correlation to compute the time lag (drift) between the two audio streams, aligning the videos based on their audio tracks.
-
-Use: Ensures the synchronization of two GoPro videos by calculating the drift and adjusting for any time offset between the videos.
-
-synchronisation_utils.py
-
-Function: This script synchronizes photogrammetry cameras with one another and with UWB data. It uses calibration and timestamp adjustments to align the data sources accurately. It is a crucial part of the main processing pipeline.
-
-Use: Used to handle and correct timing mismatches between different cameras and sensors (e.g., UWB), ensuring accurate data fusion for further analysis.
-
-audio_plotting_utils.py
-
-Function: This code extracts mono audio from video files, applies a band-pass filter to isolate specific frequencies, and plots the filtered audio waveform and its spectrogram.
-
-Use: Helpful for visualizing and analyzing the audio data from the videos, ensuring synchronization through visual inspection of the audio waveforms and frequency content.
-
-**Others**
-
-Lastly there are some separate codes in the photogrammetry pipleine. determine_baselength.py, kite_shape_reconstruction_utils.py, main_photogrammetry.py and stereo_photogrammetry_utils.py, which are all the main codes of photogrammetry.
-
-1. determine_baselength.py
-
-Function: This script computes the baseline length required for stereo vision accuracy. It calculates depth error as a function of the baseline distance and analyzes the effect of baseline length on depth precision.
-
-Purpose: It helps determine the optimal baseline length for stereo cameras to minimize depth errors, ensuring accurate 3D reconstruction from stereo images.
-
-2. kite_shape_reconstruction_utils.py
-
-Function: This script contains utilities for reconstructing the kite’s shape from marker detections in stereo images. It processes the detected markers, identifies the leading edge (LE) and struts, and fits the geometry of the kite in 3D space.
-
-Key Functions:
-
-separate_LE_and_struts: Labels detected markers as either part of the leading edge (LE) or as strut identifiers (0-7), based on brightness thresholds and horizontal spacing. It clusters markers and assigns labels accordingly.
-
-3D utilities: It provides essential utilities for triangulating points, estimating angles, and fitting 3D lines and planes to the kite's structure.
-
-Purpose: This utility is vital for converting 2D image data into 3D shapes, enabling accurate modeling of the kite's deformation and geometry.
-
-3. main_photogrammetry.py
-
-Function: This is the central script for processing stereo frames in the photogrammetry pipeline. It loads calibration data, processes stereo pairs, applies rotation corrections, performs feature matching, and triangulates the points to reconstruct the 3D structure of the kite.
-
-Key Steps:
-
-Stereo Calibration: Loads camera calibration data for intrinsic and extrinsic parameters.
-
-Rotation Corrections: Uses per-frame yaw, pitch, and roll adjustments to correct for camera misalignments.
-
-Feature Matching: Matches corresponding features in the left and right frames using epipolar constraints and KLT tracking.
-
-3D Triangulation: Computes the 3D coordinates of the matched features.
-
-Purpose: This script ties together all processes from calibration, feature matching, and triangulation, generating the final 3D point cloud used in analysis.
-
-4. stereo_photogrammetry_utils.py
-
-Function: This script includes various utilities for stereo image processing, such as feature tracking, rectification, and triangulation. It also handles stereo pair processing with rotation corrections.
-
-Key Features:
-
-Stereo Rectification: Adjusts and aligns stereo frames to correct for distortions and ensure epipolar geometry for accurate feature matching.
-
-KLT Tracking: Uses Lucas-Kanade optical flow to track points across frames.
-
-Triangulation: Converts matched 2D points from both stereo images into 3D coordinates.
-
-Debugging and Visualization: Offers options for visualizing stereo frames with overlaid markers and diagnostic statistics, such as epipolar line alignment.
-
-Purpose: It provides the core processing functions for handling stereo images, including rectification, tracking, and 3D reconstruction, enabling precise measurement of the kite's deformation.
-
-**UWB subsystem**
-
-The UWB subsystem handles the setup, calibration, and data collection of UWB distance measurements. It also provides tools for post-processing and visualizing the data. This subsystem is integral for measuring distances in the photogrammetry pipeline, where accurate positioning data is required for 3D reconstruction.
-
-1. Calibration Folder:
-
-calibration_UWB.py
-
-Function: This script performs linear calibration of the UWB sensors by fitting a linear model to the raw and actual distance measurements. It calculates the coefficients (a, b) for the calibration equation: corrected = a * measured + b.
-
-Purpose: Provides the calibration parameters to adjust raw UWB measurements and reduce errors.
-
-ranging_accuracy_uwb.py
-
-Function: This script analyzes the noise in UWB measurements by determining the consistency and accuracy of the sensor readings over time.
-
-Purpose: Helps assess the precision of the UWB system by measuring how much variation exists in the readings over a short period (typically 5 seconds), ensuring stable measurements for later use.
-
-static_measurement.py
-
-Function: Takes UWB distance measurements over a fixed 5-second period and calculates the average, since static setups (no movement) are assumed for this test.
-
-Purpose: Provides a stable and reliable UWB reading for calibration and further analysis.
-
-range_test.py
-
-Function: Determines the range of the UWB sensors by measuring the distance over a longer duration (typically 1 minute), simulating the conditions where one device is moved away from the other.
-
-Purpose: Provides an understanding of the operational range and signal loss for the UWB system as the distance between sensors increases.
-
-fresnel_zone_calculation.py
-
-Function: Calculates the Fresnel zone radius, which indicates the minimum ground clearance required to avoid obstruction of the UWB signal. This is based on the operating frequency and the separation distance between the two devices.
-
-Purpose: Ensures that the UWB sensors are positioned at the appropriate height to avoid signal degradation due to ground interference.
-
-2. Data Processing Folder:
-
-lag_light_wrt_first_log.py
-
-Function: Measures the lag between the UWB signal and the LED light used for synchronization. It compares timestamps between UWB logs and the light flashes (triggered by the system) to determine the time offset between them.
-
-Purpose: Ensures synchronization between the UWB system and external signals (e.g., light flashes) to maintain precise time alignment in the data.
-
-noise_visualization_uwb.py
-
-Function: This script visualizes the UWB distance noise by plotting the variations in the UWB data. It applies a zero-phase exponential moving average (EMA) filter to the data to highlight slow variations and suppress high-frequency noise without introducing any time lag.
-
-Purpose: Provides a visual representation of the noise characteristics, helping assess the quality of UWB data and guiding improvements.
-
-postprocess_RAW_UWB_file.py
-
-Function: This script post-processes raw UWB data that has not been automatically processed. It applies the previously calculated linear calibration, interpolates missing data, and smooths the data using the zero-phase EMA filter.
-
-Purpose: Ensures the raw UWB data is cleaned and calibrated, ready for further analysis.
-
-3. Main UWB Code:
-
-main_UWB.py
-
-Function: This is the main script that initiates UWB ranging. It starts the distance measurement process, logs the data, applies calibration, and post-processes the results. It interacts with the UWB sensors and automatically saves the processed data for later use.
-
-Purpose: The central code for UWB ranging in the pipeline, ensuring that data is collected, processed, and stored automatically.
-
-**Main postprocessing pipeline**
-
-This pipeline integrates the results from the KCU + Pitot, Photogrammetry, and UWB subsystems and generates a synchronized, processed output. It involves combining the data into a single dataset and visualizing it as a video with relevant metrics overlaid.
-
-1. combine_all_results.py
-
-Function: Combines the results from the KCU + Pitot, Photogrammetry, and UWB subsystems into a single, unified Pandas DataFrame. This is done by merging the data based on timestamps or other relevant parameters from each subsystem (e.g., camera frames, sensor data).
-
-Purpose: This script consolidates all collected data from different subsystems, making it ready for further processing and visualization.
-
-2. video_generator.py
-
-Function: This script generates a video from the synchronized and combined data. The video includes:
-
-4 views of the kite: front, side, bottom, and 3D.
-
-Phase of flight and other relevant telemetry data are displayed on the video.
-
-Synchronized data (e.g., wind speed, tether force) is overlaid on the video in real-time.
-
-Key Steps:
-
-Data Visualization: The telemetry data (e.g., airspeed, tether force, span) is used to generate annotations that are overlaid on the video frames.
-
-Rendering 3D Views: The 3D structure of the kite, including markers and the leading edge (LE), is visualized in 3D.
-
-Panels: Different panels show the front, side, bottom views of the kite, as well as metrics like angle of attack (AOA) and tether length.
-
-Output: The final video is saved, providing a comprehensive visual representation of the kite's performance during the test.
-
-Purpose of the Main Post-Processing Pipeline:
-
-The pipeline provides a comprehensive, synchronized output of the data collected from different sensors and cameras. It not only combines these results into a unified dataset but also creates a visual representation in the form of a video. This allows for easy analysis of the kite's behavior, deformation, and performance over time, with all the necessary telemetry overlaid in a clear format.
