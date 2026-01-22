@@ -18,7 +18,11 @@ Practising_with_phones/time_series/
 *.drawio
 *.obj
 *.ply
-#*.csv
+*.csv
 *.npy
 *.wav
 *.ulg
+
+__pycache__/
+main simulation/__pycache__/
+synchronisation/__pycache__/
