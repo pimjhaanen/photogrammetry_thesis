@@ -60,7 +60,7 @@ The **Photogrammetry Subsystem** is responsible for accurately measuring the 3D 
    - **Files**: `detect_crosses.py`, `detection_test_without_crosses.py`, `centre_detection.py`, `check_HSV_colour.py`, `marker_detection_utils.py`  
    - **Purpose**: Detects markers (e.g., red crosses, circular blobs) in stereo images, refining their positions with **subpixel accuracy** to ensure reliable 3D reconstruction.
 
-## 4. **Static Experiments**  
+ 4. **Static Experiments**  
 
    **Files**:  
    `correction_factor_calculator.py`, `span_calculator.py`, `static_processing.py`, `static_processing_fisheye.py`, `anhedral_angle_calculator.py`, `determine_pitch_angle.py`, `determine_zeta_xi.py`, `twist_and_billowing.py`, `plot_static_results.py`  
@@ -96,7 +96,7 @@ The **Photogrammetry Subsystem** is responsible for accurately measuring the 3D 
      - **Files**: `twist_and_billowing.py`, `plot_static_results.py`  
      - **Purpose**: The **twist_and_billowing.py** script calculates the **twist** and **billowing** of the kite during the static frame analysis. It generates different output files that provide insight into how the kite deforms. The **plot_static_results.py** script is responsible for visualizing the static test results by plotting the **3D reconstructed shapes** and deformation characteristics of the kite, enabling a thorough analysis of the static experiment.
 
-## 5. **Photogrammetry Main Functions**  
+ 5. **Photogrammetry Main Functions**  
 
    **Files**:  
    `determine_baselength.py`, `kite_shape_reconstruction_utils.py`, `main_photogrammetry.py`, `stereo_photogrammetry_utils.py`  
