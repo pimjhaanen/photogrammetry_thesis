@@ -225,3 +225,6 @@ pyvista==0.30.1  # Optional, for 3D visualization and mesh processing
    With everything ready, you can run the code, or parts of the code. However, remember that a lot of hardware is required (camera's, calibration images, markers, UWB sensors, etc.) to make the setup work. Good luck :)
 
 
+## About the author
+
+My name is Pim Julius Haanen (20/03/2001, Alkmaar), and I graduated in January of 2026 for a MSc aerodynamics & wind energy at the faculty of aerospace engineering of the TU Delft, the Netherlands. The code here was used for my MSc thesis, provided here: https://resolver.tudelft.nl/uuid:40f2626a-a436-4068-8269-3c663fc249fd. Feel free to use the code provided here for your project :)
